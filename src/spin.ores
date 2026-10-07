@@ -132,18 +132,15 @@ define module spin as
   pub fnc require_param(borrow HttpExchange request, String name) -> Result<String, String> {
     if request.param_size(name) != 1; then return Err("expected one path parameter: " + name); fi
     val String value = request.param(name);
-    if value == ""; then return Err("empty path parameter: " + name); fi
-    return Ok(value);
+    return value == "" ? Err("empty path parameter: " + name) : Ok(value);
   }
   pub fnc require_query(borrow HttpExchange request, String name) -> Result<String, String> {
     val String value = request.query(name);
-    if value == ""; then return Err("missing or empty query parameter: " + name); fi
-    return Ok(value);
+    return value == "" ? Err("missing or empty query parameter: " + name) : Ok(value);
   }
   pub fnc require_header(borrow HttpExchange request, String name) -> Result<String, String> {
     val String value = request.header(name);
-    if value == ""; then return Err("missing or empty header: " + name); fi
-    return Ok(value);
+    return value == "" ? Err("missing or empty header: " + name) : Ok(value);
   }
 
   pub fnc builder() -> Builder { return new Builder(); }
