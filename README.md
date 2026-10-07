@@ -32,7 +32,7 @@ The central registration/dispatch API is:
 ```ores
 val builder = spin.builder();
 val path = http_routing.path("/hello", arr[http_routing.literal("hello")]);
-builder.get(&path, http.handler("SharedHello")).unwrap();
+builder.get(rt borrow path, http.handler("SharedHello")).unwrap();
 val app = builder.build().unwrap();
 val server = http.listen("127.0.0.1", 8080, 128, 1048576, 30000);
 loop {
@@ -65,12 +65,12 @@ See [docs/OWNERSHIP.md](docs/OWNERSHIP.md) for exact guarantees.
 
 ## Routes, middleware, and extraction
 
-`builder.route(method, &path, handler, pipeline_id, contract_id, operation_id)`
+`builder.route(method, rt borrow path, handler, pipeline_id, contract_id, operation_id)`
 accepts any method supported by the router; `get` and `post` are conveniences.
 Static, parameter, and wildcard matching, strict slash handling, HEAD fallback,
 OPTIONS, 404, 405, and Allow synthesis come from the router.
 
-`builder.use(hook)` registers a `Fnc<bool(&HttpExchange)>` supervisor middleware.
+`builder.use(hook)` registers a `Fnc<bool(borrow HttpExchange)>` supervisor middleware.
 Hooks run in registration order after routing metadata/captures are attached,
 including for framework-generated errors and OPTIONS. Return true to continue;
 return false after scheduling a response to stop dispatch. A hook may inspect
