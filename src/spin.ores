@@ -108,7 +108,7 @@ define module spin as
       return Ok(true);
     }
 
-    pub route(mut self)(String method, rt borrow http_routing.PathPattern path, HttpHandler handler,
+    pub route(mut self)(String method, borrow http_routing.PathPattern path, HttpHandler handler,
                         int pipeline, int contract_id, String operation) -> Result<bool, String> {
       if self.built; then return Err("builder already consumed"); fi
       val result = self.router.route(method, path, self.bindings.size, pipeline, contract_id, operation);
@@ -116,10 +116,10 @@ define module spin as
       self.bindings.add(new Binding(handler, path.copy(), pipeline, contract_id));
       return Ok(true);
     }
-    pub get(mut self)(rt borrow http_routing.PathPattern path, HttpHandler handler) -> Result<bool, String> {
+    pub get(mut self)(borrow http_routing.PathPattern path, HttpHandler handler) -> Result<bool, String> {
       return self.route("GET", path, handler, -1, -1, "");
     }
-    pub post(mut self)(rt borrow http_routing.PathPattern path, HttpHandler handler) -> Result<bool, String> {
+    pub post(mut self)(borrow http_routing.PathPattern path, HttpHandler handler) -> Result<bool, String> {
       return self.route("POST", path, handler, -1, -1, "");
     }
     pub build(mut self)() -> Result<Application, String> {
