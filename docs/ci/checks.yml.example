@@ -1,0 +1,16 @@
+name: Static checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  syntax:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - run: bash -n scripts/compiler.sh scripts/test.sh
+      - run: python3 -m py_compile tests/integration.py scripts/*.py

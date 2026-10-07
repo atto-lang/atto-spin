@@ -1,0 +1,33 @@
+name: Native integration (manual cross-repository checkout)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Configure Java
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Fetch pinned private dependencies
+        env:
+          GH_TOKEN: ${{ secrets.ORESLANG_READ_TOKEN }}
+        run: |
+          test -n "$GH_TOKEN" || { echo 'Configure ORESLANG_READ_TOKEN with read access to the core and router repositories'; exit 1; }
+          gh auth setup-git
+          git submodule update --init
+          gh repo clone ores-truffle-oreslang/oreslang-source.java work/compiler
+          git -C work/compiler checkout "$(cat SOURCE_REF)"
+      - name: Build compiler and run ownership tests
+        run: mvn -q -f work/compiler/pom.xml -Dtest=NativeHttpTest test dependency:build-classpath -Dmdep.outputFile=target/classpath.txt
+      - name: Native router and framework integration
+        run: |
+          export ORESLANG_SOURCE_DIR="$PWD/work/compiler"
+          scripts/test.sh
