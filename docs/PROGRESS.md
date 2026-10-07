@@ -18,7 +18,7 @@ boundaries are explicit below; this is not a claim of a stable production releas
 | 11 | Extraction/responses | Required-value Results, captures/query/cookies/headers, text/HTML/JSON/redirect helpers; application-owned codecs. |
 | 12 | Middleware | Ordered supervisor hooks, route pipeline/contract IDs, auth/CORS example, ordinary error containment. |
 | 13 | Lifecycle/limits | Admission through actor finalization, draining, parser/connection defaults, counters, optional timings. |
-| 14 | Verification | 1,220 core tests; native routing suite; 55 real-HTTP integration assertions. |
+| 14 | Verification | 1,232 core tests; native routing suite; 55 real-HTTP integration assertions. |
 | 15 | Examples/benchmark/draft | Runnable mixed-mode example, timing/JFR allocation baseline, pinned test scripts, linked draft PRs. |
 
 ## Draft boundaries
@@ -38,6 +38,13 @@ boundaries are explicit below; this is not a claim of a stable production releas
   overhead. Optimizing-Graal/native-image and production load testing are not
   represented as complete.
 
-[Runtime draft #438](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/438)
+[Merged runtime #438](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/438)
 
-[Routing draft #8](https://github.com/ores-truffle-oreslang/oreslang-http-routing/pull/8)
+[Merged routing #8](https://github.com/ores-truffle-oreslang/oreslang-http-routing/pull/8)
+
+## Keyword-borrow and boundary hardening follow-up
+
+- Migrated routing/Spin types and expressions to keyword borrows.
+- Pinned compiler support for explicit singleton tuple unpacking and borrow leases.
+- Audited and hardened cleanup retention and source failure propagation.
+- Revalidated 1,232 core tests, router golden tests, and 55 HTTP assertions.

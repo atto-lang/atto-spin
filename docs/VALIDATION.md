@@ -39,6 +39,10 @@ The companion runtime/router GitHub Actions jobs did not start: GitHub reported
 failed account payments or an insufficient spending limit. Their hosted checks
 remain unverified; the passing results below are local, on exact dependency pins.
 
-Pinned local results on 2026-10-07: **1,220 core tests, zero failures/errors/skips**;
+Pinned local results on 2026-10-07: **1,232 core tests, zero failures/errors/skips**;
 router native golden and runner-contract suites pass; **55 Spin HTTP assertions
 pass** including handlers that omit self.end and shutdown with a live actor.
+
+The follow-up keyword-borrow migration was validated against current main plus
+the pinned compiler hardening commit. Core regressions include explicit singleton
+tuples, grouping, borrow suspension, cleanup retention, and async/actor diagnostics.
