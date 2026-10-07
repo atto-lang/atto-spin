@@ -1,0 +1,3 @@
+[submodule "dependencies/http-routing"]
+	path = dependencies/http-routing
+	url = https://github.com/ores-truffle-oreslang/oreslang-http-routing.git
