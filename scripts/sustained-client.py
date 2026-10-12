@@ -47,11 +47,12 @@ async def one(reader, writer, host, path, expected_mode, timeout):
     return (time.perf_counter()-start)*1000, status, valid, headers.get('connection','').lower()
 
 async def benchmark(args):
-    deadline = time.monotonic() + args.duration
+    # The sustained interval starts only AFTER all client tasks are created.
+    # At 10k clients, construction time must not eat into measured load.
     ready = asyncio.Event()
+    deadline = None
     results = {'attempts':0,'successes':0,'status':Counter(),'errors':Counter(),
                'connections':0,'reused_connections':0,'latencies_ms':[]}
-    lock = asyncio.Lock()
     async def worker():
         await ready.wait()
         reader = writer = None
@@ -97,6 +98,7 @@ async def benchmark(args):
             except Exception: pass
     workers = [asyncio.create_task(worker()) for _ in range(args.concurrency)]
     started = time.monotonic()
+    deadline = started + args.duration
     ready.set()
     await asyncio.gather(*workers)
     elapsed = time.monotonic()-started
@@ -130,6 +132,7 @@ def main():
     result=asyncio.run(benchmark(args))
     with open(args.output,'w') as out: json.dump(result,out,indent=2);out.write('\n')
     print(json.dumps(result))
-    if result['success_rate'] != 1: raise SystemExit(1)
+    # Rounded success_rate is presentation-only: never let rounding hide errors.
+    if result['attempts'] != result['successes']: raise SystemExit(1)
 
 if __name__=='__main__':main()
