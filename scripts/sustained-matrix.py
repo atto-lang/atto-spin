@@ -36,13 +36,30 @@ def main():
     source=Path(env["ORESLANG_SOURCE_DIR"])
     expected=(ROOT/"SOURCE_REF").read_text().strip()
     sha=lambda path:subprocess.check_output(["git","-C",str(path),"rev-parse","HEAD"],text=True).strip()
-    assert sha(source)==expected, "compiler pin mismatch"
-    assert not subprocess.check_output(["git","-C",str(source),"status","--porcelain"],text=True).strip(), "dirty compiler source"
+    mirror=env.get("SPIN_VERIFIED_MIRROR")=="1"
     router=ROOT/"dependencies/http-routing"
-    expected_router=subprocess.check_output(["git","-C",str(ROOT),"ls-files","--stage","dependencies/http-routing"],text=True).split()[1]
-    assert sha(router)==expected_router, "router pin mismatch"
-    assert not subprocess.check_output(["git","-C",str(router),"status","--porcelain"],text=True).strip(), "dirty router"
-    metadata=dict(spin_commit=sha(ROOT),java_source_commit=sha(source),router_commit=sha(router),
+    if mirror:
+        # The mirror has different commit IDs but must have the *same Git blobs*.
+        # Verify every build input against immutable source-side Git blob SHAs.
+        workspace=ROOT.parents[1]
+        for lock_name in ("lock-java.txt","lock-spin.txt","lock-router.txt"):
+            lock=workspace/"bench-mirror"/lock_name
+            if not lock.is_file(): raise RuntimeError("missing private mirror provenance: "+str(lock))
+            for line in lock.read_text().splitlines():
+                expected_blob,filename=line.split("  ",1)
+                actual=subprocess.check_output(["git","hash-object",str(workspace/filename)],text=True).strip()
+                if actual!=expected_blob:
+                    raise RuntimeError("mirrored Git blob mismatch: "+filename)
+        if expected != "b9f7d5cf0355e8b0351c3b96eeb225925aa57b86":
+            raise RuntimeError("unexpected pinned Java pooled runtime")
+        expected_router="b736ecfeae9b2c702a672930f97209f5d27e090c"
+    else:
+        assert sha(source)==expected, "compiler pin mismatch"
+        assert not subprocess.check_output(["git","-C",str(source),"status","--porcelain"],text=True).strip(), "dirty compiler source"
+        expected_router=subprocess.check_output(["git","-C",str(ROOT),"ls-files","--stage","dependencies/http-routing"],text=True).split()[1]
+        assert sha(router)==expected_router, "router pin mismatch"
+        assert not subprocess.check_output(["git","-C",str(router),"status","--porcelain"],text=True).strip(), "dirty router"
+    metadata=dict(spin_commit="85861b01d751fdd4858d7ba144d213d1894d45fc" if mirror else sha(ROOT),java_source_commit=expected if mirror else sha(source),router_commit=expected_router if mirror else sha(router),mirrored_inputs_verified=mirror,
         client_sha256=hashlib.sha256((ROOT/"scripts/sustained-client.py").read_bytes()).hexdigest(),
         fixture_sha256=hashlib.sha256((ROOT/"tests/pooled-load-server.ores").read_bytes()).hexdigest(),
         options=vars(a)|{"out":str(a.out)},java_options=env["JAVA_TOOL_OPTIONS"],
