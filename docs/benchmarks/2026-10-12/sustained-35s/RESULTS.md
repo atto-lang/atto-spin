@@ -1,5 +1,11 @@
 # Spin 35-second sustained load: fresh vs reusable HTTP actors
 
+**Historical V1 fixture only:** These results were measured before the
+per-request `suspends` + `rt cooperate` workload was added. They cannot be
+presented as results for the new scheduling workload. See
+[WORKLOAD-V2.md](WORKLOAD-V2.md) for the revised contract and dedicated runs.
+
+
 Date: 2026-10-12. Source: Java/GraalVM opt-in pooled handlers,
 [oreslang-source.java PR #759](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/759);
 Spin fixture: [Spin PR #8](https://github.com/ores-truffle-oreslang/oreslang-spin/pull/8).
