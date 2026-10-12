@@ -36,3 +36,17 @@ means 180s of request production after connection ramp-up; tail requests can
 take additional time. One sustained run per configuration avoids conflating
 actor creation with transport admission. CPU and server allocations need
 separate instrumented runs.
+
+## Client/server CPU attribution
+
+`scripts/process_resources.py` samples the Java HTTP server PID and Python
+load-generator PID independently using Linux `/proc` process CPU ticks, RSS,
+and thread counts. Each trial emits `<tag>.resources.json` containing the
+sampled aggregate CPU percentage (100% equals one logical CPU), peak RSS,
+peak thread count, the cgroup CPU quota and CPU affinity.
+
+This distinguishes gross CPU contention on the same GitHub-hosted runner,
+but it is not a JVM profiler and does not isolate the machines. Socket-setup
+warmup is included in the process-resource sampling interval but excluded from
+HTTP response latency. Cross-run differences between independently provisioned
+runners must not be attributed to actor kind without repeated matched trials.
