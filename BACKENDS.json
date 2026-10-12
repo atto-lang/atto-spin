@@ -1,0 +1,15 @@
+{
+  "java": {
+    "pin": "SOURCE_REF",
+    "suite": "scripts/test.sh",
+    "execution": "supported"
+  },
+  "llvm": {
+    "pin": "LLVM_SOURCE_REF",
+    "execution": "unsupported",
+    "rejection_probes": [
+      "examples/mixed.ores",
+      "src/spin.ores"
+    ]
+  }
+}

@@ -5,7 +5,7 @@ shared actor or isolated actor. It uses `oreslang-http-routing` for route
 matching and native `http` capabilities from `oreslang-source.java` for I/O.
 
 This is a **draft HTTP/1.1 framework**. Its runtime and router dependencies are
-pinned to the accompanying draft changes; it is not a published stable release.
+pinned to tested compiler/router snapshots; it is not a published stable release.
 
 ## Run
 
@@ -111,3 +111,8 @@ compression, JSON codecs, and signed cookies are outside this draft. Request
 limits and JVM-wide parser/connection defaults are described in the runtime's
 HTTP_SERVER.md; they must be configured before JDK HTTP server initialization
 when embedding in another host. No automatic handler retry is performed.
+
+## Backend compatibility
+
+See [the compiler compatibility contract](docs/BACKENDS.md) for pinned Java/LLVM
+revisions, reproducible checks, and unsupported features.
