@@ -103,9 +103,8 @@ def main():
         thread.join(timeout=2)
         if server.returncode: raise RuntimeError(f"server exited {server.returncode}")
         i=logs.index("POOL_COUNTERS")
-        names=("shared_created","shared_reused","isolated_created","isolated_reused",
-               "accepted","completed","rejected","active")
-        counters=dict(zip(names,map(int,logs[i+1:i+9])))
+        names=("pooled_created","pooled_reused","accepted","completed","rejected","active")
+        counters=dict(zip(names,map(int,logs[i+1:i+7])))
         record=dict(result, strategy=args.strategy, pool_workers=args.pool_workers,
                     java_commit=pin, spin_head=git(ROOT,"rev-parse","HEAD"),
                     spin_dirty=initial_dirty,
@@ -121,10 +120,9 @@ def main():
         assert counters["accepted"] == counters["completed"], "server did not complete all accepted requests"
         assert result["attempts"] == result["successes"], "not all client requests succeeded"
         if args.strategy == "pooled":
-            prefix="shared" if args.mode=="shared" else "isolated"
-            assert counters[prefix+"_created"] > 0
-            assert counters[prefix+"_created"] < result["successes"]
-            assert counters[prefix+"_reused"] > 0, "no successful actor reuse observed"
+            assert counters["pooled_created"] > 0
+            assert counters["pooled_created"] < result["successes"]
+            assert counters["pooled_reused"] > 0, "no successful actor reuse observed"
     finally:
         if server and server.poll() is None:
             server.terminate()
