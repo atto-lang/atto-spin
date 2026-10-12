@@ -9,7 +9,7 @@ These are **new measurements**, not a reinterpretation of the historical
 HTTP-only V1 table. Keep the comparisons paired by actor kind and concurrency.
 The driver and server share a GitHub-hosted Actions runner.
 
-## Verified 100- and 1,000-client samples
+## Verified 100-, 1,000-, and 10,000-client samples
 
 | Mode | Concurrency | Strategy | Validated requests | Success | Throughput (req/s) | Mean (ms) | p95 (ms) | p99 (ms) |
 |---|---:|---|---:|---:|---:|---:|---:|---:|
@@ -21,14 +21,26 @@ The driver and server share a GitHub-hosted Actions runner.
 | shared | 1,000 | pooled | 32,611 | 100% | 903.571 | 1,086.931 | 1,445.393 | 1,920.398 |
 | isolated | 1,000 | fresh | 26,981 | 100% | 744.033 | 1,312.895 | 1,595.994 | 2,170.969 |
 | isolated | 1,000 | pooled | 26,311 | 100% | 723.892 | 1,348.053 | 1,546.591 | 2,194.172 |
+| shared | 10,000 | fresh | 32,686 | 100% | 687.390 | 11,899.335 | 14,914.159 | 15,668.475 |
+| shared | 10,000 | pooled | 33,714 | 100% | 704.195 | 11,560.817 | 13,558.201 | 14,325.676 |
+| isolated | 10,000 | fresh | 32,173 | 100% | 669.499 | 12,114.211 | 14,441.802 | 15,297.185 |
+| isolated | 10,000 | pooled | 32,426 | 100% | 669.429 | 12,007.348 | 13,986.611 | 14,710.513 |
 
 Evidence: [100-client exact-source funded run #38320484258](https://github.com/zed-pkg-test/java-app/actions/runs/38320484258)
 (fully successful) and the independently successful 1,000-client jobs in
 [run #38320761273](https://github.com/zed-pkg-test/java-app/actions/runs/38320761273)
-(the overall matrix was failed by the separately run 10,000-client cases). Server admission rejections, client errors, and active
-exchange leaks were all zero for all included samples. Pooled actors were
+(the overall matrix was failed by separately run 10,000-client cases).
+The **fully successful** 10,000-client shared and isolated pairs were collected
+independently in [run #38320991426](https://github.com/zed-pkg-test/java-app/actions/runs/38320991426).
+Earlier 10,000-client attempts with incomplete HTTP reads are excluded from
+this comparison and remain visible in their failed workflow runs.
+
+Server admission rejections, client errors, and active exchange leaks were zero
+for every *included* sample. Pooled actors were
 demonstrably reused (100 workers, 25,948 successful reuses for shared;
 100 workers, 36,007 successful reuses for isolated including warmup).
+The 10,000-client runs used 256 actors in each pool (33,508 successful shared
+reuses and 32,220 successful isolated reuses, including warmup).
 
 ## Reproducibility
 
@@ -45,9 +57,9 @@ demonstrably reused (100 workers, 25,948 successful reuses for shared;
   by the funded Actions workflow.
 - No retries. Duration: 35 seconds of closed-loop client admission for
   each strategy; wall-clock throughput includes final inflight response
-  draining. The 100-client pool uses 100 long-lived actors.
+  draining. The 100-client pool uses 100 long-lived actors; the 1,000- and
+10,000-client configurations each use 256.
 
-Do not generalize sub-3% differences from a single paired sample. Additional
-concurrency tiers and randomized/alternating-order repetitions are needed
+Do not generalize sub-3% differences from a single paired sample. Randomized/alternating-order repetitions are needed
 before claims about statistical significance, resource usage, or native-image
 behavior.
