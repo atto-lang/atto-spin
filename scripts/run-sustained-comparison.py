@@ -56,6 +56,7 @@ def main():
     body = body.replace("/* BENCHMARK_ADMISSION */ 10000",str(max(10000,args.concurrency)))
     filename=None
     logs=[]
+    initial_dirty=bool(git(ROOT,"status","--porcelain"))
     stderr=None
     server=None
     try:
@@ -76,19 +77,25 @@ def main():
         thread.start()
         port=int(lines.get(timeout=120))
         async def execute():
-            warmup=type("Metrics",(),{})()
-            counter={"connected":0,"peak_connected":0}
             path=f"/{args.strategy}/{args.mode}"
+            async def single(route,mode):
+                reader,writer=await asyncio.wait_for(asyncio.open_connection("127.0.0.1",port),args.timeout)
+                try:
+                    return await load.one(reader,writer,"127.0.0.1",route,mode,args.timeout)
+                finally:
+                    writer.close()
+                    try: await writer.wait_closed()
+                    except Exception: pass
             for index in range(100):
-                sample=await load.exchange(port,path,args.mode,args.timeout,counter)
-                if sample["status"] != 200 or sample["error"]:
+                sample=await single(path,args.mode)
+                if sample[1] != 200 or not sample[2]:
                     raise RuntimeError(f"Warmup request {index} failed: {sample}")
             options=argparse.Namespace(host="127.0.0.1",port=port,path=path,mode=args.mode,
                                         concurrency=args.concurrency,duration=args.duration,timeout=args.timeout)
             result=await load.benchmark(options)
             # Stop is a separate request, excluded from measured attempts.
-            stop=await load.exchange(port,"/__stop",None,args.timeout,counter)
-            if stop["status"]!=200 or stop["error"]:
+            stop=await single("/__stop",None)
+            if stop[1]!=200:
                 raise RuntimeError("server shutdown request failed: "+str(stop))
             return result
         result=asyncio.run(execute())
@@ -101,7 +108,7 @@ def main():
         counters=dict(zip(names,map(int,logs[i+1:i+9])))
         record=dict(result, strategy=args.strategy, pool_workers=args.pool_workers,
                     java_commit=pin, spin_head=git(ROOT,"rev-parse","HEAD"),
-                    spin_dirty=bool(git(ROOT,"status","--porcelain")),
+                    spin_dirty=initial_dirty,
                     router_commit=git(router,"rev-parse","HEAD"),
                     host=platform.platform(),cpu_count=os.cpu_count(),
                     fixture_sha256=hashlib.sha256(body.encode()).hexdigest(),
