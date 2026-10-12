@@ -25,10 +25,8 @@ pub async routine main(): void {
   val builder = spin.builder();
   val shared = http_routing.path("/shared", arr[http_routing.literal("shared")]);
   val isolated = http_routing.path("/isolated", arr[http_routing.literal("isolated")]);
-  val shared_handler = http.pooled_handler("SharedLoad", /* POOL_SIZE */ 128);
-  builder.get(rt borrow shared, shared_handler).unwrap();
-  val isolated_handler = http.pooled_handler("IsolatedLoad", /* POOL_SIZE */ 128);
-  builder.get(rt borrow isolated, isolated_handler).unwrap();
+  builder.get(rt borrow shared, http.pooled_handler("SharedLoad", /* POOL_SIZE */ 128)).unwrap();
+  builder.get(rt borrow isolated, http.pooled_handler("IsolatedLoad", /* POOL_SIZE */ 128)).unwrap();
   val app = builder.build().unwrap();
   val server = http.listen("127.0.0.1", 0, /* BENCHMARK_CAPACITY */ 300, 1024, 30000);
   stdio.println(server.port);
