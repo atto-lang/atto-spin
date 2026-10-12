@@ -39,8 +39,11 @@ async def one(reader, writer, host, path, expected_mode, timeout):
     if length < 0 or length > 1048576:
         raise ValueError('invalid benchmark response length')
     body = await asyncio.wait_for(reader.readexactly(length), timeout)
+    # Fail closed unless this response confirms the suspend/cooperate
+    # checkpoint ran before the asynchronous response completion.
     valid = (status == 200 and body == b'ok\n' and
-             headers.get('x-actor-mode') == expected_mode)
+             headers.get('x-actor-mode') == expected_mode and
+             headers.get('x-work-verified') == '1')
     return (time.perf_counter()-start)*1000, status, valid, headers.get('connection','').lower()
 
 async def benchmark(args):
@@ -107,7 +110,7 @@ async def benchmark(args):
                    p50_ms=quantile(values,.5),p95_ms=quantile(values,.95),
                    p99_ms=quantile(values,.99),
                    success_rate=round(results['successes']/results['attempts'],6) if results['attempts'] else 0,
-                   semantics='closed-loop keepalive HTTP clients; fresh-request actors until runtime pooling is implemented')
+                   semantics='closed-loop keepalive HTTP clients; 1 suspends checkpoint + 1 rt cooperate + 1 awaited async HTTP response per request')
     return results
 
 def main():
