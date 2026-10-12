@@ -23,7 +23,7 @@ capacity matching concurrency in the preceding 10k experiment.
 
 The separate final 10k run
 [38309026285](https://github.com/zed-pkg-test/formal-methods-cross-check/actions/runs/38309026285)
-PASSED both isolated jobs after explicit server properties:
+PASSED both the SHARED and PRIVATE jobs after explicit server properties:
 `jdk.httpserver.maxConnections=20000` and
 `sun.net.httpserver.maxIdleConnections=20000`.
 The Oreslang listener used **TCP backlog 4096**, **HTTP exchange admission
