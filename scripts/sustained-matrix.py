@@ -66,8 +66,6 @@ def main():
         options=vars(a)|{"out":str(a.out)},java_options=env["JAVA_TOOL_OPTIONS"],
         note="JVM loopback single host; persistent HTTP/1.1; closed-loop; no retries; no claims of native/LLVM throughput")
     (a.out/"metadata.json").write_text(json.dumps(metadata,indent=2)+"\n")
-    lines=queue.Queue()
-    stdout=[]
     for conc in concurrency:
         for mode in a.modes:
             fixture=(ROOT/"tests/pooled-load-server.ores").read_text()
@@ -76,6 +74,7 @@ def main():
                 tmp.write(fixture)
                 generated=Path(tmp.name)
             proc=None
+            lines=queue.Queue()
             tag=f"c{conc}-{mode}-w{a.pool_size}"
             try:
                 with (a.out/(tag+".stderr.log")).open("w") as stderr:
