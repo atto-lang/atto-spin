@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Spawn real Oreslang Spin, then perform sustained full-response measurements."""
 import argparse
+import asyncio
 import hashlib
 import json
 import os
