@@ -4,35 +4,83 @@ import module http_routing from "../dependencies/http-routing/src/http_routing";
 // Identical response content across all four routes; the only behavioral
 // distinction is whether the actor ends after replying.
 define actor FreshShared as
+  // One suspension-capable member invocation and one cooperative scheduler
+  // handoff per request, separate from the asynchronous HTTP response await.
+  suspends checkpoint(): int {
+    rt cooperate;
+    return 1;
+  }
   receive(ActorMail<String> mail): void {
     val request = http.claim(mail.value);
     request.set_header("X-Actor-Mode", "shared");
+    val int checkpoint = self.checkpoint();
+    if checkpoint == 1; then
+      request.set_header("X-Work-Verified", "1");
+    else
+      request.set_header("X-Work-Verified", "0");
+    fi
     await request.respond(200, "text/plain", "ok\n");
     self.end();
     return;
   }
 end
 define actor ReusedShared as
+  // One suspension-capable member invocation and one cooperative scheduler
+  // handoff per request, separate from the asynchronous HTTP response await.
+  suspends checkpoint(): int {
+    rt cooperate;
+    return 1;
+  }
   receive(ActorMail<String> mail): void {
     val request = http.claim(mail.value);
     request.set_header("X-Actor-Mode", "shared");
+    val int checkpoint = self.checkpoint();
+    if checkpoint == 1; then
+      request.set_header("X-Work-Verified", "1");
+    else
+      request.set_header("X-Work-Verified", "0");
+    fi
     await request.respond(200, "text/plain", "ok\n");
     return;
   }
 end
 define isoactor FreshIsolated as
+  // One suspension-capable member invocation and one cooperative scheduler
+  // handoff per request, separate from the asynchronous HTTP response await.
+  suspends checkpoint(): int {
+    rt cooperate;
+    return 1;
+  }
   receive(ActorMail<String> mail): void {
     val request = http.claim(mail.value);
     request.set_header("X-Actor-Mode", "isolated");
+    val int checkpoint = self.checkpoint();
+    if checkpoint == 1; then
+      request.set_header("X-Work-Verified", "1");
+    else
+      request.set_header("X-Work-Verified", "0");
+    fi
     await request.respond(200, "text/plain", "ok\n");
     self.end();
     return;
   }
 end
 define isoactor ReusedIsolated as
+  // One suspension-capable member invocation and one cooperative scheduler
+  // handoff per request, separate from the asynchronous HTTP response await.
+  suspends checkpoint(): int {
+    rt cooperate;
+    return 1;
+  }
   receive(ActorMail<String> mail): void {
     val request = http.claim(mail.value);
     request.set_header("X-Actor-Mode", "isolated");
+    val int checkpoint = self.checkpoint();
+    if checkpoint == 1; then
+      request.set_header("X-Work-Verified", "1");
+    else
+      request.set_header("X-Work-Verified", "0");
+    fi
     await request.respond(200, "text/plain", "ok\n");
     return;
   }
