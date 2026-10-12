@@ -25,11 +25,12 @@ def main():
     p.add_argument("--modes",nargs="+",choices=["shared","isolated"],default=["shared","isolated"])
     p.add_argument("--duration",type=int,default=180)
     p.add_argument("--pool-size",type=int,default=128)
-    p.add_argument("--capacity",type=int,default=10000)
+    p.add_argument("--capacity",type=int,default=20000)
+    p.add_argument("--backlog",type=int,default=4096)
     p.add_argument("--out",type=Path,required=True)
     a=p.parse_args()
     concurrency=[int(x) for x in a.concurrency.split(",")]
-    if a.duration<1 or any(n<1 or n>10000 for n in concurrency) or not 1<=a.pool_size<=4096 or not 1<=a.capacity<=65536:
+    if a.duration<1 or any(n<1 or n>10000 for n in concurrency) or not 1<=a.pool_size<=4096 or not 1<=a.capacity<=65536 or not 1<=a.backlog<=65536:
         p.error("invalid duration, concurrency, pool-size, or capacity")
     a.out.mkdir(parents=True,exist_ok=False)
     env=dict(os.environ)
@@ -66,10 +67,11 @@ def main():
         options=vars(a)|{"out":str(a.out)},java_options=env["JAVA_TOOL_OPTIONS"],
         note="JVM loopback single host; persistent HTTP/1.1; closed-loop; no retries; no claims of native/LLVM throughput")
     (a.out/"metadata.json").write_text(json.dumps(metadata,indent=2)+"\n")
+    failed=[]
     for conc in concurrency:
         for mode in a.modes:
             fixture=(ROOT/"tests/pooled-load-server.ores").read_text()
-            fixture=fixture.replace("/* BENCHMARK_CAPACITY */ 300",str(a.capacity)).replace("/* POOL_SIZE */ 128",str(a.pool_size))
+            fixture=fixture.replace("/* BENCHMARK_CAPACITY */ 300",str(a.capacity)).replace("/* BENCHMARK_BACKLOG */ 4096",str(a.backlog)).replace("/* POOL_SIZE */ 128",str(a.pool_size))
             with tempfile.NamedTemporaryFile(mode="w",prefix="sustained-",suffix=".ores",dir=ROOT/"tests",delete=False) as tmp:
                 tmp.write(fixture)
                 generated=Path(tmp.name)
@@ -113,6 +115,11 @@ def main():
                     proc.wait(timeout=30);thread.join(timeout=2)
                     (a.out/(tag+".stdout.log")).write_text("\n".join(output)+"\n")
                     if proc.returncode: raise RuntimeError(f"server {tag} exited {proc.returncode}")
+                    limits_ix=output.index("SERVER_LIMITS")
+                    requested_backlog=int(output[limits_ix+1])
+                    requested_capacity=int(output[limits_ix+2])
+                    if (requested_backlog,requested_capacity)!=(a.backlog,a.capacity):
+                        raise RuntimeError("effective guest listener parameters not equal to requested benchmark parameters")
                     ix=output.index("POOLED_ACTOR_COUNTERS")
                     actor_numbers=[int(v) for v in output[ix+1:ix+5]]
                     jx=output.index("SERVER_COUNTERS")
@@ -120,16 +127,27 @@ def main():
                     runtime=dict(actors_created_shared=actor_numbers[0],dispatches_shared=actor_numbers[1],
                         actors_created_isolated=actor_numbers[2],dispatches_isolated=actor_numbers[3],
                         accepted=server_numbers[0],rejected=server_numbers[1],completed=server_numbers[2],
-                        active_after_shutdown=server_numbers[3],peak_active=server_numbers[4])
+                        active_after_shutdown=server_numbers[3],peak_active=server_numbers[4],
+                        requested_backlog=requested_backlog,admission_capacity=requested_capacity)
                     (a.out/(tag+".runtime.json")).write_text(json.dumps(runtime,indent=2)+"\n")
                     print(json.dumps(dict(tag=tag,runtime=runtime)),flush=True)
-                    assert runtime["active_after_shutdown"]==0 and runtime["rejected"]==0, "admission rejection/drain failure"
-                    assert runtime["actors_created_"+mode] <= a.pool_size, "pool unexpectedly grew"
-                    assert runtime["dispatches_"+mode]>runtime["actors_created_"+mode], "no actor reuse proved"
+                    if runtime["active_after_shutdown"]!=0:
+                        failed.append(tag+": did not drain")
+                    if runtime["rejected"]!=0:
+                        failed.append(tag+": "+str(runtime["rejected"])+" HTTP admission rejections")
+                    if runtime["actors_created_"+mode]>a.pool_size:
+                        failed.append(tag+": actor pool unexpectedly grew")
+                    if runtime["dispatches_"+mode] <= runtime["actors_created_"+mode]:
+                        failed.append(tag+": no actor reuse observed")
+                    if result["success_percent"]!=100.0 or result["failures"] or result["http_statuses"].get(503,0):
+                        failed.append(tag+": invalid response(s); see trial JSON")
             finally:
                 generated.unlink(missing_ok=True)
                 if proc and proc.poll() is None:
                     proc.terminate()
                     try:proc.wait(timeout=5)
                     except subprocess.TimeoutExpired:proc.kill();proc.wait()
+    (a.out/"validation.json").write_text(json.dumps({"pass":not failed,"violations":failed},indent=2)+"\\n")
+    if failed:
+        raise AssertionError("sustained matrix failures: "+"; ".join(failed))
 if __name__=="__main__":main()
