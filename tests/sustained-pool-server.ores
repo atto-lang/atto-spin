@@ -63,10 +63,8 @@ pub async routine main(): void {
   }
   await server.shutdown(1000);
   stdio.println("POOL_COUNTERS");
-  stdio.println(sharedPool.workers_created);
-  stdio.println(sharedPool.workers_reused);
-  stdio.println(isolatedPool.workers_created);
-  stdio.println(isolatedPool.workers_reused);
+  stdio.println(server.pooled_created);
+  stdio.println(server.pooled_reused);
   stdio.println(server.accepted);
   stdio.println(server.completed);
   stdio.println(server.rejected);
