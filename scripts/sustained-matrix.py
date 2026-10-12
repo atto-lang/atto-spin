@@ -50,7 +50,7 @@ def main():
                 actual=subprocess.check_output(["git","hash-object",str(workspace/filename)],text=True).strip()
                 if actual!=expected_blob:
                     raise RuntimeError("mirrored Git blob mismatch: "+filename)
-        if expected != "b9f7d5cf0355e8b0351c3b96eeb225925aa57b86":
+        if expected != "9d0c98fc268d118cb4df96103f5bdf91b27f6e53":
             raise RuntimeError("unexpected pinned Java pooled runtime")
         expected_router="b736ecfeae9b2c702a672930f97209f5d27e090c"
     else:
@@ -59,7 +59,7 @@ def main():
         expected_router=subprocess.check_output(["git","-C",str(ROOT),"ls-files","--stage","dependencies/http-routing"],text=True).split()[1]
         assert sha(router)==expected_router, "router pin mismatch"
         assert not subprocess.check_output(["git","-C",str(router),"status","--porcelain"],text=True).strip(), "dirty router"
-    metadata=dict(spin_commit="85861b01d751fdd4858d7ba144d213d1894d45fc" if mirror else sha(ROOT),java_source_commit=expected if mirror else sha(source),router_commit=expected_router if mirror else sha(router),mirrored_inputs_verified=mirror,
+    metadata=dict(spin_commit=None if mirror else sha(ROOT),mirror_commit=sha(ROOT) if mirror else None,java_source_commit=expected if mirror else sha(source),router_commit=expected_router if mirror else sha(router),mirrored_inputs_verified=mirror,
         client_sha256=hashlib.sha256((ROOT/"scripts/sustained-client.py").read_bytes()).hexdigest(),
         fixture_sha256=hashlib.sha256((ROOT/"tests/pooled-load-server.ores").read_bytes()).hexdigest(),
         options=vars(a)|{"out":str(a.out)},java_options=env["JAVA_TOOL_OPTIONS"],
