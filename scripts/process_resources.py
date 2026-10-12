@@ -1,5 +1,4 @@
 """Low-overhead Linux process CPU/RSS sampling for repeatable Spin benchmarks."""
-from dataclasses import dataclass
 from pathlib import Path
 import os
 import threading
