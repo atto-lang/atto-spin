@@ -111,7 +111,8 @@ def main():
                         await reader.read()
                         writer.close()
                         await writer.wait_closed()
-                    asyncio.run(run())
+                        return result
+                    result=asyncio.run(run())
                     proc.wait(timeout=30);thread.join(timeout=2)
                     (a.out/(tag+".stdout.log")).write_text("\n".join(output)+"\n")
                     if proc.returncode: raise RuntimeError(f"server {tag} exited {proc.returncode}")
@@ -147,7 +148,7 @@ def main():
                     proc.terminate()
                     try:proc.wait(timeout=5)
                     except subprocess.TimeoutExpired:proc.kill();proc.wait()
-    (a.out/"validation.json").write_text(json.dumps({"pass":not failed,"violations":failed},indent=2)+"\\n")
+    (a.out/"validation.json").write_text(json.dumps({"pass":not failed,"violations":failed},indent=2)+"\n")
     if failed:
         raise AssertionError("sustained matrix failures: "+"; ".join(failed))
 if __name__=="__main__":main()
