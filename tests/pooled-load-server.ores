@@ -43,13 +43,12 @@ pub async routine main(): void {
     app.dispatch(request);
   }
   await server.shutdown(1000);
-  shared_handler.close();
-  isolated_handler.close();
   stdio.println("POOLED_ACTOR_COUNTERS");
-  stdio.println(shared_handler.actors_created);
-  stdio.println(shared_handler.dispatches);
-  stdio.println(isolated_handler.actors_created);
-  stdio.println(isolated_handler.dispatches);
+  stdio.println(app.actor_creations(0));
+  stdio.println(app.handled_requests(0));
+  stdio.println(app.actor_creations(1));
+  stdio.println(app.handled_requests(1));
+  app.close_handler_pools();
   stdio.println("SERVER_COUNTERS");
   stdio.println(server.accepted);
   stdio.println(server.rejected);
