@@ -47,16 +47,20 @@ def main():
     router = ROOT/"dependencies/http-routing"
     if git(router, "status", "--porcelain") or git(router,"rev-parse","HEAD") != git(ROOT, "ls-files", "--stage", "dependencies/http-routing").split()[1]:
         parser.error("HTTP router checkout must match Spin's pinned gitlink")
+    # Snapshot Git state before creating output; creating it inside the repo
+    # must not falsely label a clean source tree as dirty.
+    initial_dirty=bool(git(ROOT,"status","--porcelain"))
     if args.output.exists(): parser.error("output path must not already exist")
-    args.output.mkdir(parents=True)
     body = (ROOT/"tests/sustained-pool-server.ores").read_text()
+    if body.count("/* BENCHMARK_POOL */ 100") != 2 or body.count("/* BENCHMARK_ADMISSION */ 10000") != 1:
+        parser.error("benchmark fixture changed: required pool/admission placeholders absent or duplicated")
+    args.output.mkdir(parents=True)
     body = body.replace("/* BENCHMARK_POOL */ 100",str(args.pool_workers))
     # Keep capacity independent of pool workers; 10,000 closed-loop clients
     # require at least 10,000 slots to avoid deliberate admission rejection.
     body = body.replace("/* BENCHMARK_ADMISSION */ 10000",str(max(20000,args.concurrency)))
     filename=None
     logs=[]
-    initial_dirty=bool(git(ROOT,"status","--porcelain"))
     stderr=None
     server=None
     try:
@@ -75,7 +79,16 @@ def main():
                 lines.put(line.rstrip("\n"))
         thread=threading.Thread(target=read_lines,daemon=True)
         thread.start()
-        port=int(lines.get(timeout=120))
+        deadline=time.monotonic()+45
+        while True:
+            if server.poll() is not None:
+                raise RuntimeError(f"guest server exited before printing port: status={server.returncode}")
+            try:
+                port=int(lines.get(timeout=2))
+                break
+            except queue.Empty:
+                if time.monotonic()>=deadline:
+                    raise RuntimeError("guest server did not print a listening port within 45 seconds")
         async def execute():
             path=f"/{args.strategy}/{args.mode}"
             async def single(route,mode):
