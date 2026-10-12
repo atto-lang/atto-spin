@@ -87,7 +87,16 @@ def main():
                             lines.put(line.strip())
                     thread=threading.Thread(target=read_stdout,daemon=True)
                     thread.start()
-                    port=int(lines.get(timeout=90))
+                    boot_deadline=time.monotonic()+45
+                    while True:
+                        try:
+                            port=int(lines.get(timeout=.5))
+                            break
+                        except queue.Empty:
+                            if proc.poll() is not None:
+                                raise RuntimeError(f"server {tag} terminated before announcing its port; see {tag}.stderr.log")
+                            if time.monotonic()>boot_deadline:
+                                raise TimeoutError(f"server {tag} did not announce its port; see {tag}.stderr.log")
                     async def run():
                         import asyncio
                         # Small warmup on an independent keep-alive connection.
