@@ -8,8 +8,14 @@
     "pin": "LLVM_SOURCE_REF",
     "execution": "unsupported",
     "rejection_probes": [
-      "examples/mixed.ores",
-      "src/spin.ores"
+      {
+        "path": "examples/mixed.ores",
+        "diagnostic": "oreslang-llvmc: expected fnc or routine at byte 0"
+      },
+      {
+        "path": "src/spin.ores",
+        "diagnostic": "oreslang-llvmc: expected fnc or routine at byte 0"
+      }
     ]
   }
 }

@@ -63,3 +63,8 @@ Java: `4fe60a8b7d381b69695af17f5bfead27c5469da5`.
 LLVM: `76a4de42567ab7e6f3c602c683724e16d503003c`.
 
 These are pinned snapshots, not a claim that an arbitrary future `main` works.
+
+The backend checker validates the manifest and requires nonempty, unique, local
+LLVM probes with exact expected diagnostics. Crashes, internal errors, changed
+diagnostics, or accidental IR emission fail the check. Run its negative-contract
+regressions with `python3 scripts/test-backend-checker.py`.
