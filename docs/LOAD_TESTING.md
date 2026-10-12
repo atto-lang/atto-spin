@@ -51,7 +51,7 @@ are changed. Socket/connect timeouts and local resource exhaustion remain visibl
 - `REPORT.md`, `summary.csv`, and `summary.json`: pooled successful-request
   percentiles, success fraction, rejection/error counts, and successful burst rate.
 - `results.jsonl`: each burst, including client launch delay, connection latency,
-  first-byte latency, event-loop lag, and server timing headers.
+  header-receipt latency (a TTFB proxy), event-loop lag, and server timing headers.
 - `*.samples.json`: every attempt, including status, error, and measured intervals.
 - `*.server.json`: server counters including all warm-ups and shutdown requests;
   completed must equal accepted and active must reach zero after shutdown.
@@ -67,3 +67,8 @@ three repeats expose variation but are insufficient for strong actor-mode speed
 claims. For steady-state sizing, follow this with persistent connections, a
 separate load-generator host, independently configurable backlog, and longer
 measurement windows.
+
+Successful-request latency starts when its task resumes after the barrier and
+includes connection establishment and full response receipt. The separate burst
+latency includes launch delay from the common barrier release; do not subtract
+percentiles from each other to estimate server service time.
