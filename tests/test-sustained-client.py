@@ -76,6 +76,22 @@ class ClientTest(unittest.IsolatedAsyncioTestCase):
             other.close()
             await other.wait_closed()
 
+    async def test_duration_starts_after_worker_construction(self):
+        # Construction of many tasks must not consume the sustained interval.
+        import time
+        from unittest.mock import patch
+        original = asyncio.create_task
+        def expensive_task(coro):
+            time.sleep(.025)
+            return original(coro)
+        args=SimpleNamespace(host='127.0.0.1',port=self.port,path='/shared',
+                             mode='shared',duration=.055,concurrency=4,timeout=2)
+        with patch.object(client.asyncio, 'create_task', side_effect=expensive_task):
+            result=await client.benchmark(args)
+        self.assertGreaterEqual(result['successes'],4)
+        self.assertEqual(result['attempts'],result['successes'])
+        self.assertGreaterEqual(result['elapsed_s'], .055)
+
     async def test_invalid_mode_fails_closed(self):
         args=SimpleNamespace(host='127.0.0.1',port=self.port,path='/isolated',
                              mode='isolated',duration=.1,concurrency=2,timeout=2)
