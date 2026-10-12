@@ -22,7 +22,7 @@ class ClientTest(unittest.IsolatedAsyncioTestCase):
                 while True:
                     header = await reader.readuntil(b'\r\n\r\n')
                     if not header: break
-                    writer.write(b'HTTP/1.1 200 OK\r\nContent-Length: 3\r\nX-Actor-Mode: shared\r\nConnection: keep-alive\r\n\r\nok\n')
+                    writer.write(b'HTTP/1.1 200 OK\r\nContent-Length: 3\r\nX-Actor-Mode: shared\r\nX-Work-Verified: 1\r\nConnection: keep-alive\r\n\r\nok\n')
                     await writer.drain()
             except (asyncio.IncompleteReadError,ConnectionResetError,BrokenPipeError):
                 pass
@@ -47,6 +47,34 @@ class ClientTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result['errors'],{})
         self.assertEqual(result['status'],{'200':result['attempts']})
         self.assertLessEqual(result['connections'],4)
+
+    async def test_missing_checkpoint_header_fails_closed(self):
+        # Protocol verifier must reject an ordinary 'ok' without proof that
+        # the scheduling checkpoint finished in the actor.
+        async def no_checkpoint(reader, writer):
+            try:
+                await reader.readuntil(b'\r\n\r\n')
+                writer.write(b'HTTP/1.1 200 OK\r\nContent-Length: 3\r\nX-Actor-Mode: shared\r\n\r\nok\n')
+                await writer.drain()
+            finally:
+                writer.close()
+                try: await writer.wait_closed()
+                except Exception: pass
+        other = await asyncio.start_server(no_checkpoint, '127.0.0.1', 0)
+        try:
+            port = other.sockets[0].getsockname()[1]
+            reader,writer=await asyncio.open_connection('127.0.0.1', port)
+            try:
+                ms,status,valid,_ = await client.one(reader,writer,'127.0.0.1','/shared','shared',2)
+                self.assertEqual(status,200)
+                self.assertFalse(valid)
+            finally:
+                writer.close()
+                try: await writer.wait_closed()
+                except Exception: pass
+        finally:
+            other.close()
+            await other.wait_closed()
 
     async def test_invalid_mode_fails_closed(self):
         args=SimpleNamespace(host='127.0.0.1',port=self.port,path='/isolated',
