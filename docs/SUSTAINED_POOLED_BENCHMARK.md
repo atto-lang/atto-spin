@@ -22,6 +22,13 @@ python3 scripts/sustained-matrix.py --duration 180 --concurrency 100,1000,10000 
 
 Requires the clean pinned Java source and HTTP router, JDK 25, Maven, and
 `ORESLANG_SOURCE_DIR`. Read the JSON metadata for exact source/compiler pins.
+For large persistent-connection tests the runner supplies both
+`-Djdk.httpserver.maxConnections=20000` and
+`-Dsun.net.httpserver.maxIdleConnections=20000`. The latter avoids the JDK
+HTTP server's default 200-idle-connection cache evicting keep-alive sockets;
+without it an apparent failed request can instead be a closed idle socket.
+That transport property is independent of bounded HTTP exchange admission and
+is recorded in the benchmark metadata.
 A GitHub runner may be CPU/memory/FD-limited at 10,000 open connections, and
 100% success is an *acceptance metric*, not an assumed result. Keep malformed
 responses, 503s, aborted connections, and timeouts visible. `--duration 180`
