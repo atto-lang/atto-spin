@@ -28,7 +28,7 @@ pub async routine main(): void {
   builder.get(rt borrow shared, http.pooled_handler("SharedLoad", /* POOL_SIZE */ 128)).unwrap();
   builder.get(rt borrow isolated, http.pooled_handler("IsolatedLoad", /* POOL_SIZE */ 128)).unwrap();
   val app = builder.build().unwrap();
-  val server = http.listen("127.0.0.1", 0, /* BENCHMARK_CAPACITY */ 300, 1024, 30000);
+  val server = http.listen_with_limits("127.0.0.1", 0, /* BENCHMARK_BACKLOG */ 4096, /* BENCHMARK_CAPACITY */ 300, 1024, 30000);
   stdio.println(server.port);
   let int peak = 0;
   loop {
@@ -47,6 +47,9 @@ pub async routine main(): void {
   stdio.println(app.actor_creations(1));
   stdio.println(app.handled_requests(1));
   app.close_handler_pools();
+  stdio.println("SERVER_LIMITS");
+  stdio.println(server.requested_backlog);
+  stdio.println(server.admission_capacity);
   stdio.println("SERVER_COUNTERS");
   stdio.println(server.accepted);
   stdio.println(server.rejected);
