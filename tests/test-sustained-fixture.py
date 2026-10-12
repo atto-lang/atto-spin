@@ -37,8 +37,7 @@ class SustainedFixtureContractTest(unittest.TestCase):
                 self.assertEqual(request.count('self.checkpoint();'), 1)
                 self.assertEqual(request.count('await request.respond('), 1)
                 self.assertEqual(len(re.findall(r'\bawait\b', request)), 1)
-                self.assertEqual(len(re.findall(r'\brt cooperate\b', body)), 2,
-                    'cooperate appears once in comment and once as expression')
+                self.assertEqual(len(re.findall(r'\brt cooperate\b', body)), 1)
                 self.assertIn('request.set_header("X-Work-Verified", "1");', request)
                 self.assertIn('request.set_header("X-Work-Verified", "0");', request)
                 self.assertEqual(request.count('self.end();'), int(name.startswith('Fresh')))
