@@ -1,0 +1,75 @@
+import module spin from "../src/spin";
+import module http_routing from "../dependencies/http-routing/src/http_routing";
+
+// Identical response content across all four routes; the only behavioral
+// distinction is whether the actor ends after replying.
+define actor FreshShared as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    request.set_header("X-Actor-Mode", "shared");
+    await request.respond(200, "text/plain", "ok\n");
+    self.end();
+    return;
+  }
+end
+define actor ReusedShared as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    request.set_header("X-Actor-Mode", "shared");
+    await request.respond(200, "text/plain", "ok\n");
+    return;
+  }
+end
+define isoactor FreshIsolated as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    request.set_header("X-Actor-Mode", "isolated");
+    await request.respond(200, "text/plain", "ok\n");
+    self.end();
+    return;
+  }
+end
+define isoactor ReusedIsolated as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    request.set_header("X-Actor-Mode", "isolated");
+    await request.respond(200, "text/plain", "ok\n");
+    return;
+  }
+end
+
+pub async routine main(): void {
+  val builder = spin.builder();
+  val freshShared = http_routing.path("/fresh/shared", arr[http_routing.literal("fresh"), http_routing.literal("shared")]);
+  val pooledShared = http_routing.path("/pooled/shared", arr[http_routing.literal("pooled"), http_routing.literal("shared")]);
+  val freshIsolated = http_routing.path("/fresh/isolated", arr[http_routing.literal("fresh"), http_routing.literal("isolated")]);
+  val pooledIsolated = http_routing.path("/pooled/isolated", arr[http_routing.literal("pooled"), http_routing.literal("isolated")]);
+  val sharedPool = http.pool_handler("ReusedShared", /* BENCHMARK_POOL */ 100);
+  val isolatedPool = http.pool_handler("ReusedIsolated", /* BENCHMARK_POOL */ 100);
+  builder.get(rt borrow freshShared, http.handler("FreshShared")).unwrap();
+  builder.get(rt borrow pooledShared, sharedPool).unwrap();
+  builder.get(rt borrow freshIsolated, http.handler("FreshIsolated")).unwrap();
+  builder.get(rt borrow pooledIsolated, isolatedPool).unwrap();
+  val app = builder.build().unwrap();
+  val server = http.listen("127.0.0.1", 0, /* BENCHMARK_ADMISSION */ 10000, 1024, 60000);
+  stdio.println(server.port);
+  loop {
+    val request = await server.accept();
+    if request.target == "/__stop"; then
+      await request.respond(200, "text/plain", "stop");
+      break;
+    fi
+    app.dispatch(request);
+  }
+  await server.shutdown(1000);
+  stdio.println("POOL_COUNTERS");
+  stdio.println(sharedPool.workers_created);
+  stdio.println(sharedPool.workers_reused);
+  stdio.println(isolatedPool.workers_created);
+  stdio.println(isolatedPool.workers_reused);
+  stdio.println(server.accepted);
+  stdio.println(server.completed);
+  stdio.println(server.rejected);
+  stdio.println(server.active);
+  return;
+}
