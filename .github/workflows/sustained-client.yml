@@ -7,6 +7,8 @@ on:
     paths:
       - 'scripts/sustained-client.py'
       - 'tests/test-sustained-client.py'
+      - 'tests/test-sustained-fixture.py'
+      - 'tests/sustained-pool-server.ores'
       - '.github/workflows/sustained-client.yml'
   workflow_dispatch:
 jobs:
@@ -20,5 +22,5 @@ jobs:
           python-version: '3.12'
       - name: Syntax and protocol regression
         run: |
-          python -m py_compile scripts/sustained-client.py tests/test-sustained-client.py
-          python -m unittest discover -s tests -p 'test-sustained-client.py' -v
+          python -m py_compile scripts/sustained-client.py tests/test-sustained-client.py tests/test-sustained-fixture.py
+          python -m unittest discover -s tests -p 'test-sustained*.py' -v
