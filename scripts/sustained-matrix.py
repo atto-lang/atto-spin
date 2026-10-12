@@ -52,7 +52,7 @@ def main():
                 actual=subprocess.check_output(["git","hash-object",str(workspace/filename)],text=True).strip()
                 if actual!=expected_blob:
                     raise RuntimeError("mirrored Git blob mismatch: "+filename)
-        if expected != "9d0c98fc268d118cb4df96103f5bdf91b27f6e53":
+        if expected != "50e2d40ce466d835af2c984a71f0c7727074e247":
             raise RuntimeError("unexpected pinned Java pooled runtime")
         expected_router="b736ecfeae9b2c702a672930f97209f5d27e090c"
     else:
