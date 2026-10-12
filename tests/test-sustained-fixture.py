@@ -31,7 +31,7 @@ class SustainedFixtureContractTest(unittest.TestCase):
                 self.assertEqual(method.group(1).count('rt cooperate;'), 1)
                 self.assertIn('return 1;', method.group(1))
                 receive = re.search(
-                    r'receive\(ActorMail<String> mail\): void \{(.*?)\n  \}', body, re.S)
+                    r'suspends receive\(ActorMail<String> mail\): void \{(.*?)\n  \}', body, re.S)
                 self.assertIsNotNone(receive)
                 request = receive.group(1)
                 self.assertEqual(request.count('self.checkpoint();'), 1)
