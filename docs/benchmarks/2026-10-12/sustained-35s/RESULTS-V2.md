@@ -1,5 +1,14 @@
 # Sustained HTTP actors: scheduling workload V2
 
+**Historical V2 measurement note:** These published values predate the
+[benchmark-client timer hardening](https://github.com/ores-truffle-oreslang/oreslang-spin/pull/8)
+that starts the 35-second clock *after* all concurrent client tasks have been
+constructed. They remain auditable snapshots, but must not be mixed into
+statistical comparisons with runs using the corrected timer. They also predate
+the pooled-exchange cancellation and graceful-shutdown hardening in
+[Java PR #759](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/759).
+
+
 Test date: 2026-10-12. Workload includes **one `suspends` checkpoint
 invocation, one `rt cooperate`, and one explicit awaited HTTP response**
 per actor request. The suspended receiver contract and checkpoint response
