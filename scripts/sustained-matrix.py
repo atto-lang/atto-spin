@@ -34,7 +34,7 @@ def main():
         p.error("invalid duration, concurrency, pool-size, or capacity")
     a.out.mkdir(parents=True,exist_ok=False)
     env=dict(os.environ)
-    env["JAVA_TOOL_OPTIONS"]=env.get("JAVA_TOOL_OPTIONS","")+" -Xms256m -Xmx3g -Dores.runtime.carriers=java -Djdk.httpserver.maxConnections=20000"
+    env["JAVA_TOOL_OPTIONS"]=env.get("JAVA_TOOL_OPTIONS","")+" -Xms256m -Xmx3g -Dores.runtime.carriers=java -Djdk.httpserver.maxConnections=20000 -Dsun.net.httpserver.maxIdleConnections=20000"
     source=Path(env["ORESLANG_SOURCE_DIR"])
     expected=(ROOT/"SOURCE_REF").read_text().strip()
     sha=lambda path:subprocess.check_output(["git","-C",str(path),"rev-parse","HEAD"],text=True).strip()
