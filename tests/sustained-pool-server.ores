@@ -10,7 +10,7 @@ define actor FreshShared as
     rt cooperate;
     return 1;
   }
-  receive(ActorMail<String> mail): void {
+  suspends receive(ActorMail<String> mail): void {
     val request = http.claim(mail.value);
     request.set_header("X-Actor-Mode", "shared");
     val int checkpoint = self.checkpoint();
@@ -31,7 +31,7 @@ define actor ReusedShared as
     rt cooperate;
     return 1;
   }
-  receive(ActorMail<String> mail): void {
+  suspends receive(ActorMail<String> mail): void {
     val request = http.claim(mail.value);
     request.set_header("X-Actor-Mode", "shared");
     val int checkpoint = self.checkpoint();
@@ -51,7 +51,7 @@ define isoactor FreshIsolated as
     rt cooperate;
     return 1;
   }
-  receive(ActorMail<String> mail): void {
+  suspends receive(ActorMail<String> mail): void {
     val request = http.claim(mail.value);
     request.set_header("X-Actor-Mode", "isolated");
     val int checkpoint = self.checkpoint();
@@ -72,7 +72,7 @@ define isoactor ReusedIsolated as
     rt cooperate;
     return 1;
   }
-  receive(ActorMail<String> mail): void {
+  suspends receive(ActorMail<String> mail): void {
     val request = http.claim(mail.value);
     request.set_header("X-Actor-Mode", "isolated");
     val int checkpoint = self.checkpoint();
