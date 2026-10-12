@@ -18,6 +18,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
 from importlib.machinery import SourceFileLoader
 client=SourceFileLoader("sustained_client",str(ROOT/"scripts/sustained-client.py")).load_module()
+from process_resources import ProcessSampler
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
@@ -102,7 +103,13 @@ def main():
                     async def run():
                         import asyncio
                         # Small warmup on an independent keep-alive connection.
-                        result=await client.sustained("127.0.0.1",port,"/"+mode,mode,conc,a.duration)
+                        sampler=ProcessSampler(proc.pid, interval_s=2.0)
+                        sampler.start()
+                        try:
+                            result=await client.sustained("127.0.0.1",port,"/"+mode,mode,conc,a.duration)
+                        finally:
+                            resources=sampler.finish()
+                            (a.out/(tag+".resources.json")).write_text(json.dumps(resources,indent=2)+"\n")
                         (a.out/(tag+".json")).write_text(json.dumps(result,indent=2)+"\n")
                         print(json.dumps(result),flush=True)
                         reader,writer=await asyncio.open_connection("127.0.0.1",port)
