@@ -9,7 +9,7 @@ These are **new measurements**, not a reinterpretation of the historical
 HTTP-only V1 table. Keep the comparisons paired by actor kind and concurrency.
 The driver and server share a GitHub-hosted Actions runner.
 
-## Verified 100-client samples
+## Verified 100- and 1,000-client samples
 
 | Mode | Concurrency | Strategy | Validated requests | Success | Throughput (req/s) | Mean (ms) | p95 (ms) | p99 (ms) |
 |---|---:|---|---:|---:|---:|---:|---:|---:|
@@ -17,10 +17,16 @@ The driver and server share a GitHub-hosted Actions runner.
 | shared | 100 | pooled | 25,998 | 100% | 739.967 | 134.811 | 158.284 | 251.924 |
 | isolated | 100 | fresh | 36,094 | 100% | 1,028.379 | 97.069 | 116.272 | 187.693 |
 | isolated | 100 | pooled | 36,057 | 100% | 1,027.046 | 97.175 | 113.357 | 195.919 |
+| shared | 1,000 | fresh | 33,576 | 100% | 932.624 | 1,053.812 | 1,197.387 | 1,825.217 |
+| shared | 1,000 | pooled | 32,611 | 100% | 903.571 | 1,086.931 | 1,445.393 | 1,920.398 |
+| isolated | 1,000 | fresh | 26,981 | 100% | 744.033 | 1,312.895 | 1,595.994 | 2,170.969 |
+| isolated | 1,000 | pooled | 26,311 | 100% | 723.892 | 1,348.053 | 1,546.591 | 2,194.172 |
 
-Evidence: [exact-source funded Actions run #38320484258](https://github.com/zed-pkg-test/java-app/actions/runs/38320484258),
-fully successful. Server admission rejections, client errors, and active
-exchange leaks were all zero for these samples. Pooled actors were
+Evidence: [100-client exact-source funded run #38320484258](https://github.com/zed-pkg-test/java-app/actions/runs/38320484258)
+(fully successful) and the independently successful 1,000-client jobs in
+[run #38320761273](https://github.com/zed-pkg-test/java-app/actions/runs/38320761273)
+(the overall matrix was failed by the separately run 10,000-client cases). Server admission rejections, client errors, and active
+exchange leaks were all zero for all included samples. Pooled actors were
 demonstrably reused (100 workers, 25,948 successful reuses for shared;
 100 workers, 36,007 successful reuses for isolated including warmup).
 
