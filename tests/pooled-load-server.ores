@@ -1,0 +1,60 @@
+import module spin from "../src/spin";
+import module http_routing from "../dependencies/http-routing/src/http_routing";
+
+define actor SharedLoad as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    request.set_header("X-Actor-Mode", "shared");
+    request.set_header("Server-Timing", request.server_timing);
+    await request.respond(200, "text/plain", "ok\n");
+    return;
+  }
+end
+
+define isoactor IsolatedLoad as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    request.set_header("X-Actor-Mode", "isolated");
+    request.set_header("Server-Timing", request.server_timing);
+    await request.respond(200, "text/plain", "ok\n");
+    return;
+  }
+end
+
+pub async routine main(): void {
+  val builder = spin.builder();
+  val shared = http_routing.path("/shared", arr[http_routing.literal("shared")]);
+  val isolated = http_routing.path("/isolated", arr[http_routing.literal("isolated")]);
+  val shared_handler = http.pooled_handler("SharedLoad", /* POOL_SIZE */ 128);
+  builder.get(rt borrow shared, shared_handler).unwrap();
+  val isolated_handler = http.pooled_handler("IsolatedLoad", /* POOL_SIZE */ 128);
+  builder.get(rt borrow isolated, isolated_handler).unwrap();
+  val app = builder.build().unwrap();
+  val server = http.listen("127.0.0.1", 0, /* BENCHMARK_CAPACITY */ 300, 1024, 30000);
+  stdio.println(server.port);
+  let int peak = 0;
+  loop {
+    val request = await server.accept();
+    if server.active > peak; then peak = server.active; fi
+    if request.target == "/__stop"; then
+      await request.respond(200, "text/plain", "stop");
+      break;
+    fi
+    app.dispatch(request);
+  }
+  await server.shutdown(1000);
+  shared_handler.close();
+  isolated_handler.close();
+  stdio.println("POOLED_ACTOR_COUNTERS");
+  stdio.println(shared_handler.actors_created);
+  stdio.println(shared_handler.dispatches);
+  stdio.println(isolated_handler.actors_created);
+  stdio.println(isolated_handler.dispatches);
+  stdio.println("SERVER_COUNTERS");
+  stdio.println(server.accepted);
+  stdio.println(server.rejected);
+  stdio.println(server.completed);
+  stdio.println(server.active);
+  stdio.println(peak);
+  return;
+}
