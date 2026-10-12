@@ -24,7 +24,8 @@ def percentile(values, p):
     return round(values[max(0, math.ceil(len(values)*p)-1)], 3)
 
 def distribution(values):
-    return {f'p{int(p*100)}_ms': percentile(values,p) for p in (.5,.95,.99)}
+    return {'mean_ms': round(sum(values)/len(values), 3) if values else None,
+            **{f'p{int(p*100)}_ms': percentile(values,p) for p in (.5,.95,.99)}}
 
 async def exchange(port, path, mode, timeout, metrics, gate=None, release=None):
     if gate: await gate.wait()

@@ -53,5 +53,7 @@ class LoadTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(load.percentile([1,2,3,4],.5),2)
         self.assertEqual(load.percentile([1,2,3,4],.95),4)
         self.assertIsNone(load.percentile([],.95))
+        self.assertEqual(load.distribution([1, 2, 9])["mean_ms"], 4)
+        self.assertIsNone(load.distribution([])["mean_ms"])
 
 if __name__=='__main__':unittest.main()

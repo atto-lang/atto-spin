@@ -61,3 +61,7 @@ See the [2026-10-12 burst-load experiment](benchmarks/2026-10-12/RESULTS.md) for
 100/1,000/10,000 concurrent attempts at 5/20/50/300 request-actor admission slots.
 It records overload rejection separately from successful work and exposes client
 and TCP backlog limitations.
+
+See the [full-admission latency follow-up](benchmarks/2026-10-12/full-admission/RESULTS.md)
+for 66,600 successful requests with no rejections or retries, including mean
+response time at 100, 1,000, and 10,000 concurrency.

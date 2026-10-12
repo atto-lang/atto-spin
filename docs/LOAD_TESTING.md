@@ -21,6 +21,23 @@ The output directory must not already exist. Run locally; the fixture binds only
 to loopback on an ephemeral port and exposes a benchmark-only shutdown endpoint.
 The driver terminates only its own server process on failure.
 
+## Measure latency without deliberate admission rejection
+
+For 100, 1,000, and 10,000 simultaneous attempts with enough admission slots:
+
+```sh
+python3 scripts/load-matrix.py --actors 10000 --timeout 60 \
+  --output /absolute/path/to/new-full-admission-results
+python3 scripts/summarize-load.py /absolute/path/to/new-full-admission-results
+```
+
+This sets capacity above or equal to each tested burst size. It does not remove
+all resource limits or change production settings. Check that every attempt
+succeeded and that rejection/error counts are zero. `success_mean_ms` is the
+arithmetic mean of per-request elapsed time including TCP connect and full body
+receipt. It is **not** batch duration divided by request count. The latter is
+inverse throughput and must not be called response latency.
+
 ## What the dimensions mean
 
 Spin spawns a fresh actor per admitted request. “Actor limit” here means HTTP

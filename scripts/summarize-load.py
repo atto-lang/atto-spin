@@ -39,6 +39,8 @@ def main():
              'http_503':status[503],'other_http_errors':sum(v for k,v in status.items() if k is not None and k>=400 and k!=503),
              'client_errors':sum(bool(s['error']) for s in samples),
              'successful_burst_rps':round(len(good)/sum(r['seconds'] for r in runs),2),
+             'success_mean_ms':round(sum(s['latency_ms'] for s in good)/len(good),2) if good else None,
+             'success_burst_mean_ms':round(sum(s['burst_latency_ms'] for s in good)/len(good),2) if good else None,
              'success_p50_ms':quantile([s['latency_ms'] for s in good],.5),
              'success_p95_ms':quantile([s['latency_ms'] for s in good],.95),
              'success_p99_ms':quantile([s['latency_ms'] for s in good],.99),
@@ -55,10 +57,10 @@ def main():
     (directory/'summary.json').write_text(json.dumps(rows,indent=2)+'\n')
     lines=['# Spin burst-load results','',
            'Each row pools three bursts unless the repeats column in summary.csv says otherwise. Latency percentiles contain successful, validated 200 responses only. Successful burst requests/s divides total successes by total burst wall time; it is not a sustained throughput measurement.','',
-           '| Concurrent attempts | Actor limit | Mode | Success % | 503 | Client errors | Success req/s | p50 ms | p95 ms | p99 ms | Peak RSS MiB |',
-           '| ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |']
+           '| Concurrent attempts | Actor limit | Mode | Success % | 503 | Client errors | Success req/s | Mean ms | p50 ms | p95 ms | p99 ms | Peak RSS MiB |',
+           '| ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |']
     for r in rows:
-        lines.append('| '+' | '.join(str(r[k]) for k in ['concurrency','actor_limit','mode','success_percent','http_503','client_errors','successful_burst_rps','success_p50_ms','success_p95_ms','success_p99_ms','server_peak_rss_mib'])+' |')
+        lines.append('| '+' | '.join(str(r[k]) for k in ['concurrency','actor_limit','mode','success_percent','http_503','client_errors','successful_burst_rps','success_mean_ms','success_p50_ms','success_p95_ms','success_p99_ms','server_peak_rss_mib'])+' |')
     lines+=['','See metadata.json for compiler pins, platform, JVM options, and harness hashes. See summary.csv for connection timing, event-loop lag, and observed simultaneous client connections. Per-request samples, server counters, stderr, and memory samples are retained alongside this report.','']
     (directory/'REPORT.md').write_text('\n'.join(lines))
 
