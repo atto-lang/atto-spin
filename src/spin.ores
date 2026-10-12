@@ -33,6 +33,9 @@ define module spin as
       return;
     }
     pub is_isolated() -> bool { return self.handler.isolated; }
+    pub actors_created() -> int { return self.handler.actors_created; }
+    pub dispatches() -> int { return self.handler.dispatches; }
+    pub close_handler() -> void { self.handler.close(); return; }
   end
 
   pub define class Application as
@@ -47,6 +50,18 @@ define module spin as
 
     // Nonblocking: transport operations progress on I/O workers and each matched
     // request starts a fresh actor. Framework-generated responses need no actor.
+    pub actor_creations(int binding_index) -> int {
+      return self.bindings.get(binding_index).actors_created();
+    }
+    pub handled_requests(int binding_index) -> int {
+      return self.bindings.get(binding_index).dispatches();
+    }
+    pub close_handler_pools() -> void {
+      for (const binding of self.bindings) {
+        binding.close_handler();
+      }
+      return;
+    }
     pub dispatch(HttpExchange mut exchange): void {
       try {
         val Array<String> segments = new Array<String>();
