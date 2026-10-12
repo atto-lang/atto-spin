@@ -22,6 +22,6 @@ jobs:
           python-version: '3.12'
       - name: Syntax and protocol regression
         run: |
-          python -m py_compile scripts/sustained-client.py tests/test-sustained-client.py tests/test-sustained-fixture.py
+          python -m py_compile scripts/sustained-client.py scripts/run-sustained-comparison.py tests/test-sustained-client.py tests/test-sustained-fixture.py
           python tests/test-sustained-client.py -v
           python tests/test-sustained-fixture.py -v
