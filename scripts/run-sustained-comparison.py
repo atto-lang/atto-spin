@@ -34,11 +34,11 @@ def main():
     parser.add_argument("--mode", choices=("shared","isolated"), required=True)
     parser.add_argument("--duration", type=float, default=35)
     parser.add_argument("--pool-workers", type=int, default=None)
-    parser.add_argument("--timeout", type=float, default=60)
+    parser.add_argument("--timeout", type=float, default=90)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.duration <= 0 or args.timeout <= 0: parser.error("duration and timeout must be positive")
-    args.pool_workers = args.pool_workers or args.concurrency
+    args.pool_workers = args.pool_workers or min(args.concurrency,256)
     if not 1 <= args.pool_workers <= 10000: parser.error("pool workers must be 1..10000")
     source = Path(os.environ["ORESLANG_SOURCE_DIR"]).resolve()
     pin = (ROOT/"POOL_SOURCE_REF").read_text().strip()
@@ -53,7 +53,7 @@ def main():
     body = body.replace("/* BENCHMARK_POOL */ 100",str(args.pool_workers))
     # Keep capacity independent of pool workers; 10,000 closed-loop clients
     # require at least 10,000 slots to avoid deliberate admission rejection.
-    body = body.replace("/* BENCHMARK_ADMISSION */ 10000",str(max(10000,args.concurrency)))
+    body = body.replace("/* BENCHMARK_ADMISSION */ 10000",str(max(20000,args.concurrency)))
     filename=None
     logs=[]
     initial_dirty=bool(git(ROOT,"status","--porcelain"))
@@ -64,7 +64,7 @@ def main():
         os.close(handle)
         Path(filename).write_text(body)
         env=dict(os.environ)
-        env["JAVA_TOOL_OPTIONS"]=env.get("JAVA_TOOL_OPTIONS","") + " -Xms256m -Xmx4g -Dores.runtime.carriers=java -Djdk.httpserver.maxConnections=25000"
+        env["JAVA_TOOL_OPTIONS"]=env.get("JAVA_TOOL_OPTIONS","") + " -Xms256m -Xmx4g -Dores.runtime.carriers=java -Djdk.httpserver.maxConnections=25000 -Dsun.net.httpserver.maxReqTime=120 -Dsun.net.httpserver.maxRspTime=120 -Dsun.net.httpserver.idleInterval=120"
         stderr=(args.output/"server.stderr.log").open("w")
         server=subprocess.Popen([str(ROOT/"scripts/compiler.sh"),"--platform=server","--allow-net=127.0.0.1:0",filename],
             cwd=ROOT,env=env,stdout=subprocess.PIPE,stderr=stderr,text=True)
