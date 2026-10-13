@@ -55,14 +55,40 @@ Regressions verify that it returns zero after shared/isolated responses and
 that an unexpectedly terminated worker fails its active exchange and is
 replaced for a subsequent healthy request.
 
-The updated Java source for this follow-up is pinned in `POOL_SOURCE_REF`:
-`1e5a86aca91e80ef69761adafceb90414b922ffa`;
-its Git tree is `d584d30233163e1acd97aa9f01891ccf373acc0c`.
-The updated source was copied into a funded CI mirror with an **identical
-Git tree SHA**. New exact-source verification is tracked at
-[Actions run #38331019778](https://github.com/zed-pkg-test/java-app/actions/runs/38331019778).
-Its validation status must be checked separately; the earlier completed green
-run below predates this callback-retention fix.
+The first callback-retention fix was Java commit
+`1e5a86aca91e80ef69761adafceb90414b922ffa` with Git tree
+`d584d30233163e1acd97aa9f01891ccf373acc0c`.
+Its exact-source [Actions run #38331019778](https://github.com/zed-pkg-test/java-app/actions/runs/38331019778)
+**passed** targeted regressions and both 100-client, 35-second sustained comparisons.
+See the next section for the newer race fix and current pin.
+
+
+## Second follow-up: dispatch registration versus release
+
+A separate race existed between `moveToPooled()`, registration in the worker's
+`inFlight` set, and setting `poolHandler`. The HTTP deadline/close path could
+finish and release the exchange between those steps. Cleanup would observe a
+null handler and skip unregistration, after which dispatch could insert the
+already-released `State` into the long-lived worker registry.
+
+Java PR #759 now synchronizes the terminal-state check, handler association,
+and in-flight registration on the exchange state monitor. A terminal exchange
+is not registered. This prevents registration after request-local cleanup.
+
+The timeout/healthy-reuse integration test additionally requires
+`workers_inflight == 0` after the healthy response, complementing the existing
+successful-response and worker-death regressions.
+
+Current Spin `POOL_SOURCE_REF`:
+`0f98498ad7f7d1a780fcf71bcffe01572b307d4b`.
+The exact Java source tree SHA is
+`96b00bf8469afe8044378cce20f93dc158fec5f4`.
+That tree was reconstructed in the funded test repository with a matching
+SHA, including the revised Java runtime and regression test.
+
+[GitHub Actions run #38339736951](https://github.com/zed-pkg-test/java-app/actions/runs/38339736951)
+tests this newer tree. At the time of writing, verification is still in
+progress; prior green results do not cover this additional fix.
 
 ## Deterministic regression evidence
 
