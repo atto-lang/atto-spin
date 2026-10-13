@@ -12,6 +12,7 @@ struct ClientResult {
     lag_ns: Vec<u64>,
     workers: BTreeSet<String>,
     reused: usize,
+    sampled: usize,
     error: Option<String>,
 }
 fn main() {
@@ -70,11 +71,10 @@ fn main() {
                         break;
                     }
                     sequence += 100;
-                    let response = connection.request(
-                        port,
-                        &mode,
-                        sample_every != 0 && sequence.is_multiple_of(sample_every),
-                    );
+                    let sampled = slot >= measured_start
+                        && sample_every != 0
+                        && sequence.is_multiple_of(sample_every);
+                    let response = connection.request(port, &mode, sampled);
                     let completed = Instant::now();
                     match response {
                         Ok(response) => {
@@ -90,6 +90,7 @@ fn main() {
                                     .push(sent.saturating_duration_since(slot).as_nanos() as u64);
                                 result.workers.insert(response.worker);
                                 result.reused += usize::from(response.reused);
+                                result.sampled += usize::from(sampled);
                             }
                         }
                         Err(error) => {
@@ -113,6 +114,7 @@ fn main() {
         aggregate.lag_ns.extend(result.lag_ns);
         aggregate.workers.extend(result.workers);
         aggregate.reused += result.reused;
+        aggregate.sampled += result.sampled;
         if let Some(error) = result.error {
             errors.push(error);
         }
@@ -127,7 +129,7 @@ fn main() {
         "response_latency":stats::distribution(&mut aggregate.response_ns),
         "scheduled_latency":stats::distribution(&mut aggregate.scheduled_ns),
         "client_start_lag":stats::distribution(&mut aggregate.lag_ns),
-        "sample_every":sample_every});
+        "sample_every":sample_every, "sampled_requests":aggregate.sampled});
     std::fs::write(&args[5], serde_json::to_string_pretty(&summary).unwrap()).unwrap();
     println!("{}", summary);
     if !errors.is_empty() {
