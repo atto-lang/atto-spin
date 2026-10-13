@@ -27,8 +27,10 @@ requests. A 4 ms mean at 100 continuously active clients implies roughly 25,000
 completions/sec. Run modes separately and retain the existing 180-second window:
 
 ```sh
+JAVA_TOOL_OPTIONS=-Dores.runtime.control.parallelism=1 \
 python3 scripts/sustained-load.py --concurrency 100 --seconds 180 \
   --actor-mode shared --sample-every 1000 --core-perf --output /tmp/spin-shared
+JAVA_TOOL_OPTIONS=-Dores.runtime.control.parallelism=1 \
 python3 scripts/sustained-load.py --concurrency 100 --seconds 180 \
   --actor-mode isolated --sample-every 1000 --core-perf --output /tmp/spin-isolated
 ```
@@ -38,3 +40,9 @@ connections, ten-second warm-up and sampling policy. `mixed` remains the default
 and uses half the clients per actor kind. The current JVM isolated actor mode
 is an ownership/runtime boundary, not proof of separate OS address spaces.
 
+
+The control scheduler setting above is a benchmark configuration, not a change
+to the runtime default. It reduces supervisor scheduling contention while actor
+workers retain their separate scheduler. The full Java options are recorded in
+each run's metadata. Compare modes on the same host, sequentially, without
+concurrent builds or other load tests.
