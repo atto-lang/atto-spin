@@ -1,5 +1,44 @@
 # Spin actor-reuse benchmark and HTTP pooling: hardening audit
 
+## 2026-10-13 follow-up: guaranteed shutdown cleanup and admission accounting
+
+Java/GraalVM [PR #759](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/759)
+remains a draft. The historical Spin [PR #8](https://github.com/ores-truffle-oreslang/oreslang-spin/pull/8)
+is merged; this follow-up documents the newer unmerged Java runtime tree without
+claiming the existing Spin benchmarks verify that tree.
+
+**Current Java pin:** `c873562561676912d686415245aa60da3f0fdd21`
+(Git tree `c302d640819bdf9ab00b8e24eeff1adb68cac3f4`).
+The funded test mirror was verified to have the identical Java Git tree.
+
+Changes in this revision:
+
+- Replace `NativeHttp.close()`'s `io.shutdownNow()` with orderly executor
+  shutdown after stopping listeners, allowing already-admitted cleanup tasks
+  to run their `finally` and admission-release paths.
+- If the executor has stopped accepting new work, schedule each terminal
+  exchange's cleanup on an independent virtual thread rather than doing
+  socket I/O on an Oreslang actor carrier or timer thread.
+- Make graceful shutdown idempotent, including after the listener is closed;
+  reject/cleanup fallback occurs outside the server monitor.
+- Fix post-admission exceptions in `Server.receive`: release through
+  `State.abort` rather than manually releasing the semaphore, including
+  the `IllegalArgumentException` branch.
+- Add focused tests for accepted versus rejected cleanup and repeat shutdown.
+
+**Evidence:** [CI #38421243356](https://github.com/zed-pkg-test/java-app/actions/runs/38421243356)
+passed all 3 jobs on the immediately preceding exact tree
+(`346eceb9dbd2f54f968cc3c71259e21f24111ff9`): 13 targeted JUnit
+tests and shared/isolated 100-client benchmarks. The last post-admission
+exception fix was committed afterward and therefore needs a fresh exact-tree
+gate. Do not cite that run as validation of the current pin.
+
+The HTTP server still relies on JDK virtual-thread-backed blocking transport;
+Native Image/LLVM equivalence, mailbox bounds, deterministic race scheduling,
+and multi-minute heap/GC stabilization are not verified by these gates.
+
+---
+
 Date: 2026-10-12. Draft work:
 [Spin PR #8](https://github.com/ores-truffle-oreslang/oreslang-spin/pull/8)
 and [Java/GraalVM PR #759](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/759).
