@@ -19,14 +19,17 @@ states; late release does not recreate a removed worker.
 against 256 new registrations on the same 64-capacity worker, verifies
 that the remaining count never exceeds capacity, replenishes available
 slots, checks that further registration is FULL, and verifies
-worker-removal tombstoning against late release.
+worker-removal tombstoning against late release. A separate deterministic
+latch test holds admission inside the worker's per-key capacity check,
+then proves a concurrent release must wait for the same key lock.
 
-Current Java source `9ffc2942478984121c189dcc7ac216aae3534ff4`, Git tree
-`f4c45349a8bd07be6fca26849ce695fe26f829d7`. The funded CI
+Current Java source `e9f20f611d5a0a8225aa11ecc5c2a8f07a5bd935`, Git tree
+`4fcbc76a1ed926f8d454524c8c40dce37c9039c7`. The funded CI
 mirror reproduced this exact tree SHA. [CI run #38450209024](https://github.com/zed-pkg-test/java-app/actions/runs/38450209024)
-**passed its targeted Java regression gate**: 18 HTTP JUnit tests,
-zero failures/errors. The shared/isolated 35-second 100-client
-benchmark jobs were still running when this section was added.
+The preceding exact-tree run passed 18 HTTP JUnit tests and all
+three CI jobs, but it predates the deterministic latch regression.
+A new exact-source CI gate on the current tree is required; do not
+cite the preceding run as proof of that additional test.
 
 The gate proves bounded per-worker HTTP exchange registration under
 the exercised races; it does not prove 15-minute retained heap,
