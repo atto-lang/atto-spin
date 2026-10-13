@@ -26,12 +26,28 @@ Changes in this revision:
   the `IllegalArgumentException` branch.
 - Add focused tests for accepted versus rejected cleanup and repeat shutdown.
 
-**Evidence:** [CI #38421243356](https://github.com/zed-pkg-test/java-app/actions/runs/38421243356)
-passed all 3 jobs on the immediately preceding exact tree
-(`346eceb9dbd2f54f968cc3c71259e21f24111ff9`): 13 targeted JUnit
-tests and shared/isolated 100-client benchmarks. The last post-admission
-exception fix was committed afterward and therefore needs a fresh exact-tree
-gate. Do not cite that run as validation of the current pin.
+**Current exact-source evidence:**
+[CI #38421771486](https://github.com/zed-pkg-test/java-app/actions/runs/38421771486)
+passed **all 3 jobs** on `c873562561676912d686415245aa60da3f0fdd21`
+(tree `c302d640819bdf9ab00b8e24eeff1adb68cac3f4`): 13 JUnit
+HTTP regressions, 0 failures/errors, and two 35-second 100-client
+fresh-versus-pooled benchmark comparisons.
+
+| Mode | Strategy | Successes | Successful req/s | Mean ms | p95 ms | p99 ms |
+|---|---|---:|---:|---:|---:|---:|
+| shared | fresh | 26,676 | 759.354 | 131.376 | 182.347 | 259.295 |
+| shared | pooled | 26,357 | 750.336 | 132.942 | 156.307 | 255.174 |
+| isolated | fresh | 38,065 | 1084.685 | 92.036 | 109.679 | 150.927 |
+| isolated | pooled | 38,242 | 1089.797 | 91.612 | 109.584 | 136.786 |
+
+All 129,340 measured attempts succeeded. Each configuration reported zero
+HTTP rejections and zero active exchanges at shutdown. The pooled cases
+created 100 workers each and reused them for subsequent requests.
+
+This is a **single**, same-runner, fresh-first comparison for each actor
+mode, not evidence of statistically significant throughput improvement.
+GC allocation, retained heap under multi-minute load, high-concurrency
+1000/10000-client behavior, and native backend parity remain open.
 
 The HTTP server still relies on JDK virtual-thread-backed blocking transport;
 Native Image/LLVM equivalence, mailbox bounds, deterministic race scheduling,
