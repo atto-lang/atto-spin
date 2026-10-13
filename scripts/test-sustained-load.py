@@ -47,6 +47,14 @@ class SustainedTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result['sampled_requests'],self.sampled)
         self.assertEqual(self.sampled,self.requests)
 
+    async def test_single_actor_mode_does_not_include_other_mode(self):
+        for mode in ('shared','isolated'):
+            port=await self.start()
+            with tempfile.TemporaryDirectory() as directory:
+                result=await load.measure(port,4,.1,0,1,Path(directory),0,mode)
+            self.assertEqual(set(result['modes']),{mode})
+            self.assertEqual(result['connections_opened'],4)
+
     async def test_bad_response_fails_without_reconnect(self):
         port=await self.start(bad=True)
         with tempfile.TemporaryDirectory() as directory:
