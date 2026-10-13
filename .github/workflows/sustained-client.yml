@@ -1,0 +1,27 @@
+name: Spin sustained-client protocol check
+on:
+  push:
+    branches:
+      - perf/concurrency-actor-matrix-20261012
+  pull_request:
+    paths:
+      - 'scripts/sustained-client.py'
+      - 'tests/test-sustained-client.py'
+      - 'tests/test-sustained-fixture.py'
+      - 'tests/sustained-pool-server.ores'
+      - '.github/workflows/sustained-client.yml'
+  workflow_dispatch:
+jobs:
+  protocol:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Syntax and protocol regression
+        run: |
+          python -m py_compile scripts/sustained-client.py scripts/run-sustained-comparison.py tests/test-sustained-client.py tests/test-sustained-fixture.py
+          python tests/test-sustained-client.py -v
+          python tests/test-sustained-fixture.py -v
