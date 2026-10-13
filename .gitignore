@@ -2,3 +2,5 @@ work/
 __pycache__/
 *.log
 .DS_Store
+/.cache/
+/tools/load/target/
