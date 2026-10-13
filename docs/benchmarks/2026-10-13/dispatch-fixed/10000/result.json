@@ -1,0 +1,40 @@
+{
+  "concurrency": 10000,
+  "measurement_seconds": 180.0,
+  "warmup_seconds": 10,
+  "drain_seconds": 0.976,
+  "connections_opened": 10000,
+  "retries": 0,
+  "sampled_requests": 1862,
+  "failures": [],
+  "modes": {
+    "shared": {
+      "requests_started_in_window": 948241,
+      "completed_in_window": 943241,
+      "mean_ms": 945.062,
+      "p50_ms": 909.815,
+      "p95_ms": 1181.938,
+      "p99_ms": 1581.437,
+      "completed_rps": 5240.23,
+      "distinct_workers_observed": 32,
+      "distinct_workers_with_warmup": 32,
+      "reused_responses": 948241,
+      "warmup_requests": 48600
+    },
+    "isolated": {
+      "requests_started_in_window": 948242,
+      "completed_in_window": 943242,
+      "mean_ms": 945.054,
+      "p50_ms": 909.825,
+      "p95_ms": 1181.909,
+      "p99_ms": 1581.818,
+      "completed_rps": 5240.23,
+      "distinct_workers_observed": 32,
+      "distinct_workers_with_warmup": 32,
+      "reused_responses": 948242,
+      "warmup_requests": 48496
+    }
+  },
+  "client_event_loop_lag_p99_ms": 121.16,
+  "client_event_loop_lag_max_ms": 237.86
+}
