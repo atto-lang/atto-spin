@@ -21,9 +21,26 @@ worker serves a subsequent 200 response without being replaced.
 Git tree `6f8c8824c6c6de6b07fabd753a130dac5d217e6a`. The
 funded mirror reproduces that Git tree exactly.
 [CI run #38427100237](https://github.com/zed-pkg-test/java-app/actions/runs/38427100237)
-passed its targeted Java gate (17 JUnit tests, zero failures and
-errors). The two 35-second shared/isolated fresh/pooled benchmark jobs
-were still running when this paragraph was first recorded.
+**passed all three jobs**: 17 targeted Java HTTP JUnit tests, zero failures
+and errors, and two 35-second fresh/pooled comparisons with 100 concurrent
+clients, separately for shared and isolated actors.
+
+| Mode | Strategy | Successful requests | req/s | Mean ms | p95 ms | p99 ms |
+|---|---|---:|---:|---:|---:|---:|
+| shared | fresh | 39,097 | 1114.203 | 89.603 | 103.732 | 186.249 |
+| shared | pooled | 39,072 | 1113.622 | 89.660 | 102.776 | 170.629 |
+| isolated | fresh | 26,084 | 742.527 | 134.344 | 162.112 | 245.975 |
+| isolated | pooled | 25,736 | 732.371 | 136.199 | 156.073 | 284.305 |
+
+All 129,989 measured requests succeeded: no admission rejections,
+zero active server exchanges at shutdown, and substantial pooled worker
+reuse (100 workers created per mode). This is one fresh-first paired
+sample per mode with clients/server sharing the CI runner, **not**
+proof of a stable throughput advantage. In particular, isolated pooled
+p99 latency was worse in this run.
+
+The saturation/recovery behavior was separately verified in the
+end-to-end Java JUnit gate, not by this non-saturating 100-client run.
 
 **Scope:** This bounds HTTP exchange lifetimes, not ordinary actor
 mailboxes. The underlying `ActorRuntime` already enforces the
