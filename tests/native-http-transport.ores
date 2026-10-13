@@ -1,0 +1,23 @@
+import module net_core from "std/net";
+import module spin_native_http from "../src/spin_native_http";
+
+pub async routine main(): void {
+  val NioTcpListener listener = net_core.listen_loopback(0, 64, 256, 1024);
+  stdio.println(listener.port);
+
+  // Two overlapping HTTP lifetimes; one stalled client must not park the
+  // scheduler while the other makes progress. A pool/supervisor and tracked
+  // dynamic accept loop are required before sustained production load.
+  val Future<String> first_accept = net_core.accept_token(rt borrow listener);
+  val String first = await first_accept;
+  val Future<void> first_task = spin_native_http.dispatch_token(first);
+  val Future<String> second_accept = net_core.accept_token(rt borrow listener);
+  val String second = await second_accept;
+  val Future<void> second_task = spin_native_http.dispatch_token(second);
+  await second_task;
+  await first_task;
+
+  val Future<void> closing = net_core.close_listener(listener);
+  await closing;
+  return;
+}

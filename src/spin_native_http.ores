@@ -1,0 +1,11 @@
+// Opt-in Oreslang-native HTTP transport adapter for Spin.
+// No host HttpServer/HttpExchange: the socket remains in the std/net
+// reactor and this layer receives a context-owned, revocable scalar token.
+// This deliberately does NOT claim actor routing parity yet.
+import module http_server from "std/http_server";
+
+define module spin_native_http as
+  pub fnc dispatch_token(String ticket): Future<void> {
+    return http_server.serve_token(ticket);
+  }
+end
