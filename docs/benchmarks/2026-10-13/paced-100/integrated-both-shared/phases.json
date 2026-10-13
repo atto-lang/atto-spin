@@ -1,0 +1,139 @@
+{
+  "complete_otel_traces": 248,
+  "core_begin": {
+    "capacity": 8192,
+    "kind": "begin",
+    "sample_every": 1024,
+    "schema": "ores-core-perf.v1"
+  },
+  "core_end": {
+    "kind": "end",
+    "recorded": 2620,
+    "reserved": 2620,
+    "saturated": false,
+    "schema": "ores-core-perf.v1"
+  },
+  "core_warm_exclusion_ns": 15000000000,
+  "phases": {
+    "warm.core.http.claim": {
+      "count": 217,
+      "max_ms": 0.254292,
+      "mean_ms": 0.015136718894009216,
+      "p50_ms": 0.013708,
+      "p95_ms": 0.016708,
+      "p99_ms": 0.040417
+    },
+    "warm.core.http.dispatch": {
+      "count": 257,
+      "max_ms": 0.024541,
+      "mean_ms": 0.0026894941634241247,
+      "p50_ms": 0.002208,
+      "p95_ms": 0.004958,
+      "p99_ms": 0.009916
+    },
+    "warm.core.http.executor.queue": {
+      "count": 221,
+      "max_ms": 0.027417,
+      "mean_ms": 0.0055788325791855204,
+      "p50_ms": 0.005292,
+      "p95_ms": 0.007584,
+      "p99_ms": 0.010959
+    },
+    "warm.core.http.io.queue": {
+      "count": 230,
+      "max_ms": 0.027375,
+      "mean_ms": 0.007683117391304348,
+      "p50_ms": 0.008333,
+      "p95_ms": 0.009875,
+      "p99_ms": 0.013084
+    },
+    "warm.core.http.io.work": {
+      "count": 223,
+      "max_ms": 0.034083,
+      "mean_ms": 0.008767748878923768,
+      "p50_ms": 0.008416,
+      "p95_ms": 0.010708,
+      "p99_ms": 0.013125
+    },
+    "warm.core.http.lifetime": {
+      "count": 224,
+      "max_ms": 13.455875,
+      "mean_ms": 12.032004669642856,
+      "p50_ms": 11.953083,
+      "p95_ms": 12.759125,
+      "p99_ms": 13.358167
+    },
+    "warm.core.http.receive": {
+      "count": 224,
+      "max_ms": 0.007167,
+      "mean_ms": 0.0009806473214285715,
+      "p50_ms": 0.000875,
+      "p95_ms": 0.001542,
+      "p99_ms": 0.003792
+    },
+    "warm.core.http.timer.schedule": {
+      "count": 224,
+      "max_ms": 0.001083,
+      "mean_ms": 0.00012164732142857143,
+      "p50_ms": 0.000125,
+      "p95_ms": 0.000167,
+      "p99_ms": 0.0005
+    },
+    "warm.otel.actor.prepare": {
+      "count": 248,
+      "max_ms": 0.01275,
+      "mean_ms": 0.006447766129032259,
+      "p50_ms": 0.006542,
+      "p95_ms": 0.007958,
+      "p99_ms": 0.009333
+    },
+    "warm.otel.admission.to_claim": {
+      "count": 248,
+      "max_ms": 13.181792,
+      "mean_ms": 11.930759092741935,
+      "p50_ms": 11.895083,
+      "p95_ms": 12.538667,
+      "p99_ms": 12.783667
+    },
+    "warm.otel.admission.to_dispatch": {
+      "count": 248,
+      "max_ms": 13.059208,
+      "mean_ms": 11.811484891129032,
+      "p50_ms": 11.776167,
+      "p95_ms": 12.418084,
+      "p99_ms": 12.649
+    },
+    "warm.otel.admission.to_response_continuation": {
+      "count": 248,
+      "max_ms": 13.209667,
+      "mean_ms": 11.96581120564516,
+      "p50_ms": 11.928792,
+      "p95_ms": 12.57425,
+      "p99_ms": 13.013917
+    },
+    "warm.otel.mailbox.move_to_claim": {
+      "count": 248,
+      "max_ms": 0.038458,
+      "mean_ms": 0.013485854838709678,
+      "p50_ms": 0.01325,
+      "p95_ms": 0.016417,
+      "p99_ms": 0.019583
+    },
+    "warm.otel.response.await": {
+      "count": 248,
+      "max_ms": 0.679584,
+      "mean_ms": 0.02860434677419355,
+      "p50_ms": 0.025042,
+      "p95_ms": 0.032625,
+      "p99_ms": 0.070083
+    },
+    "warm.otel.routing.dispatch": {
+      "count": 248,
+      "max_ms": 0.211209,
+      "mean_ms": 0.11063591532258066,
+      "p50_ms": 0.108875,
+      "p95_ms": 0.1265,
+      "p99_ms": 0.135458
+    }
+  }
+}

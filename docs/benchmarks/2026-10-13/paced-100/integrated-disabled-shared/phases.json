@@ -1,0 +1,7 @@
+{
+  "complete_otel_traces": 0,
+  "core_begin": null,
+  "core_end": null,
+  "core_warm_exclusion_ns": 15000000000,
+  "phases": {}
+}

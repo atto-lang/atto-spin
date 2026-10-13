@@ -1,0 +1,10 @@
+{
+  "source": "1e099518d1a7438abf0f5426f63a3b971bd5c357",
+  "spin": "139f2076c81116381c56f86519f9e48bfb31504f",
+  "router": "6ca17f01ff02022274414707031ea3f11975f596",
+  "otel": "5fe62a3447e77072cfd30850a96ef654a18008f7",
+  "logging": "disabled",
+  "actor_mode": "shared",
+  "java": "/Users/maca5/.local/share/oreslang-audit/graalvm-community-25.3.4.1+1.1/Contents/Home/bin/java",
+  "jar_sha256": "237bb3f47c9adaf871f82e3a22e56be52150f48feb9b9d65f2772865d34b3850"
+}
