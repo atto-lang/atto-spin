@@ -1,5 +1,40 @@
 # Spin actor-reuse benchmark and HTTP pooling: hardening audit
 
+## 2026-10-13 follow-up: linearizable pooled admission and release
+
+**Finding:** Admission previously held the per-worker
+`ConcurrentHashMap.computeIfPresent` key lock while checking the
+64-entry `Set.size()`, but completion removed states directly from
+the concurrent set via `inFlight.get(worker).remove(state)`. Those
+mutations were not serialized with admission and could race against
+weakly consistent concurrent-set size observation.
+
+**Fix:** Java/GraalVM [PR #759](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/759)
+now uses `releasePoolAdmission`, a keyed `computeIfPresent` removal,
+and invokes it from `Handler.untrack`. Worker termination still
+atomically removes the registry key before aborting its remaining
+states; late release does not recreate a removed worker.
+
+**Regression:** A new 5-round admission churn test races 64 releases
+against 256 new registrations on the same 64-capacity worker, verifies
+that the remaining count never exceeds capacity, replenishes available
+slots, checks that further registration is FULL, and verifies
+worker-removal tombstoning against late release.
+
+Current Java source `9ffc2942478984121c189dcc7ac216aae3534ff4`, Git tree
+`f4c45349a8bd07be6fca26849ce695fe26f829d7`. The funded CI
+mirror reproduced this exact tree SHA. [CI run #38450209024](https://github.com/zed-pkg-test/java-app/actions/runs/38450209024)
+**passed its targeted Java regression gate**: 18 HTTP JUnit tests,
+zero failures/errors. The shared/isolated 35-second 100-client
+benchmark jobs were still running when this section was added.
+
+The gate proves bounded per-worker HTTP exchange registration under
+the exercised races; it does not prove 15-minute retained heap,
+10,000-client admission recovery, actor CONTROL priority latency, or
+GraalVM Native Image/LLVM parity.
+
+---
+
 ## 2026-10-13 follow-up: capacity-aware routing and real HTTP recovery
 
 Java/GraalVM [PR #759](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/759)
