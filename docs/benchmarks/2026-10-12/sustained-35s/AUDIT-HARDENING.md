@@ -87,8 +87,25 @@ That tree was reconstructed in the funded test repository with a matching
 SHA, including the revised Java runtime and regression test.
 
 [GitHub Actions run #38339736951](https://github.com/zed-pkg-test/java-app/actions/runs/38339736951)
-tests this newer tree. At the time of writing, verification is still in
-progress; prior green results do not cover this additional fix.
+**passed all three jobs** on the newer exact Java tree. The real-socket
+gate ran 11 JUnit tests (0 failures/errors) and source/fixture regressions.
+The 35-second sustained 100-client comparisons also passed for shared
+and isolated actor modes, with no request failures/rejections and zero
+active server exchanges after shutdown.
+
+| Mode | Strategy | Successes | Successful req/s | Mean ms | p95 ms | p99 ms |
+|---|---|---:|---:|---:|---:|---:|
+| shared | fresh | 38,103 | 1085.779 | 91.943 | 110.282 | 177.624 |
+| shared | pooled | 39,170 | 1116.236 | 89.439 | 103.097 | 159.182 |
+| isolated | fresh | 25,290 | 719.848 | 138.553 | 183.603 | 298.242 |
+| isolated | pooled | 25,295 | 720.037 | 138.527 | 214.221 | 267.869 |
+
+All rows use tree `96b00bf8469afe8044378cce20f93dc158fec5f4`,
+commit `0f98498ad7f7d1a780fcf71bcffe01572b307d4b`.
+Single-run, shared-runner comparisons cannot establish a statistically
+meaningful throughput advantage; the isolated pooled p95 is worse. The
+long-run leak/GC claim needs repeated runs and a direct heap/allocation
+profile, not only a zero-in-flight assertion.
 
 ## Deterministic regression evidence
 
