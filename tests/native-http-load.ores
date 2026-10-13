@@ -1,0 +1,26 @@
+import module net_core from "std/net";
+import module spin_native_http from "../src/spin_native_http";
+
+// Finite, supervised benchmark fixture. Every accepted task is retained and
+// awaited before listener shutdown; no fire-and-forget socket work.
+pub async routine main(): void {
+  val NioTcpListener listener = net_core.listen_loopback(0, 16384, 20000, 65536);
+  stdio.println(listener.port);
+  let mut Array<Future<void>> tasks = new Array<Future<void>>();
+  for (let int i = 0; i < /* CLIENTS */ 100; i = i + 1) {
+    val Future<String> accepting = net_core.accept_token(rt borrow listener);
+    val String ticket = await accepting;
+    val Future<void> task = spin_native_http.dispatch_token(ticket);
+    tasks.add(task);
+  }
+  for (let int j = 0; j < tasks.size; j = j + 1) {
+    val Future<void> task = tasks.get(j);
+    await task;
+  }
+  stdio.println("NATIVE_IO_METRICS");
+  stdio.println(listener.peak_outstanding);
+  stdio.println(listener.max_command_queue_ns);
+  val Future<void> shutdown = net_core.close_listener(listener);
+  await shutdown;
+  return;
+}
