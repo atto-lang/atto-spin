@@ -35,6 +35,35 @@ and [Java/GraalVM PR #759](https://github.com/ores-truffle-oreslang/oreslang-sou
    replacements, snapshots Git cleanliness before output creation, and
    reports child-process startup failure without waiting two minutes.
 
+## Follow-up audit: pooled worker termination listener retention
+
+The initial pool implementation attached an actor-termination callback to the
+persistent actor's `done()` future **for every transferred HTTP exchange**.
+A worker could therefore retain references to completed request states for its
+whole lifetime, defeating a principal memory-efficiency benefit of pooling.
+A high-throughput worker could accumulate tens of thousands of callbacks.
+
+Java PR #759 now registers exactly one termination callback when each worker
+is created. A concurrent registry holds only **currently outstanding**
+exchanges. The completion path unregisters each exchange before fulfilling
+its response completion future; actor termination removes its registry entry
+and aborts only exchanges that are still outstanding. Replacements get
+independent registries so an old worker cannot abort a new worker's requests.
+
+New observer: `HttpHandler.workers_inflight` counts live tracked exchanges.
+Regressions verify that it returns zero after shared/isolated responses and
+that an unexpectedly terminated worker fails its active exchange and is
+replaced for a subsequent healthy request.
+
+The updated Java source for this follow-up is pinned in `POOL_SOURCE_REF`:
+`1e5a86aca91e80ef69761adafceb90414b922ffa`;
+its Git tree is `d584d30233163e1acd97aa9f01891ccf373acc0c`.
+The updated source was copied into a funded CI mirror with an **identical
+Git tree SHA**. New exact-source verification is tracked at
+[Actions run #38331019778](https://github.com/zed-pkg-test/java-app/actions/runs/38331019778).
+Its validation status must be checked separately; the earlier completed green
+run below predates this callback-retention fix.
+
 ## Deterministic regression evidence
 
 [Funded exact-source Actions run #38322191586](https://github.com/zed-pkg-test/java-app/actions/runs/38322191586):
