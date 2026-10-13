@@ -1,5 +1,40 @@
 # Spin actor-reuse benchmark and HTTP pooling: hardening audit
 
+## 2026-10-13 follow-up: capacity-aware routing and real HTTP recovery
+
+Java/GraalVM [PR #759](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/759)
+now chooses a pooled worker that actually has room under the 64-exchange
+per-worker limit. It starts searching at a rotating cursor, skips full
+workers, preserves fairness, and responds 503 only when the pool has no
+admissible worker. Handler locking serializes dispatch decisions; the
+per-worker `ConcurrentHashMap.computeIfPresent` gate still owns the
+atomic reservation and protects against worker death.
+
+Regression coverage includes a deterministic slot-selection test with
+saturated and free slots, negative and near-overflow cursors, complete
+exhaustion, and recovery after slot release. A real HTTP test sends 64
+held requests to a one-worker pool, requires the 65th to receive 503,
+then verifies all timed-out exchanges are released and the original
+worker serves a subsequent 200 response without being replaced.
+
+**Exact source:** `e5171d6f80053924567886ccf6f8def7df85f794`;
+Git tree `6f8c8824c6c6de6b07fabd753a130dac5d217e6a`. The
+funded mirror reproduces that Git tree exactly.
+[CI run #38427100237](https://github.com/zed-pkg-test/java-app/actions/runs/38427100237)
+passed its targeted Java gate (17 JUnit tests, zero failures and
+errors). The two 35-second shared/isolated fresh/pooled benchmark jobs
+were still running when this paragraph was first recorded.
+
+**Scope:** This bounds HTTP exchange lifetimes, not ordinary actor
+mailboxes. The underlying `ActorRuntime` already enforces the
+configured `maxMailboxMessages` for user messages and separate
+`INTERNAL_CONTINUATION_SLOTS` headroom; priority CONTROL dispatch is
+separate. Multi-worker live-socket fairness across mixed workloads,
+mailbox-stress parity, repeatable 1000/10000-client overload, sustained
+heap/GC profiling, Native Image and LLVM remain open gates.
+
+---
+
 ## 2026-10-13 follow-up: bounded pooled-worker HTTP admission
 
 The current Java/GraalVM PR #759 adds `MAX_POOLED_INFLIGHT_PER_WORKER = 64`.
