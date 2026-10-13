@@ -25,11 +25,12 @@ then proves a concurrent release must wait for the same key lock.
 
 Current Java source `e9f20f611d5a0a8225aa11ecc5c2a8f07a5bd935`, Git tree
 `4fcbc76a1ed926f8d454524c8c40dce37c9039c7`. The funded CI
-mirror reproduced this exact tree SHA. [CI run #38450209024](https://github.com/zed-pkg-test/java-app/actions/runs/38450209024)
-The preceding exact-tree run passed 18 HTTP JUnit tests and all
-three CI jobs, but it predates the deterministic latch regression.
-A new exact-source CI gate on the current tree is required; do not
-cite the preceding run as proof of that additional test.
+mirror reproduced this exact tree SHA. [CI run #38450604235](https://github.com/zed-pkg-test/java-app/actions/runs/38450604235)
+passed **19/19 HTTP JUnit tests, zero failures/errors**, including the
+deterministic latch regression. The two 35-second shared/isolated
+fresh/pooled benchmark jobs were still running when this evidence was
+recorded. The preceding [run #38450209024](https://github.com/zed-pkg-test/java-app/actions/runs/38450209024)
+passed all three jobs but tested the earlier 18-test revision.
 
 The gate proves bounded per-worker HTTP exchange registration under
 the exercised races; it does not prove 15-minute retained heap,
