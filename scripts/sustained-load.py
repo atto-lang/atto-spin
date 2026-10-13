@@ -160,7 +160,12 @@ def main():
                     rss,cpu=stat.stdout.split();resource_samples.append({'epoch':time.time(),'rss_kib':int(rss),'cpu_percent':float(cpu)})
         monitor_thread=threading.Thread(target=monitor,daemon=True);monitor_thread.start()
         try:
-            port=int(lines.get(timeout=30))
+            startup_deadline=time.monotonic()+30
+            while True:
+                line=lines.get(timeout=max(.001,startup_deadline-time.monotonic()))
+                if line.isdigit() and 0<int(line)<65536:
+                    port=int(line);break
+                if time.monotonic()>=startup_deadline:raise TimeoutError('No server port within 30 seconds')
             result=asyncio.run(measure(port,args.concurrency,args.seconds,args.warmup,args.timeout,args.output,args.sample_every))
             import http.client
             conn=http.client.HTTPConnection('127.0.0.1',port,timeout=10)
