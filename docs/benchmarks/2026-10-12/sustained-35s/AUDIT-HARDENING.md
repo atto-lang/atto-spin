@@ -133,9 +133,22 @@ Current `POOL_SOURCE_REF`: `478c929e18de01f757784cee7acde50dc4a4f52e`;
 exact Java Git tree: `b294af877a789af3ffc10b155ff8b7d7ffe581e1`.
 The funded CI mirror reproduced that same Git tree SHA.
 [Exact-source CI run #38349784297](https://github.com/zed-pkg-test/java-app/actions/runs/38349784297)
-passed the real-socket test gate: 11 JUnit tests, no failures/errors.
-The two 35-second 100-client benchmark jobs were still running when
-this section was first written.
+**passed all three jobs**: 11 JUnit tests with zero failures/errors
+and 35-second 100-client sustained comparisons for both actor kinds.
+
+| Mode | Strategy | Successes | Successful req/s | Mean ms | p95 ms | p99 ms |
+|---|---|---:|---:|---:|---:|---:|
+| shared | fresh | 29,758 | 847.576 | 117.740 | 147.729 | 230.861 |
+| shared | pooled | 29,139 | 829.797 | 120.243 | 138.740 | 245.196 |
+| isolated | fresh | 25,469 | 725.038 | 137.599 | 206.337 | 282.366 |
+| isolated | pooled | 25,602 | 728.709 | 136.872 | 162.410 | 275.677 |
+
+All measured requests succeeded, with no admission rejections and
+zero active server exchanges after shutdown. These are one paired
+sample per mode on shared CI runners; shared pooled throughput was
+lower in this run and isolated pooled throughput essentially equal.
+No consistent performance gain can be inferred, and heap/GC retention
+under multi-minute loads remains unmeasured.
 
 ## Deterministic regression evidence
 
