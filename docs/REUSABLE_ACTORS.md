@@ -65,3 +65,6 @@ The high-concurrency keep-alive run also needs
 connections; the first 10,000-client attempt failed during warm-up when idle
 connections were closed. The harness now supplies both limits explicitly. This
 is benchmark configuration, not a change to the runtime's production defaults.
+
+For correlated queueing, routing, mailbox, and response timings, see
+[Profiling reusable HTTP actors](PROFILING.md).
