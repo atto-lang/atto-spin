@@ -115,3 +115,20 @@ Each output directory must be new. Core uses `--core-perf
 --core-perf-sample-every=1024`; use `--no-core-perf` to disable. The sampler
 alone does not enable recording. Native userland logs remain `oreslang-otel.v1`
 JSONL, not an OTLP collector integration.
+
+## Admission phase validation and native execution
+
+Final admission phase revision `703bbe971f26b7188b9a855f0c0f5be9921b0fbe`
+passed 1877 Maven tests (zero failures/errors, one skip). A separate ten-second
+measurement after warm-up validated the new core boundary against live shared
+HTTP traffic: 84,737 successful responses, 55 warmed admission-to-handler
+samples, mean 11.702 ms, p95 12.182 ms. Its separate receipts are retained;
+it is not pooled into the original eight-run overhead comparison.
+
+AOT, hybrid and polyglot-isolate images built successfully. The actual
+native-core-library.ores program returned the expected exact-integer vectors
+in AOT, hybrid and strict-isolate execution. AOT and hybrid each exported eight
+core phases. The strict-isolate host recorder exported zero guest phases:
+flag propagation/export across the physical isolate boundary remains a known
+observability gap. Successful guest execution is not evidence that guest
+phases were captured there. These smoke checks are not native HTTP throughput.
