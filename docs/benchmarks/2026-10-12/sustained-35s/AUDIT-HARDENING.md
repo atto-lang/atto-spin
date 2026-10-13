@@ -107,6 +107,36 @@ meaningful throughput advantage; the isolated pooled p95 is worse. The
 long-run leak/GC claim needs repeated runs and a direct heap/allocation
 profile, not only a zero-in-flight assertion.
 
+## Third follow-up: I/O executed after an exchange deadline
+
+Code audit of `NativeHttp.Exchange.operation()` found a request-lifecycle
+race after its initial actor-owned capability check: the asynchronous I/O
+task could begin **after** the HTTP exchange had become terminal due to a
+deadline, actor exit, or shutdown. Previous response closures did not
+consistently recheck terminal state before mutating the transport.
+
+Java PR #759 commit `4b78160a84300349748d4eb3fd89eb3d041105ed`
+now checks `State.terminal` at the I/O worker entrypoint and under the
+state lock before committing response headers or starting a streaming write.
+This suppresses not-yet-started operations after a deadline. Already-running
+blocking JDK socket I/O remains subject to transport close/cancellation,
+which is a separate native nonblocking-transport milestone.
+
+Java commit `478c929e18de01f757784cee7acde50dc4a4f52e`
+adds a regression attempting a late success response after an incomplete
+request body times out, requiring no HTTP 200 on that expired connection.
+The shared/isolated reuse test now runs 200 successful exchanges (100 per
+actor), verifies 198 reuses and zero `workers_inflight`, and still tests
+one persistent worker per actor mode.
+
+Current `POOL_SOURCE_REF`: `478c929e18de01f757784cee7acde50dc4a4f52e`;
+exact Java Git tree: `b294af877a789af3ffc10b155ff8b7d7ffe581e1`.
+The funded CI mirror reproduced that same Git tree SHA.
+[Exact-source CI run #38349784297](https://github.com/zed-pkg-test/java-app/actions/runs/38349784297)
+passed the real-socket test gate: 11 JUnit tests, no failures/errors.
+The two 35-second 100-client benchmark jobs were still running when
+this section was first written.
+
 ## Deterministic regression evidence
 
 [Funded exact-source Actions run #38322191586](https://github.com/zed-pkg-test/java-app/actions/runs/38322191586):
