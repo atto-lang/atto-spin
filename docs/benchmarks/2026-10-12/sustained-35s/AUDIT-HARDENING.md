@@ -1,5 +1,36 @@
 # Spin actor-reuse benchmark and HTTP pooling: hardening audit
 
+## 2026-10-13 follow-up: bounded pooled-worker HTTP admission
+
+The current Java/GraalVM PR #759 adds `MAX_POOLED_INFLIGHT_PER_WORKER = 64`.
+Admission uses `ConcurrentHashMap.computeIfPresent` for per-worker
+reservation and returns `FULL` when saturated and `WORKER_GONE`
+if the actor has already terminated. A full worker's newly transferred
+exchange is aborted with HTTP 503 without canceling that worker.
+`workers_rejected` exposes the count of these pool-specific rejections.
+
+A new concurrency regression in Java commit
+`a2b7eb47ec45007e28a9c5de826ce3aacaa6a777` races 256 reservations for a
+64-exchange capacity and requires exactly 64 admissions and 192
+rejections. It also exercises capacity recovery after removal and
+proves the worker's registry is not recreated following termination.
+
+The source Git tree `c5a94ddd66f648a49a7291a1c4c031fb9ff2537f` was
+reconstructed identically in the funded CI mirror.
+[Run #38423621658](https://github.com/zed-pkg-test/java-app/actions/runs/38423621658)
+is the exact-source verification gate; results must be checked
+separately from earlier green CI runs.
+
+**Limitations:** the 64-request quota bounds tracked HTTP exchange
+lifetimes per pooled actor, but it is not a universal actor mailbox
+quota. Strict round-robin dispatch can still reject a saturated slot
+even if another worker has capacity. A per-worker quota is not a
+global fairness scheduler, and Native Image/LLVM, memory retention,
+high-client-count overload behavior and transport pressure remain
+separate gates.
+
+---
+
 ## 2026-10-13 follow-up: guaranteed shutdown cleanup and admission accounting
 
 Java/GraalVM [PR #759](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/759)
