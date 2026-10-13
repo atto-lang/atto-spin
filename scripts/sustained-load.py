@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import platform
 import queue
+import random
 import runpy
 import subprocess
 import threading
@@ -20,9 +21,10 @@ def percentile(values,p):
     import math
     return round(sorted(values)[max(0,math.ceil(len(values)*p)-1)],3) if values else None
 
-async def response(reader,writer,port,mode):
+async def response(reader,writer,port,mode,sampled=False):
     start=time.perf_counter()
-    writer.write(f'GET /{mode} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nConnection: keep-alive\r\n\r\n'.encode())
+    profile="X-Profile: yes\r\n" if sampled else ""
+    writer.write(f'GET /{mode} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nConnection: keep-alive\r\n{profile}\r\n'.encode())
     await writer.drain()
     head=await reader.readuntil(b'\r\n\r\n')
     lines=head.decode('iso-8859-1').split('\r\n')
@@ -36,13 +38,13 @@ async def response(reader,writer,port,mode):
     if not identity or headers.get('x-reused') not in ('yes','no'):raise RuntimeError('Missing worker reuse evidence')
     return (time.perf_counter()-start)*1000,identity,headers['x-reused']=='yes'
 
-async def measure(port,concurrency,duration,warmup,timeout,output):
+async def measure(port,concurrency,duration,warmup,timeout,output,sample_every=0):
     connected=0;failures=[];start_gate=asyncio.Event();epoch=[0.0];deadline=[0.0]
     latencies={'shared':[],'isolated':[]};identities={'shared':set(),'isolated':set()}
     completed_in_window=Counter();reused=Counter();all_ids={'shared':set(),'isolated':set()}
-    warm=Counter();connection_count=0;lag=[];stop=False
+    warm=Counter();connection_count=0;lag=[];stop=False;sampler=random.Random(0);sampled_count=0
     async def client(index):
-        nonlocal connected,connection_count
+        nonlocal connected,connection_count,sampled_count
         mode='shared' if index%2==0 else 'isolated'
         writer=None
         try:
@@ -51,7 +53,9 @@ async def measure(port,concurrency,duration,warmup,timeout,output):
             await start_gate.wait()
             while not stop and time.perf_counter()<deadline[0]:
                 submitted=time.perf_counter()
-                elapsed,identity,was_reused=await asyncio.wait_for(response(reader,writer,port,mode),timeout)
+                sampled=bool(sample_every and submitted>=epoch[0] and sampler.randrange(sample_every)==0)
+                sampled_count+=sampled
+                elapsed,identity,was_reused=await asyncio.wait_for(response(reader,writer,port,mode,sampled),timeout)
                 all_ids[mode].add(identity)
                 if submitted>=epoch[0]:
                     latencies[mode].append(elapsed);identities[mode].add(identity)
@@ -105,7 +109,7 @@ async def measure(port,concurrency,duration,warmup,timeout,output):
     (output/'latencies.json').write_text(json.dumps(latencies)+'\n')
     result={'concurrency':concurrency,'measurement_seconds':duration,'warmup_seconds':warmup,
             'drain_seconds':round(max(0,end-deadline[0]),3),'connections_opened':connection_count,
-            'retries':0,'failures':failures,'modes':results,
+            'retries':0,'sampled_requests':sampled_count,'failures':failures,'modes':results,
             'client_event_loop_lag_p99_ms':percentile(lag,.99),'client_event_loop_lag_max_ms':round(max(lag,default=0),3)}
     (output/'result.json').write_text(json.dumps(result,indent=2)+'\n')
     if failures:raise RuntimeError('Sustained test had failures: '+str(failures[:3]))
@@ -119,20 +123,25 @@ def main():
     parser.add_argument('--seconds',type=float,default=180)
     parser.add_argument('--warmup',type=float,default=10)
     parser.add_argument('--timeout',type=float,default=60)
+    parser.add_argument('--sample-every',type=int,default=0,help='Sample warm requests with probability 1/N (fixed random seed); enables Oreslang telemetry fixture')
+    parser.add_argument('--core-perf',action='store_true')
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args()
-    if not 2<=args.concurrency<=10000 or args.seconds<=0 or args.warmup<0 or args.timeout<=0:parser.error('invalid limits')
+    if not 2<=args.concurrency<=10000 or args.seconds<=0 or args.warmup<0 or args.timeout<=0 or args.sample_every<0:parser.error('invalid limits')
     check=runpy.run_path(str(ROOT/'scripts/check-backend.py'))
     source=check['require_source']('ORESLANG_SOURCE_DIR','SOURCE_REF')
     git=lambda p,*a:subprocess.check_output(['git','-C',str(p),*a],text=True).strip()
     router=ROOT/'dependencies/http-routing'
+    otel=ROOT/'dependencies/otel'
+    if git(otel,'status','--porcelain') or git(otel,'rev-parse','HEAD')!=git(ROOT,'ls-files','--stage','dependencies/otel').split()[1]:raise RuntimeError('Otel provenance differs')
     if git(router,'status','--porcelain') or git(router,'rev-parse','HEAD')!=git(ROOT,'ls-files','--stage','dependencies/http-routing').split()[1]:raise RuntimeError('Router provenance differs')
+    fixture=ROOT/('tests/profiled-pooled-server.ores' if args.sample_every else 'tests/pooled-server.ores')
     args.output.mkdir(parents=True,exist_ok=False)
     env=dict(os.environ);env['JAVA_TOOL_OPTIONS']=env.get('JAVA_TOOL_OPTIONS','')+' -Xms256m -Xmx2g -Dores.runtime.carriers=java -Djdk.httpserver.maxConnections=20000 -Dsun.net.httpserver.maxIdleConnections=20000'
     meta={'spin_commit':git(ROOT,'rev-parse','HEAD'),'spin_dirty':bool(git(ROOT,'status','--porcelain')),
-          'runtime_commit':git(source,'rev-parse','HEAD'),'router_commit':git(router,'rev-parse','HEAD'),
+          'runtime_commit':git(source,'rev-parse','HEAD'),'router_commit':git(router,'rev-parse','HEAD'),'otel_commit':git(ROOT/'dependencies/otel','rev-parse','HEAD'),
           'driver_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-          'fixture_sha256':hashlib.sha256((ROOT/'tests/pooled-server.ores').read_bytes()).hexdigest(),
+          'fixture_sha256':hashlib.sha256(fixture.read_bytes()).hexdigest(),
           'platform':platform.platform(),'cpus':os.cpu_count(),'java_options':env['JAVA_TOOL_OPTIONS'],
           'java_version':subprocess.run([env.get('ORES_JAVA','java'),'-version'],capture_output=True,text=True).stderr,
           'pool_workers_per_mode':32,'mix':'half shared clients, half isolated; fixed per connection; no retry',
@@ -140,7 +149,7 @@ def main():
     (args.output/'metadata.json').write_text(json.dumps(meta,indent=2)+'\n')
     lines=queue.Queue();captured=[];resource_samples=[];monitor_stop=threading.Event()
     with (args.output/'stderr.log').open('w') as error:
-        server=subprocess.Popen([str(ROOT/'scripts/compiler.sh'),'--platform=server','--allow-net=127.0.0.1:0',str(ROOT/'tests/pooled-server.ores')],cwd=ROOT,env=env,stdout=subprocess.PIPE,stderr=error,text=True)
+        server=subprocess.Popen([str(ROOT/'scripts/compiler.sh'),*(['--core-perf','--core-debug'] if args.core_perf else []),'--platform=server','--allow-net=127.0.0.1:0',str(fixture)],cwd=ROOT,env=env,stdout=subprocess.PIPE,stderr=error,text=True)
         def reader():
             for line in server.stdout:captured.append(line.strip());lines.put(line.strip())
         reader_thread=threading.Thread(target=reader,daemon=True);reader_thread.start()
@@ -152,7 +161,7 @@ def main():
         monitor_thread=threading.Thread(target=monitor,daemon=True);monitor_thread.start()
         try:
             port=int(lines.get(timeout=30))
-            result=asyncio.run(measure(port,args.concurrency,args.seconds,args.warmup,args.timeout,args.output))
+            result=asyncio.run(measure(port,args.concurrency,args.seconds,args.warmup,args.timeout,args.output,args.sample_every))
             import http.client
             conn=http.client.HTTPConnection('127.0.0.1',port,timeout=10)
             try:
