@@ -1,5 +1,194 @@
 # Spin actor-reuse benchmark and HTTP pooling: hardening audit
 
+## 2026-10-13 follow-up: linearizable pooled admission and release
+
+**Finding:** Admission previously held the per-worker
+`ConcurrentHashMap.computeIfPresent` key lock while checking the
+64-entry `Set.size()`, but completion removed states directly from
+the concurrent set via `inFlight.get(worker).remove(state)`. Those
+mutations were not serialized with admission and could race against
+weakly consistent concurrent-set size observation.
+
+**Fix:** Java/GraalVM [PR #759](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/759)
+now uses `releasePoolAdmission`, a keyed `computeIfPresent` removal,
+and invokes it from `Handler.untrack`. Worker termination still
+atomically removes the registry key before aborting its remaining
+states; late release does not recreate a removed worker.
+
+**Regression:** A new 5-round admission churn test races 64 releases
+against 256 new registrations on the same 64-capacity worker, verifies
+that the remaining count never exceeds capacity, replenishes available
+slots, checks that further registration is FULL, and verifies
+worker-removal tombstoning against late release. A separate deterministic
+latch test holds admission inside the worker's per-key capacity check,
+then proves a concurrent release must wait for the same key lock.
+
+Current Java source `e9f20f611d5a0a8225aa11ecc5c2a8f07a5bd935`, Git tree
+`4fcbc76a1ed926f8d454524c8c40dce37c9039c7`. The funded CI
+mirror reproduced this exact tree SHA. [CI run #38450604235](https://github.com/zed-pkg-test/java-app/actions/runs/38450604235)
+**passed all 3 jobs**, including 19/19 HTTP JUnit tests with zero
+failures/errors and the deterministic latch regression, plus two
+35-second 100-client sustained fresh/pooled comparisons:
+
+| Actor mode | Strategy | Successful requests | Successful req/s | p95 ms | p99 ms |
+|---|---|---:|---:|---:|---:|
+| shared | fresh | 30,246 | 861.462 | 156.960 | 241.628 |
+| shared | pooled | 29,717 | 846.316 | 134.085 | 224.011 |
+| isolated | fresh | 25,937 | 738.340 | 182.756 | 299.378 |
+| isolated | pooled | 25,894 | 737.062 | 166.546 | 249.148 |
+
+All 111,794 measured HTTP attempts succeeded: zero request failures,
+zero admission rejections, and zero active server exchanges after drain.
+The paired runs used shared CI runners and fresh-first order, so they
+do not establish a statistically significant pooled-throughput benefit.
+The preceding [run #38450209024](https://github.com/zed-pkg-test/java-app/actions/runs/38450209024)
+also passed all three jobs but tested the earlier 18-test revision.
+
+The gate proves bounded per-worker HTTP exchange registration under
+the exercised races; it does not prove 15-minute retained heap,
+10,000-client admission recovery, actor CONTROL priority latency, or
+GraalVM Native Image/LLVM parity.
+
+---
+
+## 2026-10-13 follow-up: capacity-aware routing and real HTTP recovery
+
+Java/GraalVM [PR #759](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/759)
+now chooses a pooled worker that actually has room under the 64-exchange
+per-worker limit. It starts searching at a rotating cursor, skips full
+workers, preserves fairness, and responds 503 only when the pool has no
+admissible worker. Handler locking serializes dispatch decisions; the
+per-worker `ConcurrentHashMap.computeIfPresent` gate still owns the
+atomic reservation and protects against worker death.
+
+Regression coverage includes a deterministic slot-selection test with
+saturated and free slots, negative and near-overflow cursors, complete
+exhaustion, and recovery after slot release. A real HTTP test sends 64
+held requests to a one-worker pool, requires the 65th to receive 503,
+then verifies all timed-out exchanges are released and the original
+worker serves a subsequent 200 response without being replaced.
+
+**Exact source:** `e5171d6f80053924567886ccf6f8def7df85f794`;
+Git tree `6f8c8824c6c6de6b07fabd753a130dac5d217e6a`. The
+funded mirror reproduces that Git tree exactly.
+[CI run #38427100237](https://github.com/zed-pkg-test/java-app/actions/runs/38427100237)
+**passed all three jobs**: 17 targeted Java HTTP JUnit tests, zero failures
+and errors, and two 35-second fresh/pooled comparisons with 100 concurrent
+clients, separately for shared and isolated actors.
+
+| Mode | Strategy | Successful requests | req/s | Mean ms | p95 ms | p99 ms |
+|---|---|---:|---:|---:|---:|---:|
+| shared | fresh | 39,097 | 1114.203 | 89.603 | 103.732 | 186.249 |
+| shared | pooled | 39,072 | 1113.622 | 89.660 | 102.776 | 170.629 |
+| isolated | fresh | 26,084 | 742.527 | 134.344 | 162.112 | 245.975 |
+| isolated | pooled | 25,736 | 732.371 | 136.199 | 156.073 | 284.305 |
+
+All 129,989 measured requests succeeded: no admission rejections,
+zero active server exchanges at shutdown, and substantial pooled worker
+reuse (100 workers created per mode). This is one fresh-first paired
+sample per mode with clients/server sharing the CI runner, **not**
+proof of a stable throughput advantage. In particular, isolated pooled
+p99 latency was worse in this run.
+
+The saturation/recovery behavior was separately verified in the
+end-to-end Java JUnit gate, not by this non-saturating 100-client run.
+
+**Scope:** This bounds HTTP exchange lifetimes, not ordinary actor
+mailboxes. The underlying `ActorRuntime` already enforces the
+configured `maxMailboxMessages` for user messages and separate
+`INTERNAL_CONTINUATION_SLOTS` headroom; priority CONTROL dispatch is
+separate. Multi-worker live-socket fairness across mixed workloads,
+mailbox-stress parity, repeatable 1000/10000-client overload, sustained
+heap/GC profiling, Native Image and LLVM remain open gates.
+
+---
+
+## 2026-10-13 follow-up: bounded pooled-worker HTTP admission
+
+The current Java/GraalVM PR #759 adds `MAX_POOLED_INFLIGHT_PER_WORKER = 64`.
+Admission uses `ConcurrentHashMap.computeIfPresent` for per-worker
+reservation and returns `FULL` when saturated and `WORKER_GONE`
+if the actor has already terminated. A full worker's newly transferred
+exchange is aborted with HTTP 503 without canceling that worker.
+`workers_rejected` exposes the count of these pool-specific rejections.
+
+A new concurrency regression in Java commit
+`a2b7eb47ec45007e28a9c5de826ce3aacaa6a777` races 256 reservations for a
+64-exchange capacity and requires exactly 64 admissions and 192
+rejections. It also exercises capacity recovery after removal and
+proves the worker's registry is not recreated following termination.
+
+The source Git tree `c5a94ddd66f648a49a7291a1c4c031fb9ff2537f` was
+reconstructed identically in the funded CI mirror.
+[Run #38423621658](https://github.com/zed-pkg-test/java-app/actions/runs/38423621658)
+is the exact-source verification gate; results must be checked
+separately from earlier green CI runs.
+
+**Limitations:** the 64-request quota bounds tracked HTTP exchange
+lifetimes per pooled actor, but it is not a universal actor mailbox
+quota. Strict round-robin dispatch can still reject a saturated slot
+even if another worker has capacity. A per-worker quota is not a
+global fairness scheduler, and Native Image/LLVM, memory retention,
+high-client-count overload behavior and transport pressure remain
+separate gates.
+
+---
+
+## 2026-10-13 follow-up: guaranteed shutdown cleanup and admission accounting
+
+Java/GraalVM [PR #759](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/759)
+remains a draft. The historical Spin [PR #8](https://github.com/ores-truffle-oreslang/oreslang-spin/pull/8)
+is merged; this follow-up documents the newer unmerged Java runtime tree without
+claiming the existing Spin benchmarks verify that tree.
+
+**Current Java pin:** `c873562561676912d686415245aa60da3f0fdd21`
+(Git tree `c302d640819bdf9ab00b8e24eeff1adb68cac3f4`).
+The funded test mirror was verified to have the identical Java Git tree.
+
+Changes in this revision:
+
+- Replace `NativeHttp.close()`'s `io.shutdownNow()` with orderly executor
+  shutdown after stopping listeners, allowing already-admitted cleanup tasks
+  to run their `finally` and admission-release paths.
+- If the executor has stopped accepting new work, schedule each terminal
+  exchange's cleanup on an independent virtual thread rather than doing
+  socket I/O on an Oreslang actor carrier or timer thread.
+- Make graceful shutdown idempotent, including after the listener is closed;
+  reject/cleanup fallback occurs outside the server monitor.
+- Fix post-admission exceptions in `Server.receive`: release through
+  `State.abort` rather than manually releasing the semaphore, including
+  the `IllegalArgumentException` branch.
+- Add focused tests for accepted versus rejected cleanup and repeat shutdown.
+
+**Current exact-source evidence:**
+[CI #38421771486](https://github.com/zed-pkg-test/java-app/actions/runs/38421771486)
+passed **all 3 jobs** on `c873562561676912d686415245aa60da3f0fdd21`
+(tree `c302d640819bdf9ab00b8e24eeff1adb68cac3f4`): 13 JUnit
+HTTP regressions, 0 failures/errors, and two 35-second 100-client
+fresh-versus-pooled benchmark comparisons.
+
+| Mode | Strategy | Successes | Successful req/s | Mean ms | p95 ms | p99 ms |
+|---|---|---:|---:|---:|---:|---:|
+| shared | fresh | 26,676 | 759.354 | 131.376 | 182.347 | 259.295 |
+| shared | pooled | 26,357 | 750.336 | 132.942 | 156.307 | 255.174 |
+| isolated | fresh | 38,065 | 1084.685 | 92.036 | 109.679 | 150.927 |
+| isolated | pooled | 38,242 | 1089.797 | 91.612 | 109.584 | 136.786 |
+
+All 129,340 measured attempts succeeded. Each configuration reported zero
+HTTP rejections and zero active exchanges at shutdown. The pooled cases
+created 100 workers each and reused them for subsequent requests.
+
+This is a **single**, same-runner, fresh-first comparison for each actor
+mode, not evidence of statistically significant throughput improvement.
+GC allocation, retained heap under multi-minute load, high-concurrency
+1000/10000-client behavior, and native backend parity remain open.
+
+The HTTP server still relies on JDK virtual-thread-backed blocking transport;
+Native Image/LLVM equivalence, mailbox bounds, deterministic race scheduling,
+and multi-minute heap/GC stabilization are not verified by these gates.
+
+---
+
 Date: 2026-10-12. Draft work:
 [Spin PR #8](https://github.com/ores-truffle-oreslang/oreslang-spin/pull/8)
 and [Java/GraalVM PR #759](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/759).
