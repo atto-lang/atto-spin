@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Closed-loop mixed shared/isolated load with keep-alive and reusable actors."""
+"""Closed-loop shared/isolated load with pooled or fresh request actors."""
 import argparse
 import asyncio
 from collections import Counter
@@ -13,9 +13,21 @@ import random
 import runpy
 import subprocess
 import threading
+import tempfile
 import time
 
 ROOT=Path(__file__).resolve().parents[1]
+
+def configure_fixture(source, lifecycle, pool_size):
+    if source.count('.pooled(32)') != 2:
+        raise ValueError('Expected two handler pool declarations')
+    if lifecycle == 'fresh':
+        source = source.replace('.pooled(32)', '')
+        marker = '    return;\n  }\nend'
+        if source.count(marker) != 2:
+            raise ValueError('Expected two actor receive endings')
+        return source.replace(marker, '    self.end();\n'+marker)
+    return source.replace('.pooled(32)', f'.pooled({pool_size})')
 
 def percentile(values,p):
     import math
@@ -38,7 +50,7 @@ async def response(reader,writer,port,mode,sampled=False):
     if not identity or headers.get('x-reused') not in ('yes','no'):raise RuntimeError('Missing worker reuse evidence')
     return (time.perf_counter()-start)*1000,identity,headers['x-reused']=='yes'
 
-async def measure(port,concurrency,duration,warmup,timeout,output,sample_every=0,actor_mode="mixed"):
+async def measure(port,concurrency,duration,warmup,timeout,output,sample_every=0,actor_mode="mixed",actor_lifecycle="pooled",pool_size=32):
     connected=0;failures=[];start_gate=asyncio.Event();epoch=[0.0];deadline=[0.0]
     latencies={'shared':[],'isolated':[]};identities={'shared':set(),'isolated':set()}
     completed_in_window=Counter();reused=Counter();all_ids={'shared':set(),'isolated':set()}
@@ -56,6 +68,8 @@ async def measure(port,concurrency,duration,warmup,timeout,output,sample_every=0
                 sampled=bool(sample_every and submitted>=epoch[0] and sampler.randrange(sample_every)==0)
                 sampled_count+=sampled
                 elapsed,identity,was_reused=await asyncio.wait_for(response(reader,writer,port,mode,sampled),timeout)
+                if actor_lifecycle == 'fresh' and (was_reused or identity in all_ids[mode]):
+                    raise RuntimeError('Fresh actor identity reused')
                 all_ids[mode].add(identity)
                 if submitted>=epoch[0]:
                     latencies[mode].append(elapsed);identities[mode].add(identity)
@@ -108,13 +122,13 @@ async def measure(port,concurrency,duration,warmup,timeout,output,sample_every=0
                        'reused_responses':reused[mode],'warmup_requests':warm[mode]}
     # Keep numeric samples, rather than printing every request during measurement.
     (output/'latencies.json').write_text(json.dumps(latencies)+'\n')
-    result={'concurrency':concurrency,'actor_mode':actor_mode,'measurement_seconds':duration,'warmup_seconds':warmup,
+    result={'concurrency':concurrency,'actor_mode':actor_mode,'actor_lifecycle':actor_lifecycle,'pool_size':pool_size if actor_lifecycle=='pooled' else None,'measurement_seconds':duration,'warmup_seconds':warmup,
             'drain_seconds':round(max(0,end-deadline[0]),3),'connections_opened':connection_count,
             'retries':0,'sampled_requests':sampled_count,'failures':failures,'modes':results,
             'client_event_loop_lag_p99_ms':percentile(lag,.99),'client_event_loop_lag_max_ms':round(max(lag,default=0),3)}
     (output/'result.json').write_text(json.dumps(result,indent=2)+'\n')
     if failures:raise RuntimeError('Sustained test had failures: '+str(failures[:3]))
-    if any(not r['requests_started_in_window'] or not r['reused_responses'] or r['distinct_workers_with_warmup']>32 for r in results.values()):
+    if any(not r['requests_started_in_window'] or (actor_lifecycle=='pooled' and (not r['reused_responses'] or r['distinct_workers_with_warmup']>pool_size)) for r in results.values()):
         raise RuntimeError('Missing or invalid actor reuse evidence')
     return result
 
@@ -126,10 +140,12 @@ def main():
     parser.add_argument('--timeout',type=float,default=60)
     parser.add_argument('--sample-every',type=int,default=0,help='Sample warm requests with probability 1/N (fixed random seed); enables Oreslang telemetry fixture')
     parser.add_argument('--actor-mode',choices=['mixed','shared','isolated'],default='mixed')
+    parser.add_argument('--actor-lifecycle',choices=['pooled','fresh'],default='pooled')
+    parser.add_argument('--pool-size',type=int,default=32)
     parser.add_argument('--core-perf',action='store_true')
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args()
-    if not 2<=args.concurrency<=10000 or args.seconds<=0 or args.warmup<0 or args.timeout<=0 or args.sample_every<0:parser.error('invalid limits')
+    if not 2<=args.concurrency<=10000 or args.seconds<=0 or args.warmup<0 or args.timeout<=0 or args.sample_every<0 or not 1<=args.pool_size<=4096:parser.error('invalid limits')
     check=runpy.run_path(str(ROOT/'scripts/check-backend.py'))
     source=check['require_source']('ORESLANG_SOURCE_DIR','SOURCE_REF')
     git=lambda p,*a:subprocess.check_output(['git','-C',str(p),*a],text=True).strip()
@@ -139,14 +155,21 @@ def main():
     if git(router,'status','--porcelain') or git(router,'rev-parse','HEAD')!=git(ROOT,'ls-files','--stage','dependencies/http-routing').split()[1]:raise RuntimeError('Router provenance differs')
     fixture=ROOT/('tests/profiled-pooled-server.ores' if args.sample_every else 'tests/pooled-server.ores')
     args.output.mkdir(parents=True,exist_ok=False)
+    source_fixture = fixture
+    source_dirty = bool(git(ROOT,'status','--porcelain'))
+    generated = configure_fixture(fixture.read_text(),args.actor_lifecycle,args.pool_size)
+    with tempfile.NamedTemporaryFile(mode='w',suffix='.ores',prefix='.sustained-',dir=ROOT/'tests',delete=False) as temp:
+        temp.write(generated)
+        fixture=Path(temp.name)
+    (args.output/'fixture.ores').write_text(generated)
     env=dict(os.environ);env['JAVA_TOOL_OPTIONS']=env.get('JAVA_TOOL_OPTIONS','')+' -Xms256m -Xmx2g -Dores.runtime.carriers=java -Djdk.httpserver.maxConnections=20000 -Dsun.net.httpserver.maxIdleConnections=20000'
-    meta={'spin_commit':git(ROOT,'rev-parse','HEAD'),'spin_dirty':bool(git(ROOT,'status','--porcelain')),
+    meta={'spin_commit':git(ROOT,'rev-parse','HEAD'),'spin_dirty':source_dirty,
           'runtime_commit':git(source,'rev-parse','HEAD'),'router_commit':git(router,'rev-parse','HEAD'),'otel_commit':git(ROOT/'dependencies/otel','rev-parse','HEAD'),
           'driver_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
           'fixture_sha256':hashlib.sha256(fixture.read_bytes()).hexdigest(),
           'platform':platform.platform(),'cpus':os.cpu_count(),'java_options':env['JAVA_TOOL_OPTIONS'],
           'java_version':subprocess.run([env.get('ORES_JAVA','java'),'-version'],capture_output=True,text=True).stderr,
-          'pool_workers_per_mode':32,'mix':args.actor_mode+'; fixed per connection; no retry',
+          'source_fixture':str(source_fixture.relative_to(ROOT)),'actor_lifecycle':args.actor_lifecycle,'pool_workers_per_mode':args.pool_size if args.actor_lifecycle=='pooled' else None,'mix':args.actor_mode+'; fixed per connection; no retry',
           'configuration':{k:str(v) if isinstance(v,Path) else v for k,v in vars(args).items()}}
     (args.output/'metadata.json').write_text(json.dumps(meta,indent=2)+'\n')
     lines=queue.Queue();captured=[];resource_samples=[];monitor_stop=threading.Event()
@@ -168,7 +191,7 @@ def main():
                 if line.isdigit() and 0<int(line)<65536:
                     port=int(line);break
                 if time.monotonic()>=startup_deadline:raise TimeoutError('No server port within 30 seconds')
-            result=asyncio.run(measure(port,args.concurrency,args.seconds,args.warmup,args.timeout,args.output,args.sample_every,args.actor_mode))
+            result=asyncio.run(measure(port,args.concurrency,args.seconds,args.warmup,args.timeout,args.output,args.sample_every,args.actor_mode,args.actor_lifecycle,args.pool_size))
             import http.client
             conn=http.client.HTTPConnection('127.0.0.1',port,timeout=10)
             try:
@@ -182,7 +205,7 @@ def main():
             counters=dict(zip(keys,map(int,captured[index+1:index+6])))
             (args.output/'server.json').write_text(json.dumps(counters,indent=2)+'\n')
             if len(counters)!=5 or counters['rejected'] or counters['active'] or counters['accepted']!=counters['completed']:raise RuntimeError('Invalid server counters: '+str(counters))
-            if any(r['distinct_workers_with_warmup']!=32 for r in result['modes'].values()):raise RuntimeError('Missing full-pool reuse evidence')
+            if args.actor_lifecycle=='pooled' and any(r['distinct_workers_with_warmup']!=args.pool_size for r in result['modes'].values()):raise RuntimeError('Missing full-pool reuse evidence')
             print(json.dumps(result),flush=True)
         finally:
             if server.poll() is None:
@@ -192,5 +215,6 @@ def main():
             monitor_stop.set();monitor_thread.join(timeout=3)
             (args.output/'stdout.log').write_text('\n'.join(captured)+'\n')
             (args.output/'resources.json').write_text(json.dumps(resource_samples)+'\n')
+            fixture.unlink(missing_ok=True)
 
 if __name__=='__main__':main()
