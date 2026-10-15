@@ -44,10 +44,10 @@ def main():
                 check(req(path, method)[1].get('x-spin-responder') == 'actor', 'framework reply owns exchange in actor')
             for value in ('first','second','first'):
                 response = req('/users/alice?q='+value, headers={'Cookie':'session='+value})
-                check(response[2] == ('alice|'+value+'|'+value).encode(), 'cached decision retains no request query/cookie state')
+                check(response[2] == ('alice|'+value+'|'+value).encode(), 'repeated route retains no request query/cookie state')
             for index in range(40):
-                check(req('/users/user'+str(index)+'?q=q', headers={'Cookie':'session=v'})[2] == ('user'+str(index)+'|q|v').encode(), 'bounded positive cache overflow preserves captures')
-            check(req('/shared')[0] == 200, 'cached route survives capacity exhaustion')
+                check(req('/users/user'+str(index)+'?q=q', headers={'Cookie':'session=v'})[2] == ('user'+str(index)+'|q|v').encode(), 'distinct requests preserve path captures')
+            check(req('/shared')[0] == 200, 'literal route still responds after dynamic requests')
             check(req('/shared', headers={'X-Fail':'yes'})[0] == 500, 'middleware failure contained')
             check(req('/shared')[0] == 200, 'supervisor survives middleware failure')
             status, headers, _ = req('/shared', 'POST')
