@@ -37,6 +37,33 @@ class ClientTest(unittest.IsolatedAsyncioTestCase):
         self.server.close()
         await self.server.wait_closed()
 
+    async def test_duplicate_or_malformed_response_headers_cannot_pass(self):
+        class Writer:
+            def write(self, _data): pass
+            async def drain(self): pass
+        common = (b'HTTP/1.1 200 OK\r\nContent-Length: 3\r\n'
+                  b'X-Actor-Mode: shared\r\nX-Work-Verified: 1\r\n')
+        for extra in (b'Content-Length: 3\r\n', b'X-Actor-Mode: shared\r\n',
+                      b'broken-header\r\n', b' Content-Length: 3\r\n'):
+            with self.subTest(extra=extra):
+                reader = asyncio.StreamReader()
+                reader.feed_data(common + extra + b'\r\nok\n')
+                reader.feed_eof()
+                with self.assertRaises(ValueError):
+                    await client.one(reader, Writer(), 'localhost', '/', 'shared', 1)
+
+    async def test_nondecimal_content_length_cannot_pass(self):
+        class Writer:
+            def write(self, _data): pass
+            async def drain(self): pass
+        for length in (b'+3', b'3_0', b'3, 3'):
+            reader = asyncio.StreamReader()
+            reader.feed_data(b'HTTP/1.1 200 OK\r\nContent-Length: ' + length +
+                             b'\r\nX-Actor-Mode: shared\r\nX-Work-Verified: 1\r\n\r\nok\n')
+            reader.feed_eof()
+            with self.assertRaises(ValueError):
+                await client.one(reader, Writer(), 'localhost', '/', 'shared', 1)
+
     async def test_persistent_connections_and_validity(self):
         args=SimpleNamespace(host='127.0.0.1',port=self.port,path='/shared',
                              mode='shared',duration=.25,concurrency=4,timeout=2)
