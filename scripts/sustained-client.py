@@ -25,17 +25,33 @@ async def one(reader, writer, host, path, expected_mode, timeout):
     await asyncio.wait_for(writer.drain(), timeout)
     raw = await asyncio.wait_for(reader.readuntil(b'\r\n\r\n'), timeout)
     lines = raw.decode('iso-8859-1').split('\r\n')
-    status = int(lines[0].split()[1])
+    status_line = lines[0].split(' ', 2)
+    if (len(status_line) < 2 or status_line[0] != 'HTTP/1.1'
+            or len(status_line[1]) != 3 or not status_line[1].isascii()
+            or not status_line[1].isdecimal()):
+        raise ValueError('invalid benchmark HTTP status line')
+    status = int(status_line[1])
     headers = {}
     for line in lines[1:]:
-        if ':' in line:
-            key, value = line.split(':', 1)
-            headers[key.lower()] = value.strip()
+        if not line:
+            continue
+        key, separator, value = line.partition(':')
+        if (not separator or not key or any(ch not in
+                "!#$%&'*+-.^_`|~0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                for ch in key)):
+            raise ValueError('malformed benchmark response header')
+        key = key.lower()
+        if key in headers:
+            raise ValueError('duplicate benchmark response header: '+key)
+        headers[key] = value.strip()
     if 'transfer-encoding' in headers:
         raise ValueError('unsupported transfer encoding: '+headers['transfer-encoding'])
     if 'content-length' not in headers:
         raise ValueError('missing Content-Length; cannot delimit reusable HTTP connection')
-    length = int(headers['content-length'])
+    raw_length = headers['content-length']
+    if not raw_length.isascii() or not raw_length.isdecimal():
+        raise ValueError('invalid benchmark Content-Length')
+    length = int(raw_length)
     if length < 0 or length > 1048576:
         raise ValueError('invalid benchmark response length')
     body = await asyncio.wait_for(reader.readexactly(length), timeout)
