@@ -39,6 +39,15 @@ def main():
             check(req('/shared/')[0] == 404, 'strict trailing slash')
             check(req('/shared//')[0] == 404, 'strict repeated slash')
             check(req('/missing')[0] == 404, 'not found')
+            for method in ('GET','POST','OPTIONS'):
+                path = '/missing' if method == 'GET' else '/shared'
+                check(req(path, method)[1].get('x-spin-responder') == 'actor', 'framework reply owns exchange in actor')
+            for value in ('first','second','first'):
+                response = req('/users/alice?q='+value, headers={'Cookie':'session='+value})
+                check(response[2] == ('alice|'+value+'|'+value).encode(), 'repeated route retains no request query/cookie state')
+            for index in range(40):
+                check(req('/users/user'+str(index)+'?q=q', headers={'Cookie':'session=v'})[2] == ('user'+str(index)+'|q|v').encode(), 'distinct requests preserve path captures')
+            check(req('/shared')[0] == 200, 'literal route still responds after dynamic requests')
             check(req('/shared', headers={'X-Fail':'yes'})[0] == 500, 'middleware failure contained')
             check(req('/shared')[0] == 200, 'supervisor survives middleware failure')
             status, headers, _ = req('/shared', 'POST')
