@@ -10,6 +10,7 @@ label="$1"; source_dir="$(cd "$2" && pwd -P)"; mode="$3"; logging="$4"; seconds=
 export ORESLANG_SOURCE_DIR="$source_dir"
 : "${ORES_JAVA:?Set ORES_JAVA to the matching GraalVM java executable}"
 output="$root/.cache/latency-20261013/$label"
+fixture="${SPIN_LOAD_FIXTURE:-$root/tests/profiled-pooled-server.ores}"
 [[ ! -e "$output" ]] || { echo 'Output directory already exists' >&2; exit 65; }
 mkdir -p "$output"
 flags=(--no-core-perf); sample=0
@@ -25,10 +26,11 @@ jq -n --arg source "$(git -C "$source_dir" rev-parse HEAD)" --arg spin "$(git re
  --arg logging "$logging" --arg mode "$mode" --arg java "$ORES_JAVA" \
  --arg java_options "${JAVA_TOOL_OPTIONS:-}" --arg started_at "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
  --arg client_artifact "$(shasum -a 256 tools/load/target/release/spin-paced-load | awk '{print $1}')" \
+ --arg fixture "$fixture" --arg fixture_hash "$(shasum -a 256 "$fixture" | awk '{print $1}')" \
  --arg artifact "$(shasum -a 256 "$source_dir/target/oreslang-source-0.1.0-SNAPSHOT.jar" | awk '{print $1}')" \
- '{source:$source,spin:$spin,router:$router,otel:$otel,logging:$logging,actor_mode:$mode,java:$java,java_options:$java_options,started_at_utc:$started_at,client_sha256:$client_artifact,jar_sha256:$artifact}' > "$output/metadata.json"
-"$ORES_JAVA" -version 2> "$output/java-version.txt"
-./scripts/compiler.sh --platform=server --allow-net=127.0.0.1:0 "${flags[@]}" tests/profiled-pooled-server.ores > "$output/stdout.log" 2> "$output/stderr.log" &
+ '{source:$source,spin:$spin,router:$router,otel:$otel,logging:$logging,actor_mode:$mode,java:$java,java_options:$java_options,started_at_utc:$started_at,client_sha256:$client_artifact,fixture:$fixture,fixture_sha256:$fixture_hash,jar_sha256:$artifact}' > "$output/metadata.json"
+env -u JAVA_TOOL_OPTIONS "$ORES_JAVA" -version 2> "$output/java-version.txt"
+./scripts/compiler.sh --platform=server --allow-net=127.0.0.1:0 "${flags[@]}" "$fixture" > "$output/stdout.log" 2> "$output/stderr.log" &
 server_pid=$!
 monitor_pid=''
 cleanup() {
@@ -38,7 +40,7 @@ cleanup() {
 }
 trap cleanup EXIT
 for attempt in $(seq 1 200); do
- port="$(sed -n '1p' "$output/stdout.log")"
+ port="$(awk '/^[0-9]+$/ {print; exit}' "$output/stdout.log")"
  [[ "$port" =~ ^[0-9]+$ ]] && break
  kill -0 "$server_pid" 2>/dev/null || { cat "$output/stderr.log" >&2; exit 1; }
  sleep .1

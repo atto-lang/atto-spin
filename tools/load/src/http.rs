@@ -19,8 +19,14 @@ impl Connection {
         stream.set_write_timeout(Some(Duration::from_secs(5)))?;
         Ok(Self(BufReader::new(stream)))
     }
-    pub fn request(&mut self, port: u16, mode: &str, sampled: bool) -> io::Result<Response> {
-        write!(self.0.get_mut(), "GET /{mode} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nX-Profile: {}\r\nConnection: keep-alive\r\n\r\n", if sampled { "yes" } else { "no" })?;
+    pub fn request(
+        &mut self,
+        port: u16,
+        mode: &str,
+        path: &str,
+        sampled: bool,
+    ) -> io::Result<Response> {
+        write!(self.0.get_mut(), "GET {path} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nX-Profile: {}\r\nConnection: keep-alive\r\n\r\n", if sampled { "yes" } else { "no" })?;
         let mut line = String::new();
         self.0.read_line(&mut line)?;
         if !line.starts_with("HTTP/1.1 200 ") {
@@ -134,7 +140,7 @@ mod tests {
             &b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nX-Actor-Mode: shared\r\nX-Worker: worker-7\r\nX-Reused: yes\r\n\r\n3\r\nok\n\r\n0\r\n\r\n"[..]
         ] {
             let (port, server) = serve(bytes);
-            let response = Connection::connect(port).unwrap().request(port, "shared", false).unwrap();
+            let response = Connection::connect(port).unwrap().request(port, "shared", "/shared", false).unwrap();
             assert_eq!(response.worker, "worker-7"); assert!(response.reused);
             server.join().unwrap();
         }
@@ -146,7 +152,7 @@ mod tests {
             &b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\ngarbage\r\n"[..]
         ] {
             let (port, server) = serve(bytes);
-            assert!(Connection::connect(port).unwrap().request(port, "shared", false).is_err());
+            assert!(Connection::connect(port).unwrap().request(port, "shared", "/shared", false).is_err());
             server.join().unwrap();
         }
     }

@@ -25,6 +25,14 @@ fn main() {
     let port: u16 = args[1].parse().unwrap();
     let mode = args[2].clone();
     assert!(matches!(mode.as_str(), "shared" | "isolated"));
+    let request_path = std::env::var("SPIN_LOAD_PATH").unwrap_or_else(|_| format!("/{mode}"));
+    assert!(
+        request_path.starts_with('/')
+            && !request_path
+                .bytes()
+                .any(|b| b.is_ascii_whitespace() || b.is_ascii_control()),
+        "invalid request path"
+    );
     let seconds: u64 = args[3].parse().unwrap();
     assert!((1..=600).contains(&seconds));
     let sample_every: u64 = args[4].parse().unwrap();
@@ -37,6 +45,7 @@ fn main() {
         .map(|id| {
             let barrier = barrier.clone();
             let mode = mode.clone();
+            let request_path = request_path.clone();
             std::thread::spawn(move || {
                 let connection = http::Connection::connect(port);
                 barrier.wait();
@@ -74,7 +83,7 @@ fn main() {
                     let sampled = slot >= measured_start
                         && sample_every != 0
                         && sequence.is_multiple_of(sample_every);
-                    let response = connection.request(port, &mode, sampled);
+                    let response = connection.request(port, &mode, &request_path, sampled);
                     let completed = Instant::now();
                     match response {
                         Ok(response) => {
@@ -121,7 +130,7 @@ fn main() {
     }
     let successes = aggregate.response_ns.len();
     let target_slots = seconds * 10000;
-    let summary = json!({"schema":"spin-paced-load.v1", "mode":mode, "clients":clients, "target_rps":10000,
+    let summary = json!({"schema":"spin-paced-load.v1", "mode":mode, "request_path":request_path, "clients":clients, "target_rps":10000,
         "warmup_seconds":10, "measurement_seconds":seconds, "target_slots":target_slots,
         "successes":successes, "missed_or_failed_slots":target_slots.saturating_sub(successes as u64),
         "achieved_rps":successes as f64 / seconds as f64, "failed_clients":errors.len(), "errors":errors,
