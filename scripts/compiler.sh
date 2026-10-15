@@ -8,4 +8,4 @@ if [[ ! -f "$source_dir/target/classpath.txt" ]]; then
   exit 69
 fi
 exec "$java_bin" --enable-native-access=ALL-UNNAMED -Dpolyglot.engine.WarnInterpreterOnly=false \
-  -cp "$source_dir/target/classes:$(cat "$source_dir/target/classpath.txt")" dev.oreslang.launcher.OresMain "$@"
+  -cp "$source_dir/target/classes:$(cat "$source_dir/target/classpath.txt")" dev.oreslang.launcher.OresMain --core-io=native-async-only "$@"
