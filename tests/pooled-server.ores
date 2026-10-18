@@ -2,9 +2,10 @@ import module spin from "../src/spin";
 import module http_routing from "../dependencies/http-routing/src/http_routing";
 
 define actor SharedLoad as
-  val String identity = process.unique_id();
+  let String identity = "";
   let bool reused = false;
   receive(ActorMail<String> mail): void {
+    if self.identity == ""; then self.identity = process.unique_id(); fi
     val request = http.claim(mail.value);
     request.set_header("X-Actor-Mode", "shared");
     request.set_header("X-Worker", self.identity);
@@ -16,9 +17,10 @@ define actor SharedLoad as
 end
 
 define isoactor IsolatedLoad as
-  val String identity = process.unique_id();
+  let String identity = "";
   let bool reused = false;
   receive(ActorMail<String> mail): void {
+    if self.identity == ""; then self.identity = process.unique_id(); fi
     val request = http.claim(mail.value);
     request.set_header("X-Actor-Mode", "isolated");
     request.set_header("X-Worker", self.identity);
