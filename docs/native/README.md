@@ -52,3 +52,10 @@ identical Java/native executions; 423 local native CTests passed. This preserves
 zero GC/full AOT and does not yet admit HttpHandler/HttpExchange or the actual
 Spin module graph. The published sustained benchmark above records its own
 older exact source/binary hashes, not measurements of every later compiler pin.
+
+[Typed-bool exact-tree Linux validation](2026-10-18-bool/README.md) passed 434
+native tests plus Java/native conformance. The Java package pin combines the
+borrow audit with the existing NIO branch, preserving asynchronous HTTP client
+completion. Router factory initialization now runs in Builder's explicit
+no-argument constructor under the newer constructor checks; the public factory
+and direct no-argument construction remain available.
