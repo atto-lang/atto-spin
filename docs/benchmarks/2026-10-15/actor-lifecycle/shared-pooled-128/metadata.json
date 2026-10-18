@@ -1,0 +1,29 @@
+{
+  "spin_commit": "eb23e583df4d872a24ef58d4b6625a42ce427743",
+  "spin_dirty": false,
+  "runtime_commit": "797a4a51f716761590f0cb02ec085029e18f26de",
+  "router_commit": "59f8100121f1927fb1909226e8204a4793a5237e",
+  "otel_commit": "5fe62a3447e77072cfd30850a96ef654a18008f7",
+  "driver_sha256": "6df0a6f4bc4e21749fe77a7aa537ba72d055603ed644ae0e8ab7cddc598cdd6c",
+  "fixture_sha256": "a67704a03388e2d1b3ae463a4e6fcfa52b7958b0585619d7873d1445712b9402",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "cpus": 18,
+  "java_options": "-Dores.runtime.control.parallelism=1 -Xms256m -Xmx2g -Dores.runtime.carriers=java -Djdk.httpserver.maxConnections=20000 -Dsun.net.httpserver.maxIdleConnections=20000",
+  "java_version": "Picked up JAVA_TOOL_OPTIONS: -Dores.runtime.control.parallelism=1\nopenjdk version \"25.0.4.1\" 2026-08-18 LTS\nOpenJDK Runtime Environment Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS, mixed mode, sharing)\n",
+  "source_fixture": "tests/profiled-pooled-server.ores",
+  "actor_lifecycle": "pooled",
+  "pool_workers_per_mode": 128,
+  "mix": "shared; fixed per connection; no retry",
+  "configuration": {
+    "concurrency": 100,
+    "seconds": 180.0,
+    "warmup": 10,
+    "timeout": 60,
+    "sample_every": 1000,
+    "actor_mode": "shared",
+    "actor_lifecycle": "pooled",
+    "pool_size": 128,
+    "core_perf": true,
+    "output": "../../outputs/spin-lifecycle-shared-pooled-128"
+  }
+}
