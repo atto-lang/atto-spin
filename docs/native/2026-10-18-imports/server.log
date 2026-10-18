@@ -1,0 +1,2 @@
+LISTENING port=54610 pid=37466 actors=128 carriers=4
+{"accepted":12514948,"completed":12514948,"scheduler_completed":12514948,"actors_used":128,"peak_connections":100,"mailbox_retries":0,"bad_frames":0,"transport_errors":0,"queue_mean_ms":0.00770785,"actor_mean_ms":0.000522566,"completion_mean_ms":0.0238689,"server_mean_ms":0.0336482}

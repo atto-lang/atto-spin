@@ -33,3 +33,13 @@ The next milestones are import/type graph lowering, typed HTTP capabilities,
 Future/await/cooperate state machines, shared/private actor source integration,
 route and OTel module compilation, then identical-workload JVM/native comparisons.
 The native repository's `docs/SPIN_NATIVE_PARITY.md` tracks these gates.
+
+The pinned compiler now resolves bounded relative module graphs ahead of time.
+The benchmark actor imports `http_status.ores`; its public function and private
+helper execute as native code within the actor turn. Module selections, public
+arity slots and ownership checks are preserved. This is partial module support;
+Spin's exported objects/methods, String/Array APIs and async/OTel graph remain
+unimplemented. Java PR #1380 fixes detached copies of borrowed primitives so
+12 identical module programs execute in both backends. Native named value
+arguments and explicit qualified generic arguments have separate native tests
+and are not asserted as Java parity.

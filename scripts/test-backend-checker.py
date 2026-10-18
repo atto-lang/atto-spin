@@ -32,6 +32,11 @@ class BackendChecks(unittest.TestCase):
         return checker.load_contract()
     def test_valid_contract(self):
         self.assertEqual(self.load(), self.contract)
+    def test_specific_actor_boundary_diagnostic(self):
+        self.contract['llvm']['rejection_probes'][0]['diagnostic'] = 'oreslang-llvmc: actor requires at least one scalar field at byte 151'
+        self.assertEqual(self.load(), self.contract)
+        self.contract['llvm']['rejection_probes'][0]['diagnostic'] = 'oreslang-llvmc: internal compiler error'
+        with self.assertRaises(RuntimeError): self.load()
     def test_empty_probes_rejected(self):
         self.contract['llvm']['rejection_probes'] = []
         with self.assertRaises(RuntimeError): self.load()

@@ -10,11 +10,11 @@
     "rejection_probes": [
       {
         "path": "examples/mixed.ores",
-        "diagnostic": "oreslang-llvmc: expected fnc or routine at byte 0"
+        "diagnostic": "oreslang-llvmc: actor requires at least one scalar field at byte 151"
       },
       {
         "path": "src/spin.ores",
-        "diagnostic": "oreslang-llvmc: expected fnc or routine at byte 0"
+        "diagnostic": "oreslang-llvmc: expected fnc or routine at byte 257"
       }
     ]
   }
