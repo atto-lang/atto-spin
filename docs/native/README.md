@@ -43,3 +43,5 @@ unimplemented. Java PR #1380 fixes detached copies of borrowed primitives so
 12 identical module programs execute in both backends. Native named value
 arguments and explicit qualified generic arguments have separate native tests
 and are not asserted as Java parity.
+
+[Latest imported-module benchmark and exact-source CI](2026-10-18-imports/README.md).

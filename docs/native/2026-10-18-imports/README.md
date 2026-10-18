@@ -38,6 +38,14 @@ parity or hardware heap isolation. See [the roadmap](../README.md).
 Every successful response was actor-owned; exact HTTP and scheduler counts match.
 Client results exclude warmup; server phase means include it. Means do not impose
 a per-request tail guarantee. Source/mirror preparation and GitHub delivery ran
-during the measurement, but no local build, test suite or other load generator
-did. The result is a successful native integration baseline, not a controlled
+during the measurement, and two lightweight compiler rejection probes also ran; no local build, full
+test suite or other load generator did. The result is a successful native integration baseline, not a controlled
 attribution of the small throughput difference from the earlier compiler build.
+
+The exact-source [Linux CI run](https://github.com/led-dynamo/leddy-e2e/actions/runs/39161058984)
+passed **429 native tests, 21 Java ownership tests, all 45 module cases with 12
+identical Java/native executions, and five repeats each of three native HTTP
+ownership/Release/sanitizer tests**. [The CI receipt](ci-receipt.json) records both
+source trees, mirror commit/tree and executed job. Private destination verified
+before connector mirroring; no cross-org secrets/tokens. Billing-blocked origin
+checks still executed zero steps and have not been bypassed.
