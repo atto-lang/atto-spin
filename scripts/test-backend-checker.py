@@ -62,6 +62,12 @@ class BackendChecks(unittest.TestCase):
             with self.subTest(code=code,out=out,err=err), self.assertRaises(RuntimeError):
                 checker.check_rejection(subprocess.CompletedProcess([],code,out,err),probe)
         checker.check_rejection(subprocess.CompletedProcess([],1,'',probe['diagnostic']+'\n'),probe)
+    def test_native_os_entrypoint_control(self):
+        valid = 'define i32 @main() {\n  ret i32 42\n}\n'
+        checker.check_positive(subprocess.CompletedProcess([], 0, valid, ''))
+        for code, output in ((1, valid), (-11, valid), (0, ''), (0, 'define i64 @main() { ret i64 42 }')):
+            with self.subTest(code=code, output=output), self.assertRaises(RuntimeError):
+                checker.check_positive(subprocess.CompletedProcess([], code, output, 'failure'))
     def test_provenance_fails_closed(self):
         source=self.root/'source'
         source.mkdir()

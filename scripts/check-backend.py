@@ -69,6 +69,11 @@ def check_rejection(result, probe):
     if result.returncode != 1 or result.stdout.strip() or result.stderr.strip() != probe['diagnostic']:
         raise RuntimeError(f"Unexpected rejection result for {probe['path']}: exit={result.returncode}\n{result.stderr}")
 
+def check_positive(result):
+    # Current native ABI has an OS i32 entrypoint around the guest i64 main.
+    if result.returncode or not re.search(r'^define i32 @main\(\)', result.stdout, re.MULTILINE):
+        raise RuntimeError('LLVM positive control failed; rejection is not evidence of compatibility: ' + result.stderr)
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('backend', choices=['java', 'llvm'])
@@ -88,8 +93,7 @@ def main():
         baseline = Path(directory) / 'baseline.ores'
         baseline.write_text('pub fnc main(): int { return 42; }\n')
         positive = subprocess.run([str(compiler), str(baseline)], capture_output=True, text=True, timeout=30)
-        if positive.returncode or 'define i64 @main(' not in positive.stdout:
-            raise RuntimeError('LLVM positive control failed; rejection is not evidence of compatibility: ' + positive.stderr)
+        check_positive(positive)
         for probe in contract['llvm']['rejection_probes']:
             entry = local_file(probe['path'])
             result = subprocess.run([str(compiler), str(entry)], capture_output=True, text=True, timeout=30)
