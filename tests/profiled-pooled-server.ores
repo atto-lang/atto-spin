@@ -74,6 +74,7 @@ pub async routine main(): void {
   let int peak = 0;
   loop {
     val request = await server.accept();
+    val int resumed = process.monotonic_ns();
     if server.active > peak; then peak = server.active; fi
     if request.target == "/__stop"; then
       await request.respond(200, "text/plain", "stop");
@@ -82,10 +83,16 @@ pub async routine main(): void {
     val bool sampled = request.header("X-Profile") == "yes";
     val String trace = request.request_id;
     val int admitted = request.admitted_ns;
+    val int queued = request.http_queued_ns;
+    val int accept_ready = request.accept_ready_ns;
     val int dispatching = process.monotonic_ns();
     app.dispatch(request);
     val int dispatched = process.monotonic_ns();
     if sampled; then
+      otel.metric("spin-profile", trace, "http.admission_to_queue", "histogram", "ns", queued - admitted);
+      otel.metric("spin-profile", trace, "http.queue", "histogram", "ns", accept_ready - queued);
+      otel.metric("spin-profile", trace, "accept.ready_to_resume", "histogram", "ns", resumed - accept_ready);
+      otel.metric("spin-profile", trace, "supervisor.prepare", "histogram", "ns", dispatching - resumed);
       otel.metric("spin-profile", trace, "admission.to_dispatch", "histogram", "ns", dispatching - admitted);
       otel.metric("spin-profile", trace, "routing.dispatch", "histogram", "ns", dispatched - dispatching);
     fi

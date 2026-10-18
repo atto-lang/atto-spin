@@ -124,7 +124,7 @@ async def measure(port,concurrency,duration,warmup,timeout,output,sample_every=0
     (output/'latencies.json').write_text(json.dumps(latencies)+'\n')
     result={'concurrency':concurrency,'actor_mode':actor_mode,'actor_lifecycle':actor_lifecycle,'pool_size':pool_size if actor_lifecycle=='pooled' else None,'measurement_seconds':duration,'warmup_seconds':warmup,
             'drain_seconds':round(max(0,end-deadline[0]),3),'connections_opened':connection_count,
-            'retries':0,'sampled_requests':sampled_count,'failures':failures,'modes':results,
+            'retries':0,'profile_schema':2,'sampled_requests':sampled_count,'failures':failures,'modes':results,
             'client_event_loop_lag_p99_ms':percentile(lag,.99),'client_event_loop_lag_max_ms':round(max(lag,default=0),3)}
     (output/'result.json').write_text(json.dumps(result,indent=2)+'\n')
     if failures:raise RuntimeError('Sustained test had failures: '+str(failures[:3]))
