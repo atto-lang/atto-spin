@@ -81,3 +81,14 @@ executing any steps.
 This report is a documentation-only follow-up to tested Spin commit
 `82f9368f40a6cfe6644c5ac28b7b2267bba7095f`. Both benchmark runs and CI tested that
 same executable source tree.
+
+
+## Latest-main follow-up
+
+Runtime main advanced to `6f2bec490` during final validation. It was merged as
+`ecea1a07d88dad590f3d4d48a86c1bc1a6d5476c`; the only new files are the independent
+signed-i64 corpus and its conformance test. `git diff f4b69fd27 ecea1a07d -- src/main
+stdlib pom.xml` is empty. All eight added conformance checks passed locally.
+Framework/router pins now include that merge. The preserved benchmark metadata
+and CI receipt intentionally retain the exact commits they executed rather than
+claiming a benchmark on an unexecuted new commit.
