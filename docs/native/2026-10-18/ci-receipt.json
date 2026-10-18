@@ -1,0 +1,21 @@
+{
+  "source_repository": "ores-truffle-oreslang/oreslang-source.llvm",
+  "source_commit": "5df5750134a980854e8fb10ac203b66b3b158431",
+  "source_tree": "4925e62bcd64b39e392597442828c60f4232da38",
+  "source_private": true,
+  "mirror_repository": "led-dynamo/leddy-e2e",
+  "mirror_private_verified": true,
+  "mirror_commit": "017264462fd30b9527cba9c1191822e07e71d81b",
+  "mirror_root_tree": "978153f114dac034cd51c88602c5fe699fbe67ab",
+  "run_id": 39158599187,
+  "job_id": 117766914102,
+  "run_url": "https://github.com/led-dynamo/leddy-e2e/actions/runs/39158599187",
+  "conclusion": "success",
+  "linux_ctests_passed": 427,
+  "http_selected_tests": 3,
+  "http_repetitions_each": 5,
+  "origin_run": 39158458574,
+  "origin_steps_executed": 0,
+  "origin_blocker": "Billing/spending limit; no source-org checks bypassed",
+  "transfer": "Exact source Git tree through GitHub connector; local snapshot checkout with destination GITHUB_TOKEN; no cross-org secrets or tokens"
+}

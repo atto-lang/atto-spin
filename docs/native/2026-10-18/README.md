@@ -41,3 +41,12 @@ scheduling, so use the full client cycle when estimating 100-client throughput.
 No build, test suite or second load generator ran alongside the measurement.
 Source/mirror preparation and GitHub delivery ran during the measurement; no
 claim of a dedicated idle benchmark machine is made.
+
+Validation: **427/427 Linux CTests passed**, followed by five repetitions each
+of the exchange ownership, Release HTTP and ASan/UBSan HTTP tests. The
+[private fallback run](https://github.com/led-dynamo/leddy-e2e/actions/runs/39158599187)
+executed the exact source tree above, mirrored through the GitHub connector.
+[CI receipt](ci-receipt.json) records the source/mirror trees and executed job.
+Source-org CI ran zero steps because billing blocked it; its merge checks
+remain unchanged. Local macOS validation passed 416 tests across the full
+run plus a three-test Wasm rerun with Homebrew Clang.
