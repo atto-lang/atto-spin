@@ -38,10 +38,17 @@ The pinned compiler now resolves bounded relative module graphs ahead of time.
 The benchmark actor imports `http_status.ores`; its public function and private
 helper execute as native code within the actor turn. Module selections, public
 arity slots and ownership checks are preserved. This is partial module support;
-Spin's exported objects/methods, String/Array APIs and async/OTel graph remain
-unimplemented. Java PR #1380 fixes detached copies of borrowed primitives so
+Public scalar classes/direct methods now lower too; String/Array APIs, general
+object lifetimes and the actual async/OTel graph remain unimplemented. Java PR #1380 fixes detached copies of borrowed primitives so
 12 identical module programs execute in both backends. Native named value
 arguments and explicit qualified generic arguments have separate native tests
 and are not asserted as Java parity.
 
-[Latest imported-module benchmark and exact-source CI](2026-10-18-imports/README.md).
+[Latest imported-class-method benchmark and exact-source CI](2026-10-18-methods/README.md).
+
+The current pin also checks source `bool` separately from `int` across fields,
+method/function returns, locals and loans. The bool suite has 36 cases and twelve
+identical Java/native executions; 423 local native CTests passed. This preserves
+zero GC/full AOT and does not yet admit HttpHandler/HttpExchange or the actual
+Spin module graph. The published sustained benchmark above records its own
+older exact source/binary hashes, not measurements of every later compiler pin.

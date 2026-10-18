@@ -14,7 +14,7 @@
       },
       {
         "path": "src/spin.ores",
-        "diagnostic": "oreslang-llvmc: native class field supports only scalar int or mut Array<int> at byte 289"
+        "diagnostic": "oreslang-llvmc: native class field supports only scalar int/bool or mut Array<int> at byte 289"
       }
     ]
   }
