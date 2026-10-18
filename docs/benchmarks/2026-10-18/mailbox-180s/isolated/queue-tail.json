@@ -1,0 +1,6 @@
+{
+  "sample_count": 7424,
+  "p99_ms": 0.582541,
+  "max_ms": 4.95925,
+  "samples_above_3ms": 2
+}
