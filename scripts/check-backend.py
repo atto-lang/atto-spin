@@ -61,7 +61,7 @@ def load_contract():
             raise RuntimeError('Duplicate LLVM rejection probe')
         seen.add(path)
         diagnostic = probe['diagnostic']
-        if not isinstance(diagnostic, str) or not diagnostic.startswith(('oreslang-llvmc: expected ', 'oreslang-llvmc: actor requires ')) or '\n' in diagnostic:
+        if not isinstance(diagnostic, str) or not diagnostic.startswith(('oreslang-llvmc: expected ', 'oreslang-llvmc: actor requires ', 'oreslang-llvmc: native class field supports only scalar int or mut Array<int> at byte ')) or '\n' in diagnostic:
             raise RuntimeError('Expected a specific unsupported-syntax diagnostic')
     return contract
 

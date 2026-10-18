@@ -37,6 +37,11 @@ class BackendChecks(unittest.TestCase):
         self.assertEqual(self.load(), self.contract)
         self.contract['llvm']['rejection_probes'][0]['diagnostic'] = 'oreslang-llvmc: internal compiler error'
         with self.assertRaises(RuntimeError): self.load()
+    def test_specific_native_field_boundary(self):
+        self.contract['llvm']['rejection_probes'][0]['diagnostic'] = 'oreslang-llvmc: native class field supports only scalar int or mut Array<int> at byte 289'
+        self.assertEqual(self.load(), self.contract)
+        self.contract['llvm']['rejection_probes'][0]['diagnostic'] = 'oreslang-llvmc: native class internal compiler error'
+        with self.assertRaises(RuntimeError): self.load()
     def test_empty_probes_rejected(self):
         self.contract['llvm']['rejection_probes'] = []
         with self.assertRaises(RuntimeError): self.load()
