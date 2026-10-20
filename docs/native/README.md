@@ -1,0 +1,61 @@
+# LLVM native HTTP baseline
+
+The first native integration connects LLVM-compiled Oreslang scalar actor
+handlers to the existing C scheduler/mailboxes and a C++ nonblocking HTTP
+adapter. One process hosts all actors and the reactor. Actor invocation uses
+in-memory mailboxes; there is no worker HTTP or cross-process IPC.
+
+```sh
+# Checkout/build the LLVM_SOURCE_REF commit in oreslang-source.llvm first.
+export ORESLANG_LLVM_SOURCE_DIR=/path/to/oreslang-source.llvm
+# If needed, select Clang matching the LLVM development toolchain:
+export CLANG=/opt/homebrew/opt/llvm@20/bin/clang
+export CXX=/opt/homebrew/opt/llvm@20/bin/clang++
+./scripts/benchmark-llvm-native.sh --output /tmp/spin-native-baseline \
+  --clients 100 --actors 128 --carriers 4 --warmup 10 --seconds 180
+```
+
+This experiment is **not full Spin source support**. `BACKENDS.json` continues
+to reject unsupported LLVM module compilation. Parsing, fixed routing and
+response formatting are native adapter work; the guest actor maintains its
+persistent request count and returns status. It does not execute the JVM
+benchmark's guest suspend/cooperate checkpoints, shared/private source actor
+placement or oreslang-otel module. Separate actor heaps live in the same address
+space and do not provide hardware memory protection against malicious native code.
+
+The native adapter uses kqueue on macOS and epoll on Linux, exclusively owns
+socket operations and hands exclusive request/response capabilities to actors.
+Generation/actor checks and release/acquire publication fence ownership; socket
+readiness remains reactor work. Unsupported filesystem I/O has no worker fallback.
+Numeric timings are buffered/aggregated and exported at shutdown.
+
+The next milestones are import/type graph lowering, typed HTTP capabilities,
+Future/await/cooperate state machines, shared/private actor source integration,
+route and OTel module compilation, then identical-workload JVM/native comparisons.
+The native repository's `docs/SPIN_NATIVE_PARITY.md` tracks these gates.
+
+The pinned compiler now resolves bounded relative module graphs ahead of time.
+The benchmark actor imports `http_status.ores`; its public function and private
+helper execute as native code within the actor turn. Module selections, public
+arity slots and ownership checks are preserved. This is partial module support;
+Public scalar classes/direct methods now lower too; String/Array APIs, general
+object lifetimes and the actual async/OTel graph remain unimplemented. Java PR #1380 fixes detached copies of borrowed primitives so
+12 identical module programs execute in both backends. Native named value
+arguments and explicit qualified generic arguments have separate native tests
+and are not asserted as Java parity.
+
+[Latest imported-class-method benchmark and exact-source CI](2026-10-18-methods/README.md).
+
+The current pin also checks source `bool` separately from `int` across fields,
+method/function returns, locals and loans. The bool suite has 36 cases and twelve
+identical Java/native executions; 423 local native CTests passed. This preserves
+zero GC/full AOT and does not yet admit HttpHandler/HttpExchange or the actual
+Spin module graph. The published sustained benchmark above records its own
+older exact source/binary hashes, not measurements of every later compiler pin.
+
+[Typed-bool exact-tree Linux validation](2026-10-18-bool/README.md) passed 434
+native tests plus Java/native conformance. The Java package pin combines the
+borrow audit with the existing NIO branch, preserving asynchronous HTTP client
+completion. Router factory initialization now runs in Builder's explicit
+no-argument constructor under the newer constructor checks; the public factory
+and direct no-argument construction remain available.

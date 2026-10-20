@@ -1,0 +1,14 @@
+{
+  "source_commit": "55b0c7bdae2e51279f967564a04c07c6c878e41c",
+  "source_tree": "cc608aa4b21563f13d5099d9e0cf48f7abdf25b6",
+  "binary_sha256": "25a6377dc15eec579b5d42027fa5ca7c427c0f0051c61994e08f9bb85f313439",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "machine": "arm64",
+  "python": "3.9.6",
+  "command": [
+    "/Users/alexandermills/Documents/Codex/2026-10-07/in-t/work/oreslang-source.llvm/build/native-http/native-http-server",
+    "0",
+    "128",
+    "4"
+  ]
+}

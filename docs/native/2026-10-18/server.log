@@ -1,0 +1,2 @@
+LISTENING port=52660 pid=5664 actors=128 carriers=4
+{"accepted":12965700,"completed":12965700,"scheduler_completed":12965700,"actors_used":128,"peak_connections":100,"mailbox_retries":0,"bad_frames":0,"transport_errors":0,"queue_mean_ms":0.00731714,"actor_mean_ms":0.00043947,"completion_mean_ms":0.0232143,"server_mean_ms":0.032464}

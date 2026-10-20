@@ -32,6 +32,23 @@ class BackendChecks(unittest.TestCase):
         return checker.load_contract()
     def test_valid_contract(self):
         self.assertEqual(self.load(), self.contract)
+    def test_specific_actor_boundary_diagnostic(self):
+        self.contract['llvm']['rejection_probes'][0]['diagnostic'] = 'oreslang-llvmc: actor requires at least one scalar field at byte 151'
+        self.assertEqual(self.load(), self.contract)
+        self.contract['llvm']['rejection_probes'][0]['diagnostic'] = 'oreslang-llvmc: internal compiler error'
+        with self.assertRaises(RuntimeError): self.load()
+    def test_specific_native_field_boundary(self):
+        self.contract['llvm']['rejection_probes'][0]['diagnostic'] = 'oreslang-llvmc: native class field supports only scalar int or mut Array<int> at byte 289'
+        self.assertEqual(self.load(), self.contract)
+        self.contract['llvm']['rejection_probes'][0]['diagnostic'] = 'oreslang-llvmc: native class internal compiler error'
+        with self.assertRaises(RuntimeError): self.load()
+    def test_bool_field_boundary_requires_precise_offset(self):
+        prefix = 'oreslang-llvmc: native class field supports only scalar int/bool or mut Array<int> at byte '
+        self.contract['llvm']['rejection_probes'][0]['diagnostic'] = prefix + '289'
+        self.assertEqual(self.load(), self.contract)
+        for suffix in ('nope', '289 additional error', ''):
+            self.contract['llvm']['rejection_probes'][0]['diagnostic'] = prefix + suffix
+            with self.subTest(suffix=suffix), self.assertRaises(RuntimeError): self.load()
     def test_empty_probes_rejected(self):
         self.contract['llvm']['rejection_probes'] = []
         with self.assertRaises(RuntimeError): self.load()
@@ -62,6 +79,12 @@ class BackendChecks(unittest.TestCase):
             with self.subTest(code=code,out=out,err=err), self.assertRaises(RuntimeError):
                 checker.check_rejection(subprocess.CompletedProcess([],code,out,err),probe)
         checker.check_rejection(subprocess.CompletedProcess([],1,'',probe['diagnostic']+'\n'),probe)
+    def test_native_os_entrypoint_control(self):
+        valid = 'define i32 @main() {\n  ret i32 42\n}\n'
+        checker.check_positive(subprocess.CompletedProcess([], 0, valid, ''))
+        for code, output in ((1, valid), (-11, valid), (0, ''), (0, 'define i64 @main() { ret i64 42 }')):
+            with self.subTest(code=code, output=output), self.assertRaises(RuntimeError):
+                checker.check_positive(subprocess.CompletedProcess([], code, output, 'failure'))
     def test_provenance_fails_closed(self):
         source=self.root/'source'
         source.mkdir()

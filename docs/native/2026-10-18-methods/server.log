@@ -1,0 +1,2 @@
+LISTENING port=56745 pid=68224 actors=128 carriers=4
+{"accepted":11967208,"completed":11967208,"scheduler_completed":11967208,"actors_used":128,"peak_connections":100,"mailbox_retries":0,"bad_frames":0,"transport_errors":0,"queue_mean_ms":0.00796918,"actor_mean_ms":0.000554118,"completion_mean_ms":0.0245444,"server_mean_ms":0.0347123}
