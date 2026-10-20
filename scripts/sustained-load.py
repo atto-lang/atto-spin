@@ -10,6 +10,7 @@ from pathlib import Path
 import platform
 import queue
 import random
+import re
 import runpy
 import subprocess
 import threading
@@ -23,10 +24,17 @@ def configure_fixture(source, lifecycle, pool_size):
         raise ValueError('Expected two handler pool declarations')
     if lifecycle == 'fresh':
         source = source.replace('.pooled(32)', '')
-        marker = '    return;\n  }\nend'
-        if source.count(marker) != 2:
+        marker = '    return;\n  }'
+        actors = re.compile(r'(define (?:iso)?actor \w+ as\n)(.*?)(\nend)', re.S)
+        def end_actor(match):
+            body = match.group(2)
+            if body.count(marker) != 1:
+                raise ValueError('Expected one actor receive ending')
+            return match.group(1) + body.replace(marker, '    self.end();\n'+marker) + match.group(3)
+        source, count = actors.subn(end_actor, source)
+        if count != 2:
             raise ValueError('Expected two actor receive endings')
-        return source.replace(marker, '    self.end();\n'+marker)
+        return source
     return source.replace('.pooled(32)', f'.pooled({pool_size})')
 
 def percentile(values,p):
@@ -53,7 +61,7 @@ async def response(reader,writer,port,mode,sampled=False):
 async def measure(port,concurrency,duration,warmup,timeout,output,sample_every=0,actor_mode="mixed",actor_lifecycle="pooled",pool_size=32):
     connected=0;failures=[];start_gate=asyncio.Event();epoch=[0.0];deadline=[0.0]
     latencies={'shared':[],'isolated':[]};identities={'shared':set(),'isolated':set()}
-    completed_in_window=Counter();reused=Counter();all_ids={'shared':set(),'isolated':set()}
+    completed_in_window=Counter();cycle_total=Counter();reused=Counter();all_ids={'shared':set(),'isolated':set()}
     warm=Counter();connection_count=0;lag=[];stop=False;sampler=random.Random(0);sampled_count=0
     async def client(index):
         nonlocal connected,connection_count,sampled_count
@@ -72,6 +80,7 @@ async def measure(port,concurrency,duration,warmup,timeout,output,sample_every=0
                     raise RuntimeError('Fresh actor identity reused')
                 all_ids[mode].add(identity)
                 if submitted>=epoch[0]:
+                    cycle_total[mode]+=(time.perf_counter()-submitted)*1000
                     latencies[mode].append(elapsed);identities[mode].add(identity)
                     reused[mode]+=was_reused
                     if time.perf_counter()<=deadline[0]:completed_in_window[mode]+=1
@@ -116,6 +125,7 @@ async def measure(port,concurrency,duration,warmup,timeout,output,sample_every=0
         if actor_mode != "mixed" and mode != actor_mode:continue
         results[mode]={'requests_started_in_window':len(values),'completed_in_window':completed_in_window[mode],
                        'mean_ms':round(sum(values)/len(values),3) if values else None,
+                       'client_cycle_mean_ms':round(cycle_total[mode]/len(values),3) if values else None,
                        'p50_ms':percentile(values,.5),'p95_ms':percentile(values,.95),'p99_ms':percentile(values,.99),
                        'completed_rps':round(completed_in_window[mode]/duration,2),
                        'distinct_workers_observed':len(identities[mode]),'distinct_workers_with_warmup':len(all_ids[mode]),
@@ -124,7 +134,7 @@ async def measure(port,concurrency,duration,warmup,timeout,output,sample_every=0
     (output/'latencies.json').write_text(json.dumps(latencies)+'\n')
     result={'concurrency':concurrency,'actor_mode':actor_mode,'actor_lifecycle':actor_lifecycle,'pool_size':pool_size if actor_lifecycle=='pooled' else None,'measurement_seconds':duration,'warmup_seconds':warmup,
             'drain_seconds':round(max(0,end-deadline[0]),3),'connections_opened':connection_count,
-            'retries':0,'sampled_requests':sampled_count,'failures':failures,'modes':results,
+            'retries':0,'profile_schema':2,'sampled_requests':sampled_count,'failures':failures,'modes':results,
             'client_event_loop_lag_p99_ms':percentile(lag,.99),'client_event_loop_lag_max_ms':round(max(lag,default=0),3)}
     (output/'result.json').write_text(json.dumps(result,indent=2)+'\n')
     if failures:raise RuntimeError('Sustained test had failures: '+str(failures[:3]))
@@ -142,10 +152,11 @@ def main():
     parser.add_argument('--actor-mode',choices=['mixed','shared','isolated'],default='mixed')
     parser.add_argument('--actor-lifecycle',choices=['pooled','fresh'],default='pooled')
     parser.add_argument('--pool-size',type=int,default=32)
+    parser.add_argument('--dispatch-lanes',type=int,default=1)
     parser.add_argument('--core-perf',action='store_true')
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args()
-    if not 2<=args.concurrency<=10000 or args.seconds<=0 or args.warmup<0 or args.timeout<=0 or args.sample_every<0 or not 1<=args.pool_size<=4096:parser.error('invalid limits')
+    if not 2<=args.concurrency<=10000 or args.seconds<=0 or args.warmup<0 or args.timeout<=0 or args.sample_every<0 or not 1<=args.pool_size<=4096 or not 1<=args.dispatch_lanes<=16:parser.error('invalid limits')
     check=runpy.run_path(str(ROOT/'scripts/check-backend.py'))
     source=check['require_source']('ORESLANG_SOURCE_DIR','SOURCE_REF')
     git=lambda p,*a:subprocess.check_output(['git','-C',str(p),*a],text=True).strip()
@@ -154,22 +165,24 @@ def main():
     if git(otel,'status','--porcelain') or git(otel,'rev-parse','HEAD')!=git(ROOT,'ls-files','--stage','dependencies/otel').split()[1]:raise RuntimeError('Otel provenance differs')
     if git(router,'status','--porcelain') or git(router,'rev-parse','HEAD')!=git(ROOT,'ls-files','--stage','dependencies/http-routing').split()[1]:raise RuntimeError('Router provenance differs')
     fixture=ROOT/('tests/profiled-pooled-server.ores' if args.sample_every else 'tests/pooled-server.ores')
+    if args.dispatch_lanes>1:
+        fixture=ROOT/'tests/profiled-concurrent-server.ores'
     args.output.mkdir(parents=True,exist_ok=False)
     source_fixture = fixture
     source_dirty = bool(git(ROOT,'status','--porcelain'))
-    generated = configure_fixture(fixture.read_text(),args.actor_lifecycle,args.pool_size)
+    generated = configure_fixture(fixture.read_text(),args.actor_lifecycle,args.pool_size).replace('dispatcher.serve(4)',f'dispatcher.serve({args.dispatch_lanes})')
     with tempfile.NamedTemporaryFile(mode='w',suffix='.ores',prefix='.sustained-',dir=ROOT/'tests',delete=False) as temp:
         temp.write(generated)
         fixture=Path(temp.name)
     (args.output/'fixture.ores').write_text(generated)
-    env=dict(os.environ);env['JAVA_TOOL_OPTIONS']=env.get('JAVA_TOOL_OPTIONS','')+' -Xms256m -Xmx2g -Dores.runtime.carriers=java -Djdk.httpserver.maxConnections=20000 -Dsun.net.httpserver.maxIdleConnections=20000'
+    env=dict(os.environ);env['JAVA_TOOL_OPTIONS']=env.get('JAVA_TOOL_OPTIONS','')+' -Xms256m -Xmx2g -Dores.runtime.carriers=java'
     meta={'spin_commit':git(ROOT,'rev-parse','HEAD'),'spin_dirty':source_dirty,
           'runtime_commit':git(source,'rev-parse','HEAD'),'router_commit':git(router,'rev-parse','HEAD'),'otel_commit':git(ROOT/'dependencies/otel','rev-parse','HEAD'),
           'driver_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
           'fixture_sha256':hashlib.sha256(fixture.read_bytes()).hexdigest(),
           'platform':platform.platform(),'cpus':os.cpu_count(),'java_options':env['JAVA_TOOL_OPTIONS'],
           'java_version':subprocess.run([env.get('ORES_JAVA','java'),'-version'],capture_output=True,text=True).stderr,
-          'source_fixture':str(source_fixture.relative_to(ROOT)),'actor_lifecycle':args.actor_lifecycle,'pool_workers_per_mode':args.pool_size if args.actor_lifecycle=='pooled' else None,'mix':args.actor_mode+'; fixed per connection; no retry',
+          'source_fixture':str(source_fixture.relative_to(ROOT)),'actor_lifecycle':args.actor_lifecycle,'application_instances':1,'dispatch_lanes':args.dispatch_lanes,'pool_workers_per_mode':args.pool_size if args.actor_lifecycle=='pooled' else None,'mix':args.actor_mode+'; fixed per connection; no retry',
           'configuration':{k:str(v) if isinstance(v,Path) else v for k,v in vars(args).items()}}
     (args.output/'metadata.json').write_text(json.dumps(meta,indent=2)+'\n')
     lines=queue.Queue();captured=[];resource_samples=[];monitor_stop=threading.Event()

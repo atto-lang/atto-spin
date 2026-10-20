@@ -60,3 +60,26 @@ instrumentation-overhead comparison.
 The client and server share this host. Client event-loop lag and server resource
 samples are retained; this is a closed-loop saturation experiment, not an
 independent-client production capacity guarantee.
+
+## Accept queue versus supervisor resumption (profile schema 2)
+
+Warm profiles now require eleven correlated metrics per sampled request. The
+original seven remain; four new disjoint intervals decompose
+`admission.to_dispatch` exactly:
+
+- `http.admission_to_queue`: admission bookkeeping up to the pending-accept handoff.
+- `http.queue`: time waiting in the HTTP pending queue; zero when an accept Future
+  is already waiting and receives the request directly.
+- `accept.ready_to_resume`: accept delivery readiness to the first source timestamp
+  after await. Includes Future completion, scheduler waiting, interpreter resumption
+  and timestamp-call overhead; it is not pure scheduler queue time.
+- `supervisor.prepare`: source resumption to dispatch, including request inspection
+  and profiling metadata reads.
+
+The summarizer validates all eleven metrics, nonnegative component intervals,
+and exact component sum per trace. Archived seven-metric profiles remain supported
+when no schema-2 marker is present. Core `http.accept.queue` is buffered and exported
+on shutdown; the sampled otel intervals cover warm traffic using request IDs.
+These additions are instrumentation, not a dispatcher optimization. Comparing
+throughput against older fixtures must account for the extra timestamp/property
+reads. No request headers or bodies are added to logs.

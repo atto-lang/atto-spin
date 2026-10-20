@@ -79,6 +79,13 @@ class SustainedTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(fresh.count('"admission.to_response_continuation"'),2)
         self.assertEqual(load.configure_fixture(template,'pooled',128).count('.pooled(128)'),2)
 
+    def test_fresh_concurrent_fixture_preserves_supervisor_lifecycle(self):
+        template=(load.ROOT/'tests/profiled-concurrent-server.ores').read_text()
+        fresh=load.configure_fixture(template,'fresh',32)
+        self.assertEqual(fresh.count('self.end();'),2)
+        self.assertNotIn('self.end();',fresh.split('pub define class ProfileDispatcher')[1])
+        self.assertIn('await dispatcher.serve(4);',fresh)
+
     async def test_bad_response_fails_without_reconnect(self):
         port=await self.start(bad=True)
         with tempfile.TemporaryDirectory() as directory:
