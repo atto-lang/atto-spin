@@ -10,7 +10,7 @@ spec=importlib.util.spec_from_file_location('sustained',Path(__file__).with_name
 load=importlib.util.module_from_spec(spec);spec.loader.exec_module(load)
 
 class SustainedTests(unittest.IsolatedAsyncioTestCase):
-    async def start(self,bad=False):
+    async def start(self,bad=False,fresh=False):
         self.connections=0;self.requests=0;self.sampled=0
         async def handle(reader,writer):
             self.connections+=1
@@ -20,7 +20,9 @@ class SustainedTests(unittest.IsolatedAsyncioTestCase):
                     self.sampled+=b'X-Profile: yes\r\n' in raw
                     mode=raw.split(b' ')[1].strip(b'/').decode()
                     body=b'bad' if bad else b'ok\n'
-                    writer.write(f'HTTP/1.1 200 OK\r\nContent-Length: 3\r\nX-Actor-Mode: {mode}\r\nX-Worker: {mode}-worker\r\nX-Reused: yes\r\n\r\n'.encode()+body)
+                    identity=f'{mode}-{self.requests}' if fresh else f'{mode}-worker'
+                    reuse='no' if fresh else 'yes'
+                    writer.write(f'HTTP/1.1 200 OK\r\nContent-Length: 3\r\nX-Actor-Mode: {mode}\r\nX-Worker: {identity}\r\nX-Reused: {reuse}\r\n\r\n'.encode()+body)
                     await writer.drain()
             except (asyncio.IncompleteReadError,ConnectionError):pass
             finally:writer.close();await writer.wait_closed()
@@ -54,6 +56,28 @@ class SustainedTests(unittest.IsolatedAsyncioTestCase):
                 result=await load.measure(port,4,.1,0,1,Path(directory),0,mode)
             self.assertEqual(set(result['modes']),{mode})
             self.assertEqual(result['connections_opened'],4)
+
+    async def test_fresh_actors_have_unique_ids_and_no_reuse(self):
+        port=await self.start(fresh=True)
+        with tempfile.TemporaryDirectory() as directory:
+            result=await load.measure(port,4,.1,.01,1,Path(directory),0,'shared','fresh')
+        row=result['modes']['shared']
+        self.assertEqual(row['reused_responses'],0)
+        self.assertEqual(row['distinct_workers_with_warmup'],self.requests)
+
+    async def test_fresh_mode_rejects_reused_workers(self):
+        port=await self.start()
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(RuntimeError,'Fresh actor identity reused'):
+                await load.measure(port,2,.1,0,1,Path(directory),0,'shared','fresh')
+
+    def test_fresh_fixture_preserves_telemetry_before_termination(self):
+        template=(load.ROOT/'tests/profiled-pooled-server.ores').read_text()
+        fresh=load.configure_fixture(template,'fresh',32)
+        self.assertNotIn('.pooled(',fresh)
+        self.assertEqual(fresh.count('self.end();'),2)
+        self.assertEqual(fresh.count('"admission.to_response_continuation"'),2)
+        self.assertEqual(load.configure_fixture(template,'pooled',128).count('.pooled(128)'),2)
 
     async def test_bad_response_fails_without_reconnect(self):
         port=await self.start(bad=True)
