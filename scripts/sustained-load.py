@@ -38,14 +38,14 @@ async def response(reader,writer,port,mode,sampled=False):
     if not identity or headers.get('x-reused') not in ('yes','no'):raise RuntimeError('Missing worker reuse evidence')
     return (time.perf_counter()-start)*1000,identity,headers['x-reused']=='yes'
 
-async def measure(port,concurrency,duration,warmup,timeout,output,sample_every=0):
+async def measure(port,concurrency,duration,warmup,timeout,output,sample_every=0,actor_mode="mixed"):
     connected=0;failures=[];start_gate=asyncio.Event();epoch=[0.0];deadline=[0.0]
     latencies={'shared':[],'isolated':[]};identities={'shared':set(),'isolated':set()}
     completed_in_window=Counter();reused=Counter();all_ids={'shared':set(),'isolated':set()}
     warm=Counter();connection_count=0;lag=[];stop=False;sampler=random.Random(0);sampled_count=0
     async def client(index):
         nonlocal connected,connection_count,sampled_count
-        mode='shared' if index%2==0 else 'isolated'
+        mode=('shared' if index%2==0 else 'isolated') if actor_mode=='mixed' else actor_mode
         writer=None
         try:
             reader,writer=await asyncio.wait_for(asyncio.open_connection('127.0.0.1',port),timeout)
@@ -99,6 +99,7 @@ async def measure(port,concurrency,duration,warmup,timeout,output,sample_every=0
         await asyncio.gather(*clients,return_exceptions=True)
     end=time.perf_counter();results={}
     for mode,values in latencies.items():
+        if actor_mode != "mixed" and mode != actor_mode:continue
         results[mode]={'requests_started_in_window':len(values),'completed_in_window':completed_in_window[mode],
                        'mean_ms':round(sum(values)/len(values),3) if values else None,
                        'p50_ms':percentile(values,.5),'p95_ms':percentile(values,.95),'p99_ms':percentile(values,.99),
@@ -107,7 +108,7 @@ async def measure(port,concurrency,duration,warmup,timeout,output,sample_every=0
                        'reused_responses':reused[mode],'warmup_requests':warm[mode]}
     # Keep numeric samples, rather than printing every request during measurement.
     (output/'latencies.json').write_text(json.dumps(latencies)+'\n')
-    result={'concurrency':concurrency,'measurement_seconds':duration,'warmup_seconds':warmup,
+    result={'concurrency':concurrency,'actor_mode':actor_mode,'measurement_seconds':duration,'warmup_seconds':warmup,
             'drain_seconds':round(max(0,end-deadline[0]),3),'connections_opened':connection_count,
             'retries':0,'sampled_requests':sampled_count,'failures':failures,'modes':results,
             'client_event_loop_lag_p99_ms':percentile(lag,.99),'client_event_loop_lag_max_ms':round(max(lag,default=0),3)}
@@ -124,6 +125,7 @@ def main():
     parser.add_argument('--warmup',type=float,default=10)
     parser.add_argument('--timeout',type=float,default=60)
     parser.add_argument('--sample-every',type=int,default=0,help='Sample warm requests with probability 1/N (fixed random seed); enables Oreslang telemetry fixture')
+    parser.add_argument('--actor-mode',choices=['mixed','shared','isolated'],default='mixed')
     parser.add_argument('--core-perf',action='store_true')
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args()
@@ -144,7 +146,7 @@ def main():
           'fixture_sha256':hashlib.sha256(fixture.read_bytes()).hexdigest(),
           'platform':platform.platform(),'cpus':os.cpu_count(),'java_options':env['JAVA_TOOL_OPTIONS'],
           'java_version':subprocess.run([env.get('ORES_JAVA','java'),'-version'],capture_output=True,text=True).stderr,
-          'pool_workers_per_mode':32,'mix':'half shared clients, half isolated; fixed per connection; no retry',
+          'pool_workers_per_mode':32,'mix':args.actor_mode+'; fixed per connection; no retry',
           'configuration':{k:str(v) if isinstance(v,Path) else v for k,v in vars(args).items()}}
     (args.output/'metadata.json').write_text(json.dumps(meta,indent=2)+'\n')
     lines=queue.Queue();captured=[];resource_samples=[];monitor_stop=threading.Event()
@@ -166,7 +168,7 @@ def main():
                 if line.isdigit() and 0<int(line)<65536:
                     port=int(line);break
                 if time.monotonic()>=startup_deadline:raise TimeoutError('No server port within 30 seconds')
-            result=asyncio.run(measure(port,args.concurrency,args.seconds,args.warmup,args.timeout,args.output,args.sample_every))
+            result=asyncio.run(measure(port,args.concurrency,args.seconds,args.warmup,args.timeout,args.output,args.sample_every,args.actor_mode))
             import http.client
             conn=http.client.HTTPConnection('127.0.0.1',port,timeout=10)
             try:

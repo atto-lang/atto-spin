@@ -1,0 +1,25 @@
+{
+  "spin_commit": "8a21d0e652330ac49e23c48eb8f576afd47097dd",
+  "spin_dirty": false,
+  "runtime_commit": "797a4a51f716761590f0cb02ec085029e18f26de",
+  "router_commit": "59f8100121f1927fb1909226e8204a4793a5237e",
+  "otel_commit": "5fe62a3447e77072cfd30850a96ef654a18008f7",
+  "driver_sha256": "6ef5aec97193a3dc67d3cfaf538f57053ac7db7975f302db128f657d88b38e56",
+  "fixture_sha256": "363c7bddc22bde558cd4fa0ae8794e43606922ab95f3f6c5a601f0a6e552ba17",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "cpus": 18,
+  "java_options": "-Dores.runtime.control.parallelism=4 -Xms256m -Xmx2g -Dores.runtime.carriers=java -Djdk.httpserver.maxConnections=20000 -Dsun.net.httpserver.maxIdleConnections=20000",
+  "java_version": "Picked up JAVA_TOOL_OPTIONS: -Dores.runtime.control.parallelism=4\nopenjdk version \"25.0.4.1\" 2026-08-18 LTS\nOpenJDK Runtime Environment Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS, mixed mode, sharing)\n",
+  "pool_workers_per_mode": 32,
+  "mix": "shared; fixed per connection; no retry",
+  "configuration": {
+    "concurrency": 100,
+    "seconds": 180.0,
+    "warmup": 10,
+    "timeout": 60,
+    "sample_every": 1000,
+    "actor_mode": "shared",
+    "core_perf": true,
+    "output": "../../outputs/spin-actor-owned-shared-control4-100"
+  }
+}

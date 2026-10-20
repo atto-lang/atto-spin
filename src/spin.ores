@@ -3,6 +3,19 @@ import module http_routing from "../dependencies/http-routing/src/http_routing";
 // Spin performs routing in the supervisor. Handler actor code is registered
 // explicitly; mutable guest closures never cross the actor boundary.
 define module spin as
+  // Framework-generated HTTP replies also own their exchange in a mailbox turn.
+  define actor FrameworkResponse as
+    receive(ActorMail<String> mail): void {
+      val request = http.claim(mail.value);
+      val String operation = request.operation_id;
+      val int status = operation == "spin.404" ? 404 : operation == "spin.414" ? 414 : operation == "spin.204" ? 204 : operation == "spin.405" ? 405 : 500;
+      val String body = status == 404 ? "Not Found" : status == 414 ? "URI Too Long" : status == 204 ? "" : status == 405 ? "Method Not Allowed" : "Internal Server Error";
+      request.set_header("X-Spin-Responder", "actor");
+      await request.respond(status, "text/plain; charset=utf-8", body);
+      return;
+    }
+  end
+
   pub define class Binding as
     val HttpHandler handler;
     val http_routing.PathPattern pattern;
@@ -39,14 +52,19 @@ define module spin as
     val http_routing.Router router;
     val Array<Binding> bindings;
     val Array<Fnc<bool(borrow HttpExchange)>> middleware;
+    val HttpHandler framework_response = http.handler("spin.FrameworkResponse").pooled(8);
     pub constructor(http_routing.Router router, Array<Binding> bindings, Array<Fnc<bool(borrow HttpExchange)>> middleware) {
       self.router = router;
       self.bindings = bindings;
       self.middleware = middleware;
     }
 
-    // Nonblocking: transport operations progress on I/O workers and each matched
-    // request starts a fresh actor. Framework-generated responses need no actor.
+    framework_reply(borrow mut HttpExchange exchange, String operation): void {
+      exchange.set_route(operation, -1, -1);
+      self.framework_response.dispatch(exchange);
+      return;
+    }
+
     pub dispatch(HttpExchange mut exchange): void {
       try {
         val Array<String> segments = new Array<String>();
@@ -66,11 +84,11 @@ define module spin as
           return;
         fi
         if decision.is_not_found(); then
-          exchange.respond(404, "text/plain; charset=utf-8", "Not Found");
+          self.framework_reply(rt borrow mut exchange, "spin.404");
           return;
         fi
         if decision.is_limit_exceeded(); then
-          exchange.respond(414, "text/plain; charset=utf-8", "URI Too Long");
+          self.framework_reply(rt borrow mut exchange, "spin.414");
           return;
         fi
         let String allowed = "";
@@ -82,14 +100,14 @@ define module spin as
         }
         exchange.set_header("Allow", allowed);
         if decision.is_automatic_options(); then
-          exchange.respond(204, "text/plain; charset=utf-8", "");
+          self.framework_reply(rt borrow mut exchange, "spin.204");
         else
-          exchange.respond(405, "text/plain; charset=utf-8", "Method Not Allowed");
+          self.framework_reply(rt borrow mut exchange, "spin.405");
         fi
         return;
       } catch (failure) {
         if exchange.can_respond; then
-          exchange.respond(500, "text/plain; charset=utf-8", "Internal Server Error");
+          self.framework_reply(rt borrow mut exchange, "spin.500");
         fi
         return;
       }
