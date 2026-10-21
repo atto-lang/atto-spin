@@ -1,0 +1,1184 @@
+[
+  {
+    "run": "baseline-isolated",
+    "achieved_rps": 2233.766666666667,
+    "client_start_lag": {
+      "max_ms": 9.999834,
+      "p50_ms": 5.000334,
+      "p95_ms": 9.4895,
+      "p99_ms": 9.894709
+    },
+    "clients": 100,
+    "errors": [],
+    "failed_clients": 0,
+    "measurement_seconds": 30,
+    "missed_or_failed_slots": 232987,
+    "mode": "isolated",
+    "reconnects": 0,
+    "response_latency": {
+      "max_ms": 90.10775,
+      "p50_ms": 44.545334,
+      "p95_ms": 45.949625,
+      "p99_ms": 47.304375
+    },
+    "reused_responses": 67013,
+    "sample_every": 0,
+    "scheduled_latency": {
+      "max_ms": 97.878792,
+      "p50_ms": 49.656042,
+      "p95_ms": 54.276042,
+      "p99_ms": 55.471417
+    },
+    "schema": "spin-paced-load.v1",
+    "successes": 67013,
+    "target_rps": 10000,
+    "target_slots": 300000,
+    "warmup_seconds": 10,
+    "worker_ids": [
+      "0351232b-0fd9-474a-aa5c-2ca799155a0e",
+      "115e01ac-4422-4f67-8342-8b453e03c52d",
+      "15c71d6e-93c8-40ba-8809-34ab1d6fe10c",
+      "17286e1a-9c32-4631-b7d9-acf215258e78",
+      "199ae27f-ebf2-4761-a336-a9dd24bf9026",
+      "23402804-6b70-4839-a4d9-65ec291c1341",
+      "3f984785-75ce-46ac-ae2e-f9a6b005e426",
+      "53e05fae-d091-4f6b-81b2-df082334a349",
+      "57c9bc58-6983-4592-bab2-9128cd964703",
+      "645f3498-3834-482c-835c-7931bdecb2bf",
+      "6a1a1c08-518e-4ad4-969a-b55badb79c9e",
+      "729ca7ed-a469-4030-86b5-e3bb1bb3181a",
+      "7aa70c76-03b6-4b89-a8c6-1e0111bc5bea",
+      "7dbd0e6f-d06c-4e26-b7cc-cf1ccb87c1b1",
+      "7e5c691f-b10a-4e24-bdf9-fd67a2446fe1",
+      "816036b8-078c-4a39-b312-0de0961e5964",
+      "9611e51a-fa61-4951-adae-6be1b14beb12",
+      "97417e85-eef2-4718-9062-b3499272f5dd",
+      "9c4bc6a6-694f-4878-9f9c-d90410327df7",
+      "9d943340-1569-4e80-b500-081910706137",
+      "aae2279c-a93b-4c7b-a54d-9f497cd88476",
+      "ab8ae1c4-896d-4895-8da3-73173876f069",
+      "b7dfb4ff-10b1-4ead-9beb-8bf72f82d38d",
+      "c283a3b1-14b3-4d53-87c2-cba650f8054d",
+      "c6bbd52e-348d-4ea8-8748-3b38680cbeb0",
+      "cfababec-446e-4e74-8215-84671dc1f35f",
+      "cfd46371-1670-479d-8493-d3359b4455bb",
+      "e75d732b-3988-4db3-b086-ed35f4cddc79",
+      "ead2d565-642d-4342-88ea-00d546bf94ca",
+      "f0b49edc-4afa-45b2-9824-a5381a98c183",
+      "f43d1466-1dd3-4688-a37f-ae9baa98d676",
+      "f6cda3e8-84cf-477f-a09f-815cd5614e28"
+    ],
+    "metadata": {
+      "source": "62646c4372244723813ab06f2d122a6b2f5c0995",
+      "spin": "139f2076c81116381c56f86519f9e48bfb31504f",
+      "router": "6ca17f01ff02022274414707031ea3f11975f596",
+      "otel": "5fe62a3447e77072cfd30850a96ef654a18008f7",
+      "logging": "disabled",
+      "actor_mode": "isolated",
+      "java": "/Users/maca5/.local/share/oreslang-audit/graalvm-community-25.3.4.1+1.1/Contents/Home/bin/java",
+      "jar_sha256": "3d5d672fa84284906c5f462f476d672c3191f89f85d1c1a09e6830cc9a10ee0b"
+    },
+    "server": {
+      "accepted": 88801,
+      "rejected": 0,
+      "completed": 88801,
+      "active": 0,
+      "peak": 100
+    },
+    "phases": {
+      "complete_otel_traces": 0,
+      "core_begin": null,
+      "core_end": null,
+      "core_warm_exclusion_ns": 15000000000,
+      "phases": {}
+    }
+  },
+  {
+    "run": "baseline-shared",
+    "achieved_rps": 2258.766666666667,
+    "client_start_lag": {
+      "max_ms": 10.000042,
+      "p50_ms": 5.001208,
+      "p95_ms": 9.484042,
+      "p99_ms": 9.8915
+    },
+    "clients": 100,
+    "errors": [],
+    "failed_clients": 0,
+    "measurement_seconds": 30,
+    "missed_or_failed_slots": 232237,
+    "mode": "shared",
+    "reconnects": 0,
+    "response_latency": {
+      "max_ms": 227.91425,
+      "p50_ms": 43.8405,
+      "p95_ms": 45.236542,
+      "p99_ms": 46.502917
+    },
+    "reused_responses": 67763,
+    "sample_every": 0,
+    "scheduled_latency": {
+      "max_ms": 237.375125,
+      "p50_ms": 49.002875,
+      "p95_ms": 53.563375,
+      "p99_ms": 54.700667
+    },
+    "schema": "spin-paced-load.v1",
+    "successes": 67763,
+    "target_rps": 10000,
+    "target_slots": 300000,
+    "warmup_seconds": 10,
+    "worker_ids": [
+      "07d4a115-b088-4b03-9860-f0a309ec905d",
+      "09a3fc1f-693c-4451-90bd-2191dd1bf917",
+      "0e779dca-75cd-4af1-9469-120372a2a0b7",
+      "1d8ae4a9-fc7b-4dfb-80a9-b1e1d628e802",
+      "2046a43d-b92e-428a-88d9-e23d3d90e62a",
+      "21fa2121-bc3d-45e0-974c-611361e12dac",
+      "286ddf27-56c8-4813-a6e9-beca378d0c49",
+      "2b9df63a-58f8-4814-ac2b-1e1cb7306de6",
+      "417094d2-55d6-4a68-b740-7cf20ce899bf",
+      "42a775b6-7398-43e0-a13e-51188b2f64ff",
+      "4b7d3bca-1012-4b84-b601-f8cb54acb1d3",
+      "54504163-9b63-414a-ab9a-ac6193df82ff",
+      "5a8ff2e0-dcba-4211-b153-1e3e46b5c91a",
+      "5dac3d49-0a45-4cce-b7b9-e7636722a007",
+      "6f4ed55f-fccc-483d-b6fb-4af571702fed",
+      "74d0e66a-3f38-4270-8725-6cd695833e20",
+      "82d4f183-7d3b-4783-a5b0-c7716e49a2de",
+      "843af889-b6c7-4e19-a903-fb31538c3d4b",
+      "9a856088-2fd3-41f7-b6ec-564bc3746427",
+      "9f099391-25bf-4be9-9442-7d6ee230ab8b",
+      "b4b7dacb-288e-40f9-93da-f18da3f9cba0",
+      "b7075dc9-435d-42db-beaa-0ca898fdaf49",
+      "b7084e6a-71a7-408b-8638-c302f250f14e",
+      "bf53fd46-33bb-47d0-ba7c-6d70abe1ab54",
+      "c828f07a-fc71-4cf2-ad5f-ed7497c4154f",
+      "cafc5577-57a1-4474-972c-f5db7042face",
+      "d4357db8-e7c7-40f8-9071-48699f592824",
+      "e7ef5636-916e-41ff-9c66-9f65f48d4a3d",
+      "eaa10169-d7cc-4820-aac9-5afba58c8389",
+      "eae69993-645c-4e47-9e69-95ffda7c0943",
+      "f6a7f526-0457-461f-a422-fce96d3cb2aa",
+      "f6d6f8c8-14df-4145-a108-8092fe9dd728"
+    ],
+    "metadata": {
+      "source": "62646c4372244723813ab06f2d122a6b2f5c0995",
+      "spin": "139f2076c81116381c56f86519f9e48bfb31504f",
+      "router": "6ca17f01ff02022274414707031ea3f11975f596",
+      "otel": "5fe62a3447e77072cfd30850a96ef654a18008f7",
+      "logging": "disabled",
+      "actor_mode": "shared",
+      "java": "/Users/maca5/.local/share/oreslang-audit/graalvm-community-25.3.4.1+1.1/Contents/Home/bin/java",
+      "jar_sha256": "3d5d672fa84284906c5f462f476d672c3191f89f85d1c1a09e6830cc9a10ee0b"
+    },
+    "server": {
+      "accepted": 89959,
+      "rejected": 0,
+      "completed": 89959,
+      "active": 0,
+      "peak": 100
+    },
+    "phases": {
+      "complete_otel_traces": 0,
+      "core_begin": null,
+      "core_end": null,
+      "core_warm_exclusion_ns": 15000000000,
+      "phases": {}
+    }
+  },
+  {
+    "run": "integrated-both-isolated",
+    "achieved_rps": 8261.133333333333,
+    "client_start_lag": {
+      "max_ms": 10,
+      "p50_ms": 4.998708,
+      "p95_ms": 9.49875,
+      "p99_ms": 9.899708
+    },
+    "clients": 100,
+    "errors": [],
+    "failed_clients": 0,
+    "measurement_seconds": 30,
+    "missed_or_failed_slots": 52166,
+    "mode": "isolated",
+    "reconnects": 0,
+    "response_latency": {
+      "max_ms": 20.761375,
+      "p50_ms": 12.002375,
+      "p95_ms": 12.804875,
+      "p99_ms": 13.372916
+    },
+    "reused_responses": 247834,
+    "sample_every": 1000,
+    "sampled_requests": 248,
+    "scheduled_latency": {
+      "max_ms": 29.515333,
+      "p50_ms": 17.104958,
+      "p95_ms": 21.6055,
+      "p99_ms": 22.246417
+    },
+    "schema": "spin-paced-load.v1",
+    "successes": 247834,
+    "target_rps": 10000,
+    "target_slots": 300000,
+    "warmup_seconds": 10,
+    "worker_ids": [
+      "0071f86b-6156-46e2-a4d2-66e946a1803b",
+      "02c24897-c3a3-4081-af6e-b3a24e342219",
+      "15711ade-1353-4ae5-80c7-f570e7bfbb2b",
+      "160be866-1cff-402e-9f9c-eb5a7deab3ee",
+      "227204e5-6393-456a-a0ca-1be0290ff2ce",
+      "37ab7a5a-7495-4608-afaf-59ce63fea352",
+      "403b746d-6ca7-4207-986d-bf0516adb616",
+      "49bab51e-8a21-4ec7-8f15-89c71ac88941",
+      "5559d412-6d3e-444f-9db1-60247aa6918f",
+      "5adfcdbf-9cee-4d1f-919d-e87b4648c309",
+      "5b4b81a7-46fa-489a-b1f8-2e7c80afcc65",
+      "5bf4f76e-205c-4f64-8045-8c4b1d8d3d94",
+      "66976988-6bfb-44d8-b8f3-579d0e7d0e26",
+      "74f6890c-ce5a-4a83-bab4-50be096e888f",
+      "94a219fc-1c1b-4bf9-b33e-cd19f07f7961",
+      "97feef2c-a19c-4a78-9b91-d6349906a162",
+      "9e60e598-7f7d-4453-9a34-3d862e5bc23f",
+      "ab184a1b-37a8-4954-88c1-9df332c8dcef",
+      "acc35152-4828-4cfd-9b4c-35b2e69d819b",
+      "b4eb08c8-a8b1-49bd-98a2-07235e67a2d6",
+      "bc3f3822-12ee-4995-9f64-740def87c960",
+      "bf04e9de-ae35-4542-8d23-596e741a0a59",
+      "c71a369f-448c-4aca-bfbc-f798effdc2b1",
+      "d497023a-67e8-48e9-bcef-c84e182c6e44",
+      "d5d1af49-97b2-48f9-99fb-1e198989e13b",
+      "d60a9609-e3d4-490d-a326-42e130a00412",
+      "e36c52bf-b11c-499e-a2bd-abe9d80901c7",
+      "e412bb4c-000d-4831-8800-90a28311b1cf",
+      "e6b97b9f-6acd-4a09-88d6-d42a31e36c4a",
+      "ecfc3bc3-bd75-4096-832b-aa6195f10fb2",
+      "f985c537-c818-4803-82ef-2a95c2f11e39",
+      "fd1e69d9-3f2a-42c3-89cb-786de3e8f954"
+    ],
+    "metadata": {
+      "source": "1e099518d1a7438abf0f5426f63a3b971bd5c357",
+      "spin": "6f3a3f11a0900caa091f243090409f9947e42017",
+      "router": "6ca17f01ff02022274414707031ea3f11975f596",
+      "otel": "5fe62a3447e77072cfd30850a96ef654a18008f7",
+      "logging": "both",
+      "actor_mode": "isolated",
+      "java": "/Users/maca5/.local/share/oreslang-audit/graalvm-community-25.3.4.1+1.1/Contents/Home/bin/java",
+      "jar_sha256": "237bb3f47c9adaf871f82e3a22e56be52150f48feb9b9d65f2772865d34b3850"
+    },
+    "server": {
+      "accepted": 327243,
+      "rejected": 0,
+      "completed": 327243,
+      "active": 0,
+      "peak": 100
+    },
+    "phases": {
+      "complete_otel_traces": 248,
+      "core_begin": {
+        "capacity": 8192,
+        "kind": "begin",
+        "sample_every": 1024,
+        "schema": "ores-core-perf.v1"
+      },
+      "core_end": {
+        "kind": "end",
+        "recorded": 2615,
+        "reserved": 2615,
+        "saturated": false,
+        "schema": "ores-core-perf.v1"
+      },
+      "core_warm_exclusion_ns": 15000000000,
+      "phases": {
+        "warm.core.http.claim": {
+          "count": 221,
+          "max_ms": 0.084084,
+          "mean_ms": 0.014088588235294117,
+          "p50_ms": 0.01325,
+          "p95_ms": 0.018,
+          "p99_ms": 0.031959
+        },
+        "warm.core.http.dispatch": {
+          "count": 257,
+          "max_ms": 0.03275,
+          "mean_ms": 0.002800443579766537,
+          "p50_ms": 0.002333,
+          "p95_ms": 0.004,
+          "p99_ms": 0.015
+        },
+        "warm.core.http.executor.queue": {
+          "count": 220,
+          "max_ms": 0.023292,
+          "mean_ms": 0.005545477272727273,
+          "p50_ms": 0.00525,
+          "p95_ms": 0.007459,
+          "p99_ms": 0.008875
+        },
+        "warm.core.http.io.queue": {
+          "count": 225,
+          "max_ms": 0.020542,
+          "mean_ms": 0.007135728888888889,
+          "p50_ms": 0.007666,
+          "p95_ms": 0.009291,
+          "p99_ms": 0.010375
+        },
+        "warm.core.http.io.work": {
+          "count": 222,
+          "max_ms": 0.016584,
+          "mean_ms": 0.008641166666666667,
+          "p50_ms": 0.008292,
+          "p95_ms": 0.011708,
+          "p99_ms": 0.016
+        },
+        "warm.core.http.lifetime": {
+          "count": 224,
+          "max_ms": 13.328666,
+          "mean_ms": 12.103098392857143,
+          "p50_ms": 12.004458,
+          "p95_ms": 12.72775,
+          "p99_ms": 13.206125
+        },
+        "warm.core.http.receive": {
+          "count": 222,
+          "max_ms": 0.004417,
+          "mean_ms": 0.0010207927927927928,
+          "p50_ms": 0.000958,
+          "p95_ms": 0.001709,
+          "p99_ms": 0.002375
+        },
+        "warm.core.http.timer.schedule": {
+          "count": 224,
+          "max_ms": 0.000875,
+          "mean_ms": 0.00011534375,
+          "p50_ms": 0.000084,
+          "p95_ms": 0.000167,
+          "p99_ms": 0.000625
+        },
+        "warm.core.stdio.write": {
+          "count": 1,
+          "max_ms": 0.005333,
+          "mean_ms": 0.005333,
+          "p50_ms": 0.005333,
+          "p95_ms": 0.005333,
+          "p99_ms": 0.005333
+        },
+        "warm.otel.actor.prepare": {
+          "count": 248,
+          "max_ms": 0.02875,
+          "mean_ms": 0.006146153225806451,
+          "p50_ms": 0.00575,
+          "p95_ms": 0.007166,
+          "p99_ms": 0.007709
+        },
+        "warm.otel.admission.to_claim": {
+          "count": 248,
+          "max_ms": 13.003334,
+          "mean_ms": 11.98293481451613,
+          "p50_ms": 11.901541,
+          "p95_ms": 12.667584,
+          "p99_ms": 12.860834
+        },
+        "warm.otel.admission.to_dispatch": {
+          "count": 248,
+          "max_ms": 12.88375,
+          "mean_ms": 11.863020653225806,
+          "p50_ms": 11.780834,
+          "p95_ms": 12.5335,
+          "p99_ms": 12.734875
+        },
+        "warm.otel.admission.to_response_continuation": {
+          "count": 248,
+          "max_ms": 13.092334,
+          "mean_ms": 12.014485899193547,
+          "p50_ms": 11.931416,
+          "p95_ms": 12.697209,
+          "p99_ms": 12.892792
+        },
+        "warm.otel.mailbox.move_to_claim": {
+          "count": 248,
+          "max_ms": 0.06225,
+          "mean_ms": 0.013240274193548387,
+          "p50_ms": 0.012834,
+          "p95_ms": 0.01525,
+          "p99_ms": 0.018291
+        },
+        "warm.otel.response.await": {
+          "count": 248,
+          "max_ms": 0.083542,
+          "mean_ms": 0.025404931451612902,
+          "p50_ms": 0.024625,
+          "p95_ms": 0.028625,
+          "p99_ms": 0.055417
+        },
+        "warm.otel.routing.dispatch": {
+          "count": 248,
+          "max_ms": 0.21175,
+          "mean_ms": 0.11151043951612903,
+          "p50_ms": 0.110375,
+          "p95_ms": 0.119834,
+          "p99_ms": 0.136708
+        }
+      }
+    }
+  },
+  {
+    "run": "integrated-both-shared",
+    "achieved_rps": 8295.5,
+    "client_start_lag": {
+      "max_ms": 10,
+      "p50_ms": 4.994625,
+      "p95_ms": 9.498708,
+      "p99_ms": 9.900083
+    },
+    "clients": 100,
+    "errors": [],
+    "failed_clients": 0,
+    "measurement_seconds": 30,
+    "missed_or_failed_slots": 51135,
+    "mode": "shared",
+    "reconnects": 0,
+    "response_latency": {
+      "max_ms": 22.893375,
+      "p50_ms": 11.958583,
+      "p95_ms": 12.773416,
+      "p99_ms": 13.249042
+    },
+    "reused_responses": 248865,
+    "sample_every": 1000,
+    "sampled_requests": 248,
+    "scheduled_latency": {
+      "max_ms": 31.963458,
+      "p50_ms": 17.039583,
+      "p95_ms": 21.566875,
+      "p99_ms": 22.223583
+    },
+    "schema": "spin-paced-load.v1",
+    "successes": 248865,
+    "target_rps": 10000,
+    "target_slots": 300000,
+    "warmup_seconds": 10,
+    "worker_ids": [
+      "01bc09b7-9bb3-4355-b547-8559c3b80fd9",
+      "05fcad2d-e086-42cb-ac5c-f53048774d2d",
+      "1bc4009d-bc5b-4237-a1a3-fb3d9eed9f59",
+      "27374a30-4c19-4c47-9a91-dfbc357e4de5",
+      "30ed9e35-f1c5-49e1-8ef5-a876f8fcc76b",
+      "3b2e56a7-3f5d-45c8-a0e1-5503698f1ec8",
+      "3ef06490-b4ca-4fb7-a389-6beb227fd6b1",
+      "4c16c7fa-4a11-4671-a4ee-6ab5b75a3115",
+      "4cae2896-c4f5-4101-89d6-7da0bb64895d",
+      "5003b56e-8d09-424d-92c5-d3ef15f90da1",
+      "57418fd4-255b-4c55-94a8-8bf51c42884a",
+      "5874fbef-2269-4f47-a01c-d6fae69e275b",
+      "5e20d4a0-b535-49a2-aaf5-661232798f65",
+      "6545e8fd-7fe2-4d7e-b20a-2539d6f20764",
+      "6a4c8484-9f9d-4a97-8e9a-a602ef5243c5",
+      "6a7414db-32c3-419a-af29-3b23735357ed",
+      "6e967a0e-e188-409c-9d3c-e4bd17dd86cb",
+      "737604be-ebb7-458c-aec2-dff172b22f46",
+      "87cb6850-b07e-4104-8ff9-9030b84c73e5",
+      "8b2ebd2b-4648-4865-a74c-b3649248a4a4",
+      "920412d6-d661-411a-acb6-f1b217740a70",
+      "97fe2449-63b6-42b4-8e25-f19b472a48c7",
+      "9997647c-3311-4037-9107-9cde4b694a40",
+      "aebcc0d0-61b7-46ef-9458-74c00f1306e9",
+      "c4d76535-3f80-41eb-a234-279a24b29c41",
+      "c7402560-0586-476e-9bd0-7f786105405b",
+      "d19d0deb-93fb-4bfd-8fec-c6a21e9e644e",
+      "d7ca029a-19d2-4ce1-9519-b7193f3a243f",
+      "d8ee4ce9-0656-4bfc-a87c-8c4eec01ec9c",
+      "dc3a153c-5137-4714-86fe-2d54a07564a1",
+      "e558a329-744f-45c7-b3aa-20d5bf3c1c00",
+      "f51fff3d-2cbf-485e-ae84-9a521aa9c2b1"
+    ],
+    "metadata": {
+      "source": "1e099518d1a7438abf0f5426f63a3b971bd5c357",
+      "spin": "6f3a3f11a0900caa091f243090409f9947e42017",
+      "router": "6ca17f01ff02022274414707031ea3f11975f596",
+      "otel": "5fe62a3447e77072cfd30850a96ef654a18008f7",
+      "logging": "both",
+      "actor_mode": "shared",
+      "java": "/Users/maca5/.local/share/oreslang-audit/graalvm-community-25.3.4.1+1.1/Contents/Home/bin/java",
+      "jar_sha256": "237bb3f47c9adaf871f82e3a22e56be52150f48feb9b9d65f2772865d34b3850"
+    },
+    "server": {
+      "accepted": 328888,
+      "rejected": 0,
+      "completed": 328888,
+      "active": 0,
+      "peak": 100
+    },
+    "phases": {
+      "complete_otel_traces": 248,
+      "core_begin": {
+        "capacity": 8192,
+        "kind": "begin",
+        "sample_every": 1024,
+        "schema": "ores-core-perf.v1"
+      },
+      "core_end": {
+        "kind": "end",
+        "recorded": 2620,
+        "reserved": 2620,
+        "saturated": false,
+        "schema": "ores-core-perf.v1"
+      },
+      "core_warm_exclusion_ns": 15000000000,
+      "phases": {
+        "warm.core.http.claim": {
+          "count": 217,
+          "max_ms": 0.254292,
+          "mean_ms": 0.015136718894009216,
+          "p50_ms": 0.013708,
+          "p95_ms": 0.016708,
+          "p99_ms": 0.040417
+        },
+        "warm.core.http.dispatch": {
+          "count": 257,
+          "max_ms": 0.024541,
+          "mean_ms": 0.0026894941634241247,
+          "p50_ms": 0.002208,
+          "p95_ms": 0.004958,
+          "p99_ms": 0.009916
+        },
+        "warm.core.http.executor.queue": {
+          "count": 221,
+          "max_ms": 0.027417,
+          "mean_ms": 0.0055788325791855204,
+          "p50_ms": 0.005292,
+          "p95_ms": 0.007584,
+          "p99_ms": 0.010959
+        },
+        "warm.core.http.io.queue": {
+          "count": 230,
+          "max_ms": 0.027375,
+          "mean_ms": 0.007683117391304348,
+          "p50_ms": 0.008333,
+          "p95_ms": 0.009875,
+          "p99_ms": 0.013084
+        },
+        "warm.core.http.io.work": {
+          "count": 223,
+          "max_ms": 0.034083,
+          "mean_ms": 0.008767748878923768,
+          "p50_ms": 0.008416,
+          "p95_ms": 0.010708,
+          "p99_ms": 0.013125
+        },
+        "warm.core.http.lifetime": {
+          "count": 224,
+          "max_ms": 13.455875,
+          "mean_ms": 12.032004669642856,
+          "p50_ms": 11.953083,
+          "p95_ms": 12.759125,
+          "p99_ms": 13.358167
+        },
+        "warm.core.http.receive": {
+          "count": 224,
+          "max_ms": 0.007167,
+          "mean_ms": 0.0009806473214285715,
+          "p50_ms": 0.000875,
+          "p95_ms": 0.001542,
+          "p99_ms": 0.003792
+        },
+        "warm.core.http.timer.schedule": {
+          "count": 224,
+          "max_ms": 0.001083,
+          "mean_ms": 0.00012164732142857143,
+          "p50_ms": 0.000125,
+          "p95_ms": 0.000167,
+          "p99_ms": 0.0005
+        },
+        "warm.otel.actor.prepare": {
+          "count": 248,
+          "max_ms": 0.01275,
+          "mean_ms": 0.006447766129032259,
+          "p50_ms": 0.006542,
+          "p95_ms": 0.007958,
+          "p99_ms": 0.009333
+        },
+        "warm.otel.admission.to_claim": {
+          "count": 248,
+          "max_ms": 13.181792,
+          "mean_ms": 11.930759092741935,
+          "p50_ms": 11.895083,
+          "p95_ms": 12.538667,
+          "p99_ms": 12.783667
+        },
+        "warm.otel.admission.to_dispatch": {
+          "count": 248,
+          "max_ms": 13.059208,
+          "mean_ms": 11.811484891129032,
+          "p50_ms": 11.776167,
+          "p95_ms": 12.418084,
+          "p99_ms": 12.649
+        },
+        "warm.otel.admission.to_response_continuation": {
+          "count": 248,
+          "max_ms": 13.209667,
+          "mean_ms": 11.96581120564516,
+          "p50_ms": 11.928792,
+          "p95_ms": 12.57425,
+          "p99_ms": 13.013917
+        },
+        "warm.otel.mailbox.move_to_claim": {
+          "count": 248,
+          "max_ms": 0.038458,
+          "mean_ms": 0.013485854838709678,
+          "p50_ms": 0.01325,
+          "p95_ms": 0.016417,
+          "p99_ms": 0.019583
+        },
+        "warm.otel.response.await": {
+          "count": 248,
+          "max_ms": 0.679584,
+          "mean_ms": 0.02860434677419355,
+          "p50_ms": 0.025042,
+          "p95_ms": 0.032625,
+          "p99_ms": 0.070083
+        },
+        "warm.otel.routing.dispatch": {
+          "count": 248,
+          "max_ms": 0.211209,
+          "mean_ms": 0.11063591532258066,
+          "p50_ms": 0.108875,
+          "p95_ms": 0.1265,
+          "p99_ms": 0.135458
+        }
+      }
+    }
+  },
+  {
+    "run": "integrated-core-isolated",
+    "achieved_rps": 8358.8,
+    "client_start_lag": {
+      "max_ms": 10.000084,
+      "p50_ms": 5.007917,
+      "p95_ms": 9.498209,
+      "p99_ms": 9.897625
+    },
+    "clients": 100,
+    "errors": [],
+    "failed_clients": 0,
+    "measurement_seconds": 30,
+    "missed_or_failed_slots": 49236,
+    "mode": "isolated",
+    "reconnects": 0,
+    "response_latency": {
+      "max_ms": 15.685041,
+      "p50_ms": 11.889917,
+      "p95_ms": 12.62,
+      "p99_ms": 13.03625
+    },
+    "reused_responses": 250764,
+    "sample_every": 0,
+    "sampled_requests": 0,
+    "scheduled_latency": {
+      "max_ms": 25.073584,
+      "p50_ms": 16.96,
+      "p95_ms": 21.469834,
+      "p99_ms": 22.046834
+    },
+    "schema": "spin-paced-load.v1",
+    "successes": 250764,
+    "target_rps": 10000,
+    "target_slots": 300000,
+    "warmup_seconds": 10,
+    "worker_ids": [
+      "09a2ec4d-5593-4a65-be88-e27a0fadcb16",
+      "0d5d046f-9dba-4711-82b4-7f5528d7de4e",
+      "178e1187-df39-4593-bbc5-3efdb9c44757",
+      "1fa34af3-6882-4a78-ad30-da0f71c0c0fc",
+      "26329421-0c22-471f-8b5e-22bcea0d1183",
+      "2c1c5b99-17ab-478a-9dc2-9cbb728c3338",
+      "2dab577b-4e21-4620-84d8-167952b592b8",
+      "34a1062c-c803-4270-b29b-3b770d126145",
+      "37e856cf-6029-4713-8129-f64d50f7876c",
+      "5a3283ae-4877-4b14-95d3-fe551e91aea7",
+      "5eda9ff3-6ae5-4852-9744-43c36ec0174d",
+      "6160181b-08a6-498c-8604-6c7d51b75bce",
+      "70d555b1-cfd3-4bab-ba3a-2fa6cc037a31",
+      "720e5cc5-ad62-4b59-98b7-4047ef1cde62",
+      "74ee7c61-edb0-4518-927d-b4843847b26e",
+      "847a5991-cc5e-493f-8d4a-28e508a9de98",
+      "864221d3-b14e-4217-a35d-1f2840d9a2c4",
+      "96a6d092-dd19-4a8a-bbe1-dfef2f8a1610",
+      "97ab5158-8a66-41a0-b976-64cc6d15dad0",
+      "9dad0dac-b913-4773-8109-36360575e99a",
+      "b6fdb746-9402-4e10-b9a1-07ae918bee1e",
+      "b7f33a3c-73bb-4a65-a6b6-23b889d1f403",
+      "c80696a5-7b55-47ca-a95f-fcdaac6db909",
+      "c87fe9d3-24d6-4606-84aa-b6f6c0630242",
+      "d051ee19-acc6-4819-b8af-cd2f79695371",
+      "d07ea402-4418-4724-8ab6-3c8d57485e21",
+      "d74d93e8-2f39-43f0-b6d3-bf6c287f395f",
+      "ddd42be2-dec4-41bc-82b1-21e34bad44eb",
+      "dde069cc-5532-47ba-acaa-63f5d6fec402",
+      "e49c669a-83a1-47bc-9e80-7da65f178f48",
+      "e9edd6a9-35b3-4aa8-a802-de2fe6d7b50d",
+      "eb45d391-df22-41a6-a5bf-5b674d0f8ddd"
+    ],
+    "metadata": {
+      "source": "1e099518d1a7438abf0f5426f63a3b971bd5c357",
+      "spin": "6f3a3f11a0900caa091f243090409f9947e42017",
+      "router": "6ca17f01ff02022274414707031ea3f11975f596",
+      "otel": "5fe62a3447e77072cfd30850a96ef654a18008f7",
+      "logging": "core",
+      "actor_mode": "isolated",
+      "java": "/Users/maca5/.local/share/oreslang-audit/graalvm-community-25.3.4.1+1.1/Contents/Home/bin/java",
+      "jar_sha256": "237bb3f47c9adaf871f82e3a22e56be52150f48feb9b9d65f2772865d34b3850"
+    },
+    "server": {
+      "accepted": 330475,
+      "rejected": 0,
+      "completed": 330475,
+      "active": 0,
+      "peak": 100
+    },
+    "phases": {
+      "complete_otel_traces": 0,
+      "core_begin": {
+        "capacity": 8192,
+        "kind": "begin",
+        "sample_every": 1024,
+        "schema": "ores-core-perf.v1"
+      },
+      "core_end": {
+        "kind": "end",
+        "recorded": 2626,
+        "reserved": 2626,
+        "saturated": false,
+        "schema": "ores-core-perf.v1"
+      },
+      "core_warm_exclusion_ns": 15000000000,
+      "phases": {
+        "warm.core.http.claim": {
+          "count": 216,
+          "max_ms": 0.037,
+          "mean_ms": 0.014041652777777778,
+          "p50_ms": 0.013625,
+          "p95_ms": 0.017666,
+          "p99_ms": 0.023875
+        },
+        "warm.core.http.dispatch": {
+          "count": 256,
+          "max_ms": 0.022042,
+          "mean_ms": 0.00287642578125,
+          "p50_ms": 0.002417,
+          "p95_ms": 0.00475,
+          "p99_ms": 0.018583
+        },
+        "warm.core.http.executor.queue": {
+          "count": 222,
+          "max_ms": 0.519583,
+          "mean_ms": 0.008305743243243244,
+          "p50_ms": 0.005375,
+          "p95_ms": 0.008958,
+          "p99_ms": 0.018375
+        },
+        "warm.core.http.io.queue": {
+          "count": 235,
+          "max_ms": 0.036292,
+          "mean_ms": 0.007907774468085106,
+          "p50_ms": 0.0085,
+          "p95_ms": 0.011125,
+          "p99_ms": 0.01475
+        },
+        "warm.core.http.io.work": {
+          "count": 225,
+          "max_ms": 0.058,
+          "mean_ms": 0.00870852,
+          "p50_ms": 0.007917,
+          "p95_ms": 0.011334,
+          "p99_ms": 0.019875
+        },
+        "warm.core.http.lifetime": {
+          "count": 224,
+          "max_ms": 13.181583,
+          "mean_ms": 11.975155495535715,
+          "p50_ms": 11.879625,
+          "p95_ms": 12.675625,
+          "p99_ms": 12.8825
+        },
+        "warm.core.http.receive": {
+          "count": 224,
+          "max_ms": 0.011458,
+          "mean_ms": 0.001195513392857143,
+          "p50_ms": 0.001041,
+          "p95_ms": 0.001917,
+          "p99_ms": 0.002834
+        },
+        "warm.core.http.timer.schedule": {
+          "count": 224,
+          "max_ms": 0.001084,
+          "mean_ms": 0.00012761607142857144,
+          "p50_ms": 0.000125,
+          "p95_ms": 0.000167,
+          "p99_ms": 0.0005
+        }
+      }
+    }
+  },
+  {
+    "run": "integrated-core-shared",
+    "achieved_rps": 8389.233333333334,
+    "client_start_lag": {
+      "max_ms": 10.000042,
+      "p50_ms": 5.002042,
+      "p95_ms": 9.507959,
+      "p99_ms": 9.902834
+    },
+    "clients": 100,
+    "errors": [],
+    "failed_clients": 0,
+    "measurement_seconds": 30,
+    "missed_or_failed_slots": 48323,
+    "mode": "shared",
+    "reconnects": 0,
+    "response_latency": {
+      "max_ms": 21.851,
+      "p50_ms": 11.813625,
+      "p95_ms": 12.621084,
+      "p99_ms": 13.368083
+    },
+    "reused_responses": 251677,
+    "sample_every": 0,
+    "sampled_requests": 0,
+    "scheduled_latency": {
+      "max_ms": 31.74725,
+      "p50_ms": 16.920834,
+      "p95_ms": 21.421959,
+      "p99_ms": 22.055834
+    },
+    "schema": "spin-paced-load.v1",
+    "successes": 251677,
+    "target_rps": 10000,
+    "target_slots": 300000,
+    "warmup_seconds": 10,
+    "worker_ids": [
+      "052771e0-c5a8-451b-a525-788c5363aac0",
+      "08d6509f-aabd-4546-ab2b-6ade51f66a0c",
+      "09441d10-9a7f-4a5f-8275-dbabbc6e1936",
+      "0c452ce9-33fc-4fa9-9916-071356e53c2f",
+      "0e089320-383f-48e7-a45b-d1160e03969a",
+      "13304bab-8b54-4507-90b6-67117685de99",
+      "14166045-290e-4420-926e-673e3fa08b5a",
+      "202e3d10-abaf-40f4-9952-ac59e28bdcb5",
+      "3a975fc6-2f0d-46e6-893d-40c3f18001e2",
+      "3bb21c8d-0180-4f33-88d8-fc33b93d9228",
+      "3f0705fc-891b-4b9e-b63e-ed280e49cfb8",
+      "4755a4e3-4f04-42fd-9594-59e9c81689dd",
+      "520d3898-e86d-41e2-b36b-f08312410755",
+      "6fd1a349-fa38-43fb-9c44-91c72b89984e",
+      "718de680-b1e0-4342-a0a7-15fd8997b1f1",
+      "85158ec3-51a6-4e04-a002-1272c16308e8",
+      "879b62a0-774a-40ca-a0ea-410679593a69",
+      "87ecd62b-105c-497f-8d9c-cb86dc9c9ae9",
+      "8b32e51a-934f-4bbf-a841-e520175d274b",
+      "990e7fa9-adb8-460c-8d16-43c886cb4ab9",
+      "a112f5ed-3650-44ed-84fe-0efb3915f61f",
+      "a8e11b2d-7f32-447b-81d7-7f7663210873",
+      "b4e8ea96-99b8-47f0-a2de-d30201e9b553",
+      "b700e422-4d3d-4a7d-969d-51b08cfdcc91",
+      "c3d322ec-f788-4c01-8110-93a497ad676d",
+      "c729e419-52f6-4e66-80ab-443e1019ffbc",
+      "cdb4ac55-e2d1-4b7a-a1d1-ac93e34c5c89",
+      "d23b2e32-fd98-4e52-afc7-4f3e24561459",
+      "d59ebb02-e6e6-494d-9d21-6021ca54dbfc",
+      "d8dc2434-d479-4ecf-a955-71dda8097c57",
+      "e54a54e2-2304-41d3-a50a-2618e0f61efe",
+      "f617bbb4-f880-4d8b-8ee8-3e2f889fa3f7"
+    ],
+    "metadata": {
+      "source": "1e099518d1a7438abf0f5426f63a3b971bd5c357",
+      "spin": "6f3a3f11a0900caa091f243090409f9947e42017",
+      "router": "6ca17f01ff02022274414707031ea3f11975f596",
+      "otel": "5fe62a3447e77072cfd30850a96ef654a18008f7",
+      "logging": "core",
+      "actor_mode": "shared",
+      "java": "/Users/maca5/.local/share/oreslang-audit/graalvm-community-25.3.4.1+1.1/Contents/Home/bin/java",
+      "jar_sha256": "237bb3f47c9adaf871f82e3a22e56be52150f48feb9b9d65f2772865d34b3850"
+    },
+    "server": {
+      "accepted": 331971,
+      "rejected": 0,
+      "completed": 331971,
+      "active": 0,
+      "peak": 100
+    },
+    "phases": {
+      "complete_otel_traces": 0,
+      "core_begin": {
+        "capacity": 8192,
+        "kind": "begin",
+        "sample_every": 1024,
+        "schema": "ores-core-perf.v1"
+      },
+      "core_end": {
+        "kind": "end",
+        "recorded": 2640,
+        "reserved": 2640,
+        "saturated": false,
+        "schema": "ores-core-perf.v1"
+      },
+      "core_warm_exclusion_ns": 15000000000,
+      "phases": {
+        "warm.core.http.claim": {
+          "count": 209,
+          "max_ms": 0.044375,
+          "mean_ms": 0.01384809090909091,
+          "p50_ms": 0.0135,
+          "p95_ms": 0.016834,
+          "p99_ms": 0.02
+        },
+        "warm.core.http.dispatch": {
+          "count": 257,
+          "max_ms": 0.020667,
+          "mean_ms": 0.0027156186770428015,
+          "p50_ms": 0.002375,
+          "p95_ms": 0.004917,
+          "p99_ms": 0.006084
+        },
+        "warm.core.http.executor.queue": {
+          "count": 224,
+          "max_ms": 0.014334,
+          "mean_ms": 0.005341339285714285,
+          "p50_ms": 0.005125,
+          "p95_ms": 0.00675,
+          "p99_ms": 0.012334
+        },
+        "warm.core.http.io.queue": {
+          "count": 238,
+          "max_ms": 0.019542,
+          "mean_ms": 0.007644638655462185,
+          "p50_ms": 0.008458,
+          "p95_ms": 0.0095,
+          "p99_ms": 0.012041
+        },
+        "warm.core.http.io.work": {
+          "count": 226,
+          "max_ms": 0.051333,
+          "mean_ms": 0.008986137168141593,
+          "p50_ms": 0.008417,
+          "p95_ms": 0.011542,
+          "p99_ms": 0.017041
+        },
+        "warm.core.http.lifetime": {
+          "count": 224,
+          "max_ms": 14.365959,
+          "mean_ms": 11.877108839285714,
+          "p50_ms": 11.790959,
+          "p95_ms": 12.507875,
+          "p99_ms": 12.981917
+        },
+        "warm.core.http.receive": {
+          "count": 225,
+          "max_ms": 0.005292,
+          "mean_ms": 0.001097911111111111,
+          "p50_ms": 0.000959,
+          "p95_ms": 0.001917,
+          "p99_ms": 0.003958
+        },
+        "warm.core.http.timer.schedule": {
+          "count": 224,
+          "max_ms": 0.000833,
+          "mean_ms": 0.000136,
+          "p50_ms": 0.000125,
+          "p95_ms": 0.000209,
+          "p99_ms": 0.000709
+        }
+      }
+    }
+  },
+  {
+    "run": "integrated-disabled-isolated",
+    "achieved_rps": 8365.033333333333,
+    "client_start_lag": {
+      "max_ms": 10,
+      "p50_ms": 4.99525,
+      "p95_ms": 9.499916,
+      "p99_ms": 9.897541
+    },
+    "clients": 100,
+    "errors": [],
+    "failed_clients": 0,
+    "measurement_seconds": 30,
+    "missed_or_failed_slots": 49049,
+    "mode": "isolated",
+    "reconnects": 0,
+    "response_latency": {
+      "max_ms": 206.734458,
+      "p50_ms": 11.7675,
+      "p95_ms": 12.547916,
+      "p99_ms": 13.362083
+    },
+    "reused_responses": 250951,
+    "sample_every": 0,
+    "sampled_requests": 0,
+    "scheduled_latency": {
+      "max_ms": 215.485875,
+      "p50_ms": 16.870541,
+      "p95_ms": 21.38025,
+      "p99_ms": 22.029208
+    },
+    "schema": "spin-paced-load.v1",
+    "successes": 250951,
+    "target_rps": 10000,
+    "target_slots": 300000,
+    "warmup_seconds": 10,
+    "worker_ids": [
+      "014bcf8a-83be-475c-9a2d-b13f461d270d",
+      "0e00b6cc-c43d-46b7-8d8c-f9d4bb6016b0",
+      "1cc555f8-f945-4c1e-8f92-262765807ab7",
+      "28d0d483-1770-4937-8a99-b5bac4259f38",
+      "2ca5facd-39f4-4b96-bd4f-d389aecc0744",
+      "3001a54d-d908-4e05-8a58-8b7b0da3b610",
+      "31c9ea1f-431a-4d8b-8077-66a3fb31b41b",
+      "39d7bd58-43dc-49f1-a732-80dace7912de",
+      "4bc64df0-9a20-48fb-9a73-c87f2bdd3aa0",
+      "4caa8046-7b60-4d96-a69f-21edecf03fb2",
+      "56c633ae-ecbd-4d14-b536-cf1e85116dfe",
+      "5fe54567-614c-4e41-8751-a14307a9787b",
+      "628c95b6-8206-4115-8eb4-566bca7325c2",
+      "66dd9401-8a11-417b-8888-b834f1a7388c",
+      "71885646-38b3-44ca-9cdf-14572e86d4fd",
+      "7869d202-deca-4912-bb60-ae444c77108f",
+      "7f4e6564-16c0-41c6-a361-8fa87e245e2d",
+      "84cf28d4-59f1-4378-8406-8759caab2aba",
+      "8e3dbaed-324a-4718-accc-a9cc0294ff50",
+      "962a0dc1-a68d-425d-a20e-05a301b04b03",
+      "96479081-6141-4a75-92d3-68c2aed9f2ae",
+      "9c246719-25cc-4f8f-ad82-26a210a9c3e5",
+      "9d47bc97-df55-499b-a8dd-a0580ec66504",
+      "a6641914-419f-4924-9565-14c6cb48158b",
+      "a831a4b8-5d4d-4c4d-8834-60b3fdccd7ae",
+      "ac573e83-b6c7-402c-8258-3ba519152566",
+      "bef08199-71cc-4a0f-9e73-ac674d4ac7b0",
+      "c0bb3859-8061-4751-8218-705d59128782",
+      "cfa52bd9-7b27-4b81-bae8-ab027f36023f",
+      "dcb47db3-5059-4325-a0e6-08b24637e298",
+      "dd5fdee4-7f72-4882-a16f-462b1f5aa1b3",
+      "f5d5ed06-319a-4a29-8315-89f54c9f29d1"
+    ],
+    "metadata": {
+      "source": "1e099518d1a7438abf0f5426f63a3b971bd5c357",
+      "spin": "6f3a3f11a0900caa091f243090409f9947e42017",
+      "router": "6ca17f01ff02022274414707031ea3f11975f596",
+      "otel": "5fe62a3447e77072cfd30850a96ef654a18008f7",
+      "logging": "disabled",
+      "actor_mode": "isolated",
+      "java": "/Users/maca5/.local/share/oreslang-audit/graalvm-community-25.3.4.1+1.1/Contents/Home/bin/java",
+      "jar_sha256": "237bb3f47c9adaf871f82e3a22e56be52150f48feb9b9d65f2772865d34b3850"
+    },
+    "server": {
+      "accepted": 332194,
+      "rejected": 0,
+      "completed": 332194,
+      "active": 0,
+      "peak": 100
+    },
+    "phases": {
+      "complete_otel_traces": 0,
+      "core_begin": null,
+      "core_end": null,
+      "core_warm_exclusion_ns": 15000000000,
+      "phases": {}
+    }
+  },
+  {
+    "run": "integrated-disabled-shared",
+    "achieved_rps": 8309.6,
+    "client_start_lag": {
+      "max_ms": 10.003917,
+      "p50_ms": 5.010917,
+      "p95_ms": 9.508792,
+      "p99_ms": 9.905208
+    },
+    "clients": 100,
+    "errors": [],
+    "failed_clients": 0,
+    "measurement_seconds": 30,
+    "missed_or_failed_slots": 50712,
+    "mode": "shared",
+    "reconnects": 0,
+    "response_latency": {
+      "max_ms": 16.998709,
+      "p50_ms": 11.922625,
+      "p95_ms": 12.733875,
+      "p99_ms": 13.701125
+    },
+    "reused_responses": 249288,
+    "sample_every": 0,
+    "sampled_requests": 0,
+    "scheduled_latency": {
+      "max_ms": 26.734625,
+      "p50_ms": 17.04075,
+      "p95_ms": 21.546958,
+      "p99_ms": 22.185375
+    },
+    "schema": "spin-paced-load.v1",
+    "successes": 249288,
+    "target_rps": 10000,
+    "target_slots": 300000,
+    "warmup_seconds": 10,
+    "worker_ids": [
+      "0338312f-7369-467e-91c3-e734c072d2df",
+      "06452802-0b4d-4a99-b8c4-e1b1cac7fab4",
+      "094f2487-c3c0-4077-b7ce-1bf725a6038d",
+      "09b6050e-5c4a-48ef-b911-f6f981037f8d",
+      "0cba1906-59e8-4c44-a6df-e1846013dcf2",
+      "145a229d-fef7-47df-b028-78cf59d99443",
+      "1e25c4e1-36fb-4774-a226-cd8e7f55755e",
+      "1f10fc8c-b47e-4244-99f1-ecaaeb3fea74",
+      "2f86c341-a4f3-4d00-b74e-5614b19b2ade",
+      "38067453-9bb5-4ad6-8b39-f3a2d3f837d6",
+      "415434e7-af9d-4e69-b585-ec714d912ef9",
+      "4da03127-0b5f-4ee9-baf6-f0036266a386",
+      "5104d25b-85dc-4136-984e-8f5b91bc9ba2",
+      "56a9e13d-6f68-4c11-9444-474d359e7dfc",
+      "58fcba3a-f8b6-4124-86bd-c12ff4563b04",
+      "5daddecf-ae41-4fef-b526-9bc37ec383fa",
+      "6aeb2b86-84b8-4be1-a5b8-931f09f69ed4",
+      "96aa34c6-4966-42ce-ba74-793c1140d72b",
+      "9d628674-35e1-44a4-b2ae-1109249411bd",
+      "9ffa7fbe-e575-4893-8401-1c29413ba0b6",
+      "a41c1e4c-7631-41f1-84b9-ace4bcef7088",
+      "a5f941c4-38de-4705-b993-1bd819e29e1d",
+      "b8885dbb-cb4a-450c-8868-e4b1f95c9f58",
+      "bd9e88c1-9bee-48f5-b0ef-84ab17ecdc6b",
+      "c13e03a6-a290-4267-9521-6838246efafa",
+      "cda13c9c-32e8-415d-a850-f884f9b0813b",
+      "d02b1bec-6ba3-4521-9d48-0f9c80f364b3",
+      "d964c5cd-1be0-4dbf-b552-58e6f69edc07",
+      "e41360b1-97f6-424c-ae89-99e8437db6b7",
+      "e6ca3f21-f3f1-4650-bac4-51b07f423d78",
+      "eeebee7f-8a68-4498-b56d-b6b6cf630876",
+      "f3c39e50-ac0b-4db0-a011-8826ee9ff6dc"
+    ],
+    "metadata": {
+      "source": "1e099518d1a7438abf0f5426f63a3b971bd5c357",
+      "spin": "139f2076c81116381c56f86519f9e48bfb31504f",
+      "router": "6ca17f01ff02022274414707031ea3f11975f596",
+      "otel": "5fe62a3447e77072cfd30850a96ef654a18008f7",
+      "logging": "disabled",
+      "actor_mode": "shared",
+      "java": "/Users/maca5/.local/share/oreslang-audit/graalvm-community-25.3.4.1+1.1/Contents/Home/bin/java",
+      "jar_sha256": "237bb3f47c9adaf871f82e3a22e56be52150f48feb9b9d65f2772865d34b3850"
+    },
+    "server": {
+      "accepted": 329506,
+      "rejected": 0,
+      "completed": 329506,
+      "active": 0,
+      "peak": 100
+    },
+    "phases": {
+      "complete_otel_traces": 0,
+      "core_begin": null,
+      "core_end": null,
+      "core_warm_exclusion_ns": 15000000000,
+      "phases": {}
+    }
+  }
+]

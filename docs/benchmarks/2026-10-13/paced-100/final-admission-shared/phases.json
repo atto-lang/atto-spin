@@ -1,0 +1,91 @@
+{
+  "complete_otel_traces": 0,
+  "core_begin": {
+    "capacity": 8192,
+    "kind": "begin",
+    "sample_every": 1024,
+    "schema": "ores-core-perf.v1"
+  },
+  "core_end": {
+    "kind": "end",
+    "recorded": 1500,
+    "reserved": 1500,
+    "saturated": false,
+    "schema": "ores-core-perf.v1"
+  },
+  "core_warm_exclusion_ns": 15000000000,
+  "phases": {
+    "warm.core.http.admission.to_handler": {
+      "count": 55,
+      "max_ms": 13.449333,
+      "mean_ms": 11.701976563636364,
+      "p50_ms": 11.584542,
+      "p95_ms": 12.1815,
+      "p99_ms": 13.449333
+    },
+    "warm.core.http.claim": {
+      "count": 59,
+      "max_ms": 0.034209,
+      "mean_ms": 0.013997830508474578,
+      "p50_ms": 0.013666,
+      "p95_ms": 0.01675,
+      "p99_ms": 0.034209
+    },
+    "warm.core.http.dispatch": {
+      "count": 73,
+      "max_ms": 0.010791,
+      "mean_ms": 0.0030022328767123287,
+      "p50_ms": 0.002875,
+      "p95_ms": 0.00475,
+      "p99_ms": 0.010791
+    },
+    "warm.core.http.executor.queue": {
+      "count": 52,
+      "max_ms": 0.032084,
+      "mean_ms": 0.0058173269230769225,
+      "p50_ms": 0.005,
+      "p95_ms": 0.007167,
+      "p99_ms": 0.032084
+    },
+    "warm.core.http.io.queue": {
+      "count": 56,
+      "max_ms": 0.010834,
+      "mean_ms": 0.007332660714285714,
+      "p50_ms": 0.007667,
+      "p95_ms": 0.01025,
+      "p99_ms": 0.010834
+    },
+    "warm.core.http.io.work": {
+      "count": 62,
+      "max_ms": 0.012667,
+      "mean_ms": 0.008336016129032257,
+      "p50_ms": 0.00825,
+      "p95_ms": 0.009792,
+      "p99_ms": 0.012667
+    },
+    "warm.core.http.lifetime": {
+      "count": 64,
+      "max_ms": 12.453791,
+      "mean_ms": 11.7161895,
+      "p50_ms": 11.608959,
+      "p95_ms": 12.281708,
+      "p99_ms": 12.453791
+    },
+    "warm.core.http.receive": {
+      "count": 62,
+      "max_ms": 0.002458,
+      "mean_ms": 0.0010341451612903227,
+      "p50_ms": 0.000917,
+      "p95_ms": 0.00175,
+      "p99_ms": 0.002458
+    },
+    "warm.core.http.timer.schedule": {
+      "count": 64,
+      "max_ms": 0.000917,
+      "mean_ms": 0.00017384375,
+      "p50_ms": 0.000125,
+      "p95_ms": 0.000375,
+      "p99_ms": 0.000917
+    }
+  }
+}

@@ -52,11 +52,14 @@ define module spin as
     val http_routing.Router router;
     val Array<Binding> bindings;
     val Array<Fnc<bool(borrow HttpExchange)>> middleware;
-    val HttpHandler framework_response = http.handler("spin.FrameworkResponse").pooled(8);
+    val HttpHandler framework_response;
     pub constructor(http_routing.Router router, Array<Binding> bindings, Array<Fnc<bool(borrow HttpExchange)>> middleware) {
       self.router = router;
       self.bindings = bindings;
       self.middleware = middleware;
+      // Host registrations have effects; keep them in the explicit constructor
+      // rather than a declaration initializer with no proven effect bound.
+      self.framework_response = http.handler("spin.FrameworkResponse").pooled(8);
     }
 
     framework_reply(borrow mut HttpExchange exchange, String operation): void {
@@ -115,10 +118,14 @@ define module spin as
   end
 
   pub define class Builder as
-    val http_routing.RouterBuilder router = http_routing.builder();
+    val http_routing.RouterBuilder router;
     val Array<Binding> bindings = new Array<Binding>();
     val Array<Fnc<bool(borrow HttpExchange)>> middleware = new Array<Fnc<bool(borrow HttpExchange)>>();
     let bool built = false;
+
+    pub constructor() {
+      self.router = http_routing.builder();
+    }
 
     pub use(mut self)(Fnc<bool(borrow HttpExchange)> hook) -> Result<bool, String> {
       if self.built; then return Err("builder already consumed"); fi

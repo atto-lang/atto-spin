@@ -1,0 +1,83 @@
+{
+  "complete_otel_traces": 0,
+  "core_begin": {
+    "capacity": 8192,
+    "kind": "begin",
+    "sample_every": 1024,
+    "schema": "ores-core-perf.v1"
+  },
+  "core_end": {
+    "kind": "end",
+    "recorded": 2626,
+    "reserved": 2626,
+    "saturated": false,
+    "schema": "ores-core-perf.v1"
+  },
+  "core_warm_exclusion_ns": 15000000000,
+  "phases": {
+    "warm.core.http.claim": {
+      "count": 216,
+      "max_ms": 0.037,
+      "mean_ms": 0.014041652777777778,
+      "p50_ms": 0.013625,
+      "p95_ms": 0.017666,
+      "p99_ms": 0.023875
+    },
+    "warm.core.http.dispatch": {
+      "count": 256,
+      "max_ms": 0.022042,
+      "mean_ms": 0.00287642578125,
+      "p50_ms": 0.002417,
+      "p95_ms": 0.00475,
+      "p99_ms": 0.018583
+    },
+    "warm.core.http.executor.queue": {
+      "count": 222,
+      "max_ms": 0.519583,
+      "mean_ms": 0.008305743243243244,
+      "p50_ms": 0.005375,
+      "p95_ms": 0.008958,
+      "p99_ms": 0.018375
+    },
+    "warm.core.http.io.queue": {
+      "count": 235,
+      "max_ms": 0.036292,
+      "mean_ms": 0.007907774468085106,
+      "p50_ms": 0.0085,
+      "p95_ms": 0.011125,
+      "p99_ms": 0.01475
+    },
+    "warm.core.http.io.work": {
+      "count": 225,
+      "max_ms": 0.058,
+      "mean_ms": 0.00870852,
+      "p50_ms": 0.007917,
+      "p95_ms": 0.011334,
+      "p99_ms": 0.019875
+    },
+    "warm.core.http.lifetime": {
+      "count": 224,
+      "max_ms": 13.181583,
+      "mean_ms": 11.975155495535715,
+      "p50_ms": 11.879625,
+      "p95_ms": 12.675625,
+      "p99_ms": 12.8825
+    },
+    "warm.core.http.receive": {
+      "count": 224,
+      "max_ms": 0.011458,
+      "mean_ms": 0.001195513392857143,
+      "p50_ms": 0.001041,
+      "p95_ms": 0.001917,
+      "p99_ms": 0.002834
+    },
+    "warm.core.http.timer.schedule": {
+      "count": 224,
+      "max_ms": 0.001084,
+      "mean_ms": 0.00012761607142857144,
+      "p50_ms": 0.000125,
+      "p95_ms": 0.000167,
+      "p99_ms": 0.0005
+    }
+  }
+}
