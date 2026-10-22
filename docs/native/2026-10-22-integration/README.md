@@ -35,7 +35,13 @@ source differential checks against Java passed (48/37 native cases, 14/13 Java
 executions). The pinned Java runtime separately passed 317 tests in 38 suites;
 the exact pinned Spin/route integration passed 102 real HTTP checks.
 
-Origin Actions jobs never started due to billing. Private fallback validation is
-[run 39844532779](https://github.com/led-dynamo/leddy-e2e/actions/runs/39844532779).
-No successful fallback result is claimed here until its completed receipt exists;
+Origin Actions jobs never started due to billing. The first private fallback
+[run 39844532779](https://github.com/led-dynamo/leddy-e2e/actions/runs/39844532779)
+found two GCC range-loop warnings treated as errors in the newer allocation JSON
+test. Head `ff5f7eaf1217545e579e4ce610d86aaffa46bf7f` fixes those two loop
+declarations; its affected test passes locally, and the production runtime code
+is unchanged from the benchmark head. The backend pins include this repair.
+
+The exact-tree retry is [run 39845008508](https://github.com/led-dynamo/leddy-e2e/actions/runs/39845008508).
+No successful fallback result is claimed until its completed receipt exists;
 required origin repository checks remain separate.
