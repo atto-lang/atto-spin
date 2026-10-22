@@ -1,0 +1,2 @@
+LISTENING port=55764 pid=46770 actors=128 carriers=4
+{"accepted":12535065,"completed":12535065,"scheduler_completed":12535065,"actors_used":128,"peak_connections":100,"mailbox_retries":0,"bad_frames":0,"transport_errors":0,"queue_mean_ms":0.00771651,"actor_mean_ms":0.000506316,"completion_mean_ms":0.0244123,"server_mean_ms":0.0341829}

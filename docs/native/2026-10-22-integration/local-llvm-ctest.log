@@ -1,0 +1,1013 @@
+Test project /Users/alexandermills/Documents/Codex/2026-10-07/in-t/work/oreslang-source.llvm/build
+        Start 181: native_owned_scalar_cfg_generated_stress
+        Start  57: native_contract_harness_python_O
+        Start  58: native_contract_harness_python_OO
+        Start  56: native_contract_harness_optimize_failclosed
+  1/504 Test #181: native_owned_scalar_cfg_generated_stress ...............   Passed   87.15 sec
+        Start 404: class_native_1_to_16_field_layout_matrix
+  2/504 Test  #56: native_contract_harness_optimize_failclosed ............   Passed   87.28 sec
+        Start  33: native_class_owned_array_source_asan_ubsan
+  3/504 Test  #57: native_contract_harness_python_O .......................   Passed   87.43 sec
+        Start  32: native_class_owned_array_source_execution
+  4/504 Test  #58: native_contract_harness_python_OO ......................   Passed   87.57 sec
+        Start 168: native_source_bool_scalars
+  5/504 Test #168: native_source_bool_scalars .............................   Passed    8.14 sec
+        Start 169: native_source_bool_scalars_asan_ubsan
+  6/504 Test  #33: native_class_owned_array_source_asan_ubsan .............   Passed   15.77 sec
+        Start 350: native_owned_region_conditional_drop_matrix
+  7/504 Test  #32: native_class_owned_array_source_execution ..............   Passed   15.75 sec
+        Start  52: native_source_bool_release
+  8/504 Test #169: native_source_bool_scalars_asan_ubsan ..................   Passed    8.20 sec
+        Start  53: native_source_bool_sanitizer
+  9/504 Test #350: native_owned_region_conditional_drop_matrix ............   Passed    6.84 sec
+        Start  31: native_int_array_source_asan_ubsan
+ 10/504 Test  #52: native_source_bool_release .............................   Passed    8.18 sec
+        Start  30: native_int_array_source_execution
+ 11/504 Test  #53: native_source_bool_sanitizer ...........................   Passed    8.36 sec
+        Start 351: native_owned_region_conditional_drop_sanitized
+ 12/504 Test  #31: native_int_array_source_asan_ubsan .....................   Passed    6.89 sec
+        Start 223: source_actor_compiled_native_asan_ubsan
+ 13/504 Test  #30: native_int_array_source_execution ......................   Passed    9.48 sec
+        Start 166: native_source_ternary_expression
+ 14/504 Test #351: native_owned_region_conditional_drop_sanitized .........   Passed   10.52 sec
+        Start 167: native_source_ternary_expression_asan_ubsan
+ 15/504 Test #166: native_source_ternary_expression .......................   Passed    7.23 sec
+        Start 402: cfg_guarded_drop_all_native_exit_edges
+ 16/504 Test #167: native_source_ternary_expression_asan_ubsan ............   Passed    7.57 sec
+        Start  55: native_source_module_graph_execution
+ 17/504 Test #402: cfg_guarded_drop_all_native_exit_edges .................   Passed    6.84 sec
+        Start  54: native_shared_borrow_contract
+ 18/504 Test #404: class_native_1_to_16_field_layout_matrix ...............   Passed   48.49 sec
+        Start 182: native_class_move_source_execution
+ 19/504 Test #223: source_actor_compiled_native_asan_ubsan ................   Passed   20.46 sec
+        Start 183: native_class_move_source_asan_ubsan
+ 20/504 Test #182: native_class_move_source_execution .....................   Passed    5.45 sec
+        Start 352: native_single_cleanup_epilogue
+ 21/504 Test #183: native_class_move_source_asan_ubsan ....................   Passed    4.99 sec
+        Start 222: source_actor_compiled_native_lifecycle
+ 22/504 Test  #55: native_source_module_graph_execution ...................   Passed   12.48 sec
+        Start 353: native_single_cleanup_epilogue_sanitized
+ 23/504 Test  #54: native_shared_borrow_contract ..........................   Passed    8.02 sec
+        Start  51: native_source_class_methods_sanitizer
+ 24/504 Test #352: native_single_cleanup_epilogue .........................   Passed    4.14 sec
+        Start  50: native_source_class_methods_release
+ 25/504 Test #353: native_single_cleanup_epilogue_sanitized ...............   Passed    5.18 sec
+        Start 171: native_branch_local_scope_asan_ubsan
+ 26/504 Test #171: native_branch_local_scope_asan_ubsan ...................   Passed    4.17 sec
+        Start 499: cortexm_actor_admission_model_matrix
+ 27/504 Test  #51: native_source_class_methods_sanitizer ..................   Passed   11.42 sec
+        Start 170: native_branch_local_scope_source_execution
+ 28/504 Test #499: cortexm_actor_admission_model_matrix ...................   Passed    2.73 sec
+        Start 164: native_source_conditional_cfg
+ 29/504 Test #222: source_actor_compiled_native_lifecycle .................   Passed   12.69 sec
+        Start 165: native_source_conditional_cfg_asan_ubsan
+ 30/504 Test  #50: native_source_class_methods_release ....................   Passed   11.47 sec
+        Start 349: native_colon_class_field_execution
+ 31/504 Test #170: native_branch_local_scope_source_execution .............   Passed    4.80 sec
+        Start  24: native_source_i64_os_exit_subset
+ 32/504 Test #164: native_source_conditional_cfg ..........................   Passed    4.93 sec
+        Start  47: native_source_scalar_while_compiler_aot_resume
+ 33/504 Test #165: native_source_conditional_cfg_asan_ubsan ...............   Passed    5.12 sec
+        Start  25: native_tree_shaking_direct_calls
+ 34/504 Test #349: native_colon_class_field_execution .....................   Passed    3.84 sec
+        Start 241: dop_inverted_type_admission
+ 35/504 Test  #25: native_tree_shaking_direct_calls .......................   Passed    2.39 sec
+        Start  27: native_annotation_macro_aot_admission
+ 36/504 Test  #24: native_source_i64_os_exit_subset .......................   Passed    3.47 sec
+        Start 378: cfg_execute_multifield_call_in_condition
+ 37/504 Test  #47: native_source_scalar_while_compiler_aot_resume .........   Passed    2.95 sec
+        Start 463: native_actor_and_vm_shard_budget_contention
+ 38/504 Test #241: dop_inverted_type_admission ............................   Passed    2.43 sec
+        Start  28: native_annotation_macro_aot_harness_selftest
+ 39/504 Test #463: native_actor_and_vm_shard_budget_contention ............   Passed    0.41 sec
+        Start 376: cfg_execute_call_condition
+ 40/504 Test #378: cfg_execute_multifield_call_in_condition ...............   Passed    0.98 sec
+        Start  49: native_http_compiled_actor_sanitizer
+ 41/504 Test #376: cfg_execute_call_condition .............................   Passed    1.08 sec
+        Start 504: native_ipc_receipt_correlation_host_reference
+ 42/504 Test #504: native_ipc_receipt_correlation_host_reference ..........   Passed    0.13 sec
+        Start  78: native_opencl_provider_g3_state_machine
+ 43/504 Test  #78: native_opencl_provider_g3_state_machine ................   Passed    0.00 sec
+        Start 461: native_vm_cross_domain_physical_turn_limit
+ 44/504 Test #461: native_vm_cross_domain_physical_turn_limit .............   Passed    0.11 sec
+        Start  77: native_portable_compute_opencl_g2_contract
+ 45/504 Test  #77: native_portable_compute_opencl_g2_contract .............   Passed    0.00 sec
+        Start  76: native_portable_compute_kernel_g2_contract
+ 46/504 Test  #76: native_portable_compute_kernel_g2_contract .............   Passed    0.00 sec
+        Start 240: dop_inverted_columns_safe_handles
+ 47/504 Test  #27: native_annotation_macro_aot_admission ..................   Passed    2.15 sec
+        Start  48: native_http_compiled_actor_release
+ 48/504 Test #240: dop_inverted_columns_safe_handles ......................   Passed    0.07 sec
+        Start 462: native_shared_actor_turn_gate_pthread_contention
+ 49/504 Test #462: native_shared_actor_turn_gate_pthread_contention .......   Passed    0.02 sec
+        Start 503: trusted_hierarchical_network_gate_host_only
+ 50/504 Test #503: trusted_hierarchical_network_gate_host_only ............   Passed    0.00 sec
+        Start  73: dop_gpu_exact_layout_fence_admission
+ 51/504 Test  #73: dop_gpu_exact_layout_fence_admission ...................   Passed    0.01 sec
+        Start 464: native_actor_shard_snapshot_quota_and_generation
+ 52/504 Test  #28: native_annotation_macro_aot_harness_selftest ...........   Passed    1.66 sec
+        Start 502: untrusted_network_quota_host_only
+ 53/504 Test #502: untrusted_network_quota_host_only ......................   Passed    0.00 sec
+        Start 483: refreshed_i64_module_contract_execution
+ 54/504 Test #464: native_actor_shard_snapshot_quota_and_generation .......   Passed    0.02 sec
+        Start 460: native_vm_cgroup_cpu_budgeted_carrier_admission
+ 55/504 Test #460: native_vm_cgroup_cpu_budgeted_carrier_admission ........   Passed    0.00 sec
+        Start  75: native_portable_compute_authority_contract
+ 56/504 Test  #75: native_portable_compute_authority_contract .............   Passed    0.00 sec
+        Start   7: native_realtime_transitive_effect_analysis
+ 57/504 Test   #7: native_realtime_transitive_effect_analysis .............   Passed    0.00 sec
+        Start  13: native_alloc_json_strict_text_tree_substrate
+ 58/504 Test  #13: native_alloc_json_strict_text_tree_substrate ...........   Passed    0.00 sec
+        Start  81: dop_static_access_batch_conflicts
+ 59/504 Test  #81: dop_static_access_batch_conflicts ......................   Passed    0.00 sec
+        Start   4: native_concurrency_vector_clock_host_only
+ 60/504 Test   #4: native_concurrency_vector_clock_host_only ..............   Passed    0.00 sec
+        Start   5: native_realtime_actor_arena_contract
+ 61/504 Test   #5: native_realtime_actor_arena_contract ...................   Passed    0.00 sec
+        Start  74: native_portable_compute_descriptor_contract
+ 62/504 Test  #74: native_portable_compute_descriptor_contract ............   Passed    0.00 sec
+        Start 239: native_dop_checked_region_addressing
+ 63/504 Test #239: native_dop_checked_region_addressing ...................   Passed    0.01 sec
+        Start   3: native_actor_supervisor_generational_reply_host_only
+ 64/504 Test   #3: native_actor_supervisor_generational_reply_host_only ...   Passed    0.01 sec
+        Start 459: native_actor_carrier_locality_control_priority
+ 65/504 Test #459: native_actor_carrier_locality_control_priority .........   Passed    0.00 sec
+        Start   6: native_static_safety_ast_contract
+ 66/504 Test   #6: native_static_safety_ast_contract ......................   Passed    0.00 sec
+        Start 399: cfg_exec_multifield_guard_chain
+ 67/504 Test #483: refreshed_i64_module_contract_execution ................   Passed    0.36 sec
+        Start 475: native_execution_context_exhaustion_admission
+ 68/504 Test #475: native_execution_context_exhaustion_admission ..........   Passed    0.00 sec
+        Start 446: native_exec_reborrow_shared
+ 69/504 Test  #49: native_http_compiled_actor_sanitizer ...................   Passed    1.73 sec
+        Start 391: class_exec_field_take_reinitialization
+ 70/504 Test #399: cfg_exec_multifield_guard_chain ........................   Passed    0.66 sec
+        Start 432: native_exec_arithmetic
+ 71/504 Test #446: native_exec_reborrow_shared ............................   Passed    0.90 sec
+        Start 451: native_actor_i64_access_evidence_host_only
+ 72/504 Test #451: native_actor_i64_access_evidence_host_only .............   Passed    0.00 sec
+        Start 390: class_exec_owned_stack_field
+ 73/504 Test  #48: native_http_compiled_actor_release .....................   Passed    1.60 sec
+        Start 393: class_exec_two_field_mutator
+ 74/504 Test #391: class_exec_field_take_reinitialization .................   Passed    0.94 sec
+        Start 433: native_exec_owned_stack_class
+ 75/504 Test #432: native_exec_arithmetic .................................   Passed    1.11 sec
+        Start  82: native_ownership_auto_traits_and_logical_dop
+ 76/504 Test  #82: native_ownership_auto_traits_and_logical_dop ...........   Passed    0.00 sec
+        Start 440: native_exec_lexical_mutable_loan
+ 77/504 Test #390: class_exec_owned_stack_field ...........................   Passed    1.10 sec
+        Start  29: native_int_array_llvm_abi
+ 78/504 Test #393: class_exec_two_field_mutator ...........................   Passed    0.98 sec
+        Start 237: native_data_layout_advisor
+ 79/504 Test #237: native_data_layout_advisor .............................   Passed    0.00 sec
+        Start 401: cfg_exec_experimental_owned_early_drop
+ 80/504 Test #433: native_exec_owned_stack_class ..........................   Passed    1.08 sec
+        Start 441: native_exec_rt_copy_scalar
+ 81/504 Test #440: native_exec_lexical_mutable_loan .......................   Passed    1.07 sec
+        Start 108: native_exit_void_runs_defer
+ 82/504 Test  #29: native_int_array_llvm_abi ..............................   Passed    0.90 sec
+        Start 439: native_exec_lexical_shared_loan
+ 83/504 Test #401: cfg_exec_experimental_owned_early_drop .................   Passed    0.89 sec
+        Start 398: cfg_exec_multifield_guard_fallthrough
+ 84/504 Test #441: native_exec_rt_copy_scalar .............................   Passed    0.86 sec
+        Start 396: class_exec_three_field_mutator
+ 85/504 Test #108: native_exit_void_runs_defer ............................   Passed    0.88 sec
+        Start 448: native_exec_reborrow_mut_to_shared
+ 86/504 Test #439: native_exec_lexical_shared_loan ........................   Passed    0.87 sec
+        Start 447: native_exec_reborrow_mut
+ 87/504 Test #398: cfg_exec_multifield_guard_fallthrough ..................   Passed    0.88 sec
+        Start  43: native_rt_scalar_frame_aot_two_tasks
+ 88/504 Test #396: class_exec_three_field_mutator .........................   Passed    0.91 sec
+        Start 132: shared_java_llvm_128_call_matrix
+ 89/504 Test #448: native_exec_reborrow_mut_to_shared .....................   Passed    0.89 sec
+        Start 389: class_exec_mut_to_shared_reborrow
+ 90/504 Test #447: native_exec_reborrow_mut ...............................   Passed    0.89 sec
+        Start 103: native_exit_overflow_fails_closed
+ 91/504 Test  #43: native_rt_scalar_frame_aot_two_tasks ...................   Passed    0.92 sec
+        Start 438: native_exec_owned_region_nested
+ 92/504 Test #132: shared_java_llvm_128_call_matrix .......................   Passed    0.89 sec
+        Start 431: native_exec_forward_call
+ 93/504 Test #389: class_exec_mut_to_shared_reborrow ......................   Passed    0.90 sec
+        Start 144: native_caught_throw_payload
+ 94/504 Test #103: native_exit_overflow_fails_closed ......................   Passed    1.09 sec
+        Start 445: native_exec_loan_exclusive
+ 95/504 Test #438: native_exec_owned_region_nested ........................   Passed    1.05 sec
+        Start 388: class_exec_shared_read
+ 96/504 Test #431: native_exec_forward_call ...............................   Passed    1.07 sec
+        Start 137: native_defer_field_return_snapshot
+ 97/504 Test #144: native_caught_throw_payload ............................   Passed    1.09 sec
+        Start 482: native_hpc_ml_scalar_source_provenance
+ 98/504 Test #445: native_exec_loan_exclusive .............................   Passed    1.10 sec
+        Start 486: refreshed_actor_persistent_fields
+ 99/504 Test #388: class_exec_shared_read .................................   Passed    1.10 sec
+        Start 102: native_exit_max_valid
+100/504 Test #137: native_defer_field_return_snapshot .....................   Passed    1.10 sec
+        Start 100: native_exit_void_fallthrough
+101/504 Test #482: native_hpc_ml_scalar_source_provenance .................   Passed    1.06 sec
+        Start 129: native_named_call_mut_borrow_binding
+102/504 Test #486: refreshed_actor_persistent_fields ......................   Passed    0.83 sec
+        Start 403: class_exec_two_field_shared_read
+103/504 Test #102: native_exit_max_valid ..................................   Passed    0.85 sec
+        Start 435: native_exec_lexical_local
+104/504 Test #100: native_exit_void_fallthrough ...........................   Passed    0.85 sec
+        Start 131: shared_java_llvm_http_handler
+105/504 Test #129: native_named_call_mut_borrow_binding ...................   Passed    0.87 sec
+        Start 387: class_exec_mutable_borrow
+106/504 Test #403: class_exec_two_field_shared_read .......................   Passed    0.93 sec
+        Start 104: native_exit_negative_fails_closed
+107/504 Test #435: native_exec_lexical_local ..............................   Passed    0.91 sec
+        Start 394: cfg_exec_mutated_multifield_early_true
+108/504 Test #131: shared_java_llvm_http_handler ..........................   Passed    0.91 sec
+        Start 436: native_exec_owned_identifier
+109/504 Test #387: class_exec_mutable_borrow ..............................   Passed    0.91 sec
+        Start 437: native_exec_owned_region
+110/504 Test #104: native_exit_negative_fails_closed ......................   Passed    0.71 sec
+        Start 107: native_exit_wide_64bit_overflow_fails_closed
+111/504 Test #394: cfg_exec_mutated_multifield_early_true .................   Passed    0.73 sec
+        Start 395: cfg_exec_mutated_multifield_early_false
+112/504 Test #436: native_exec_owned_identifier ...........................   Passed    0.75 sec
+        Start 413: native_class_val_final_mut_read
+113/504 Test #437: native_exec_owned_region ...............................   Passed    0.74 sec
+        Start 130: native_named_call_overload_arity_guest
+114/504 Test #107: native_exit_wide_64bit_overflow_fails_closed ...........   Passed    0.74 sec
+        Start 133: native_defer_lifo_guarded_execution
+115/504 Test #395: cfg_exec_mutated_multifield_early_false ................   Passed    0.73 sec
+        Start 392: class_exec_cfg_branch_field_take
+116/504 Test #413: native_class_val_final_mut_read ........................   Passed    0.71 sec
+        Start 400: cfg_exec_scalar_branch_move
+117/504 Test #130: native_named_call_overload_arity_guest .................   Passed    0.71 sec
+        Start 124: call_scoped_borrow_parameter_refresh
+118/504 Test #133: native_defer_lifo_guarded_execution ....................   Passed    0.70 sec
+        Start 230: native_ndarray_write_view_reference
+119/504 Test #230: native_ndarray_write_view_reference ....................   Passed    0.01 sec
+        Start 397: cfg_exec_multifield_guard_taken
+120/504 Test #392: class_exec_cfg_branch_field_take .......................   Passed    0.69 sec
+        Start 442: native_exec_rt_take_scalar
+121/504 Test #400: cfg_exec_scalar_branch_move ............................   Passed    0.70 sec
+        Start 128: native_named_call_mixed_guest
+122/504 Test #124: call_scoped_borrow_parameter_refresh ...................   Passed    0.70 sec
+        Start 101: native_exit_module_main
+123/504 Test #397: cfg_exec_multifield_guard_taken ........................   Passed    0.71 sec
+        Start 105: native_exit_zero
+124/504 Test #442: native_exec_rt_take_scalar .............................   Passed    0.70 sec
+        Start 106: native_exit_one
+125/504 Test #128: native_named_call_mixed_guest ..........................   Passed    0.69 sec
+        Start 343: native_compiled_name_arity_borrow_abi
+126/504 Test #101: native_exit_module_main ................................   Passed    0.69 sec
+        Start 412: native_class_colon_write
+127/504 Test #105: native_exit_zero .......................................   Passed    0.67 sec
+        Start 419: native_scalar_constructor_arithmetic
+128/504 Test #106: native_exit_one ........................................   Passed    0.70 sec
+        Start 386: native_public_class_field_read
+129/504 Test #343: native_compiled_name_arity_borrow_abi ..................   Passed    0.70 sec
+        Start 465: native_actor_owned_aos_soa_aosoa_dense_kernel
+130/504 Test #465: native_actor_owned_aos_soa_aosoa_dense_kernel ..........   Passed    0.01 sec
+        Start 434: native_exec_negative
+131/504 Test #412: native_class_colon_write ...............................   Passed    0.70 sec
+        Start 495: native_aot_driver
+132/504 Test #419: native_scalar_constructor_arithmetic ...................   Passed    0.70 sec
+        Start 327: native_user_tuple_call_executes
+133/504 Test #386: native_public_class_field_read .........................   Passed    0.67 sec
+        Start 143: native_caught_throw_unwind_lifo
+134/504 Test #434: native_exec_negative ...................................   Passed    0.63 sec
+        Start 420: native_scalar_constructor_simple
+135/504 Test #495: native_aot_driver ......................................   Passed    0.76 sec
+        Start 444: native_exec_loan_read
+136/504 Test #327: native_user_tuple_call_executes ........................   Passed    0.64 sec
+        Start 134: native_defer_multiguard_cfg_exit_execution
+137/504 Test #143: native_caught_throw_unwind_lifo ........................   Passed    0.66 sec
+        Start 430: native_exec_constant
+138/504 Test #420: native_scalar_constructor_simple .......................   Passed    0.70 sec
+        Start 127: native_named_call_reordered_guest
+139/504 Test #444: native_exec_loan_read ..................................   Passed    0.60 sec
+        Start 443: native_exec_rt_share_scalar
+140/504 Test #134: native_defer_multiguard_cfg_exit_execution .............   Passed    0.72 sec
+        Start 411: native_class_final_read
+141/504 Test #430: native_exec_constant ...................................   Passed    0.70 sec
+        Start 142: native_try_finally_return_snapshot
+142/504 Test #127: native_named_call_reordered_guest ......................   Passed    0.66 sec
+        Start 311: native_structural_shape_failclosed
+143/504 Test #311: native_structural_shape_failclosed .....................   Passed    0.02 sec
+        Start   2: native_symbol_property_layout_host_only_v1
+144/504 Test   #2: native_symbol_property_layout_host_only_v1 .............   Passed    0.01 sec
+        Start 476: native_execution_continuation_aosoa_trace
+145/504 Test #476: native_execution_continuation_aosoa_trace ..............   Passed    0.00 sec
+        Start 501: trusted_outbound_token_bucket_host_only
+146/504 Test #501: trusted_outbound_token_bucket_host_only ................   Passed    0.00 sec
+        Start 221: source_actor_await_trace_runtime
+147/504 Test #221: source_actor_await_trace_runtime .......................   Passed    0.00 sec
+        Start 242: native_managed_reference_width_and_dod_layout
+148/504 Test #242: native_managed_reference_width_and_dod_layout ..........   Passed    0.00 sec
+        Start 328: native_local_entry_identifier_executes
+149/504 Test #443: native_exec_rt_share_scalar ............................   Passed    0.61 sec
+        Start  44: wasm32_source_class_ownership_runtime
+150/504 Test #411: native_class_final_read ................................   Passed    0.59 sec
+        Start   1: native_send_sync_marker_contract
+151/504 Test   #1: native_send_sync_marker_contract .......................   Passed    0.00 sec
+        Start  26: native_compile_benchmark_harness_selftest
+152/504 Test #142: native_try_finally_return_snapshot .....................   Passed    0.62 sec
+        Start  79: native_opencl_real_gpu_probe_conditional
+153/504 Test  #44: wasm32_source_class_ownership_runtime ..................   Passed    0.33 sec
+        Start  38: native_linked_queue_exact_source_failclosed
+154/504 Test  #79: native_opencl_real_gpu_probe_conditional ...............   Passed    0.05 sec
+        Start  17: native_int_array_transaction_recovery
+155/504 Test #328: native_local_entry_identifier_executes .................   Passed    0.59 sec
+        Start 342: native_compiled_name_arity_overloads
+156/504 Test  #26: native_compile_benchmark_harness_selftest ..............   Passed    0.33 sec
+        Start  19: native_realtime_profile_cli
+157/504 Test  #19: native_realtime_profile_cli ............................   Passed    0.05 sec
+        Start  16: native_int_array_region_security
+158/504 Test  #17: native_int_array_transaction_recovery ..................   Passed    0.26 sec
+        Start 421: native_scalar_constructor_public
+159/504 Test  #38: native_linked_queue_exact_source_failclosed ............   Passed    0.34 sec
+        Start 450: native_actor_arena_persistent_scratch
+160/504 Test  #16: native_int_array_region_security .......................   Passed    0.20 sec
+        Start 306: native_ownership_async_boundary_matrix
+161/504 Test #450: native_actor_arena_persistent_scratch ..................   Passed    0.13 sec
+        Start 452: native_actor_owned_i64_heap_loan_quiescence
+162/504 Test #342: native_compiled_name_arity_overloads ...................   Passed    0.35 sec
+        Start 347: native_field_and_region_move_admission
+163/504 Test #452: native_actor_owned_i64_heap_loan_quiescence ............   Passed    0.08 sec
+        Start  34: native_owned_region_slot_security
+164/504 Test #306: native_ownership_async_boundary_matrix .................   Passed    0.21 sec
+        Start 109: native_exit_no_main_is_not_linkable
+165/504 Test  #34: native_owned_region_slot_security ......................   Passed    0.09 sec
+        Start 227: native_monotonic_timer_admission_and_cancel_race
+166/504 Test #227: native_monotonic_timer_admission_and_cancel_race .......   Passed    0.02 sec
+        Start 458: native_ores_vm_four_carrier_domains
+167/504 Test #458: native_ores_vm_four_carrier_domains ....................   Passed    0.00 sec
+        Start 479: native_supervisor_typed_panic_event
+168/504 Test #479: native_supervisor_typed_panic_event ....................   Passed    0.01 sec
+        Start  40: native_messagepack_wire_v2_java_parity
+169/504 Test #421: native_scalar_constructor_public .......................   Passed    0.38 sec
+        Start 457: native_vm_master_control_wake_coalescing
+170/504 Test #457: native_vm_master_control_wake_coalescing ...............   Passed    0.00 sec
+        Start 316: native_pinned_actor_heap_suspend_cancel_quiescence
+171/504 Test #347: native_field_and_region_move_admission .................   Passed    0.20 sec
+        Start 471: native_actor_lazy_carrier_creation_failure_fence
+172/504 Test #471: native_actor_lazy_carrier_creation_failure_fence .......   Passed    0.00 sec
+        Start 468: native_actor_typed_panic_exclusive_carrier
+173/504 Test #316: native_pinned_actor_heap_suspend_cancel_quiescence .....   Passed    0.02 sec
+        Start 470: native_actor_nonblocking_ready_queue
+174/504 Test #468: native_actor_typed_panic_exclusive_carrier .............   Passed    0.00 sec
+        Start 469: native_actor_exclusive_data_and_control
+175/504 Test #470: native_actor_nonblocking_ready_queue ...................   Passed    0.00 sec
+        Start 478: native_supervisor_reserved_control_future
+176/504 Test #469: native_actor_exclusive_data_and_control ................   Passed    0.01 sec
+        Start 474: native_actor_domain_exhaustion_no_reuse
+177/504 Test #478: native_supervisor_reserved_control_future ..............   Passed    0.01 sec
+        Start 231: native_actor_group_heap_loan_quiescence
+178/504 Test #231: native_actor_group_heap_loan_quiescence ................   Passed    0.00 sec
+        Start 477: native_actorgroup_per_child_wait_done
+179/504 Test #474: native_actor_domain_exhaustion_no_reuse ................   Passed    0.01 sec
+        Start  80: dop_hostbuffer_multithread_read_loan_quiescence
+180/504 Test #477: native_actorgroup_per_child_wait_done ..................   Passed    0.00 sec
+        Start 284: native_critical_state_loan_runtime_bridge
+181/504 Test #284: native_critical_state_loan_runtime_bridge ..............   Passed    0.00 sec
+        Start  23: native_compiler_source_budget
+182/504 Test  #80: dop_hostbuffer_multithread_read_loan_quiescence ........   Passed    0.01 sec
+        Start  84: gpu_device_generation_quiescence_fences
+183/504 Test  #84: gpu_device_generation_quiescence_fences ................   Passed    0.01 sec
+        Start 283: native_critical_handle_state_using_contract
+184/504 Test #283: native_critical_handle_state_using_contract ............   Passed    0.00 sec
+        Start 285: native_actor_owned_typed_scalar_state
+185/504 Test #285: native_actor_owned_typed_scalar_state ..................   Passed    0.00 sec
+        Start 282: native_function_effect_bitset_contract
+186/504 Test #282: native_function_effect_bitset_contract .................   Passed    0.00 sec
+        Start  37: native_actor_owned_heap_contract
+187/504 Test  #37: native_actor_owned_heap_contract .......................   Passed    0.00 sec
+        Start   9: native_stdlib_mutex_rw_queue_and_quiescence
+188/504 Test  #40: native_messagepack_wire_v2_java_parity .................   Passed    0.08 sec
+        Start  72: dop_typed_cpu_opencl_ownership
+189/504 Test  #72: dop_typed_cpu_opencl_ownership .........................   Passed    0.01 sec
+        Start 287: native_logical_mutex_fifo_and_cancellation
+190/504 Test #109: native_exit_no_main_is_not_linkable ....................   Passed    0.18 sec
+        Start  10: native_actor_state_rw_critical_using_admission
+191/504 Test #287: native_logical_mutex_fifo_and_cancellation .............   Passed    0.08 sec
+        Start 466: native_vm_supervisor_owner_typed_quiescent_control
+192/504 Test #466: native_vm_supervisor_owner_typed_quiescent_control .....   Passed    0.01 sec
+        Start 289: native_reserved_java_keywords
+193/504 Test  #23: native_compiler_source_budget ..........................   Passed    0.15 sec
+        Start  46: wasm32_source_actor_guest_lifecycle
+194/504 Test   #9: native_stdlib_mutex_rw_queue_and_quiescence ............   Passed    0.13 sec
+        Start 449: native_owned_i64_region_drop_and_provenance
+195/504 Test  #10: native_actor_state_rw_critical_using_admission .........   Passed    0.10 sec
+        Start 456: native_actor_fifo_mailbox_admission
+196/504 Test #449: native_owned_i64_region_drop_and_provenance ............   Passed    0.03 sec
+        Start 232: native_actor_done_resource_quiescence
+197/504 Test #232: native_actor_done_resource_quiescence ..................   Passed    0.00 sec
+        Start  45: wasm32_compiler_generated_source_actor_state
+198/504 Test #456: native_actor_fifo_mailbox_admission ....................   Passed    0.04 sec
+        Start 472: native_actor_send_stop_linearizable_race
+199/504 Test #472: native_actor_send_stop_linearizable_race ...............   Passed    0.01 sec
+        Start 497: cortexm_freestanding_source_object
+200/504 Test  #46: wasm32_source_actor_guest_lifecycle ....................   Passed    0.11 sec
+        Start  41: native_tagged_enum_message_java_wire_parity
+201/504 Test  #41: native_tagged_enum_message_java_wire_parity ............   Passed    0.03 sec
+        Start 226: native_actor_multi_group_membership
+202/504 Test  #45: wasm32_compiler_generated_source_actor_state ...........   Passed    0.10 sec
+        Start 348: native_colon_class_field_admission
+203/504 Test #226: native_actor_multi_group_membership ....................   Passed    0.02 sec
+        Start 315: native_pinned_continuation_loan_cancel_quiescence
+204/504 Test #289: native_reserved_java_keywords ..........................   Passed    0.17 sec
+        Start   8: native_core_atomic_mutex_rw_admission
+205/504 Test #497: cortexm_freestanding_source_object .....................   Passed    0.10 sec
+        Start  83: quantum_circuit_qasm3_simulator
+206/504 Test  #83: quantum_circuit_qasm3_simulator ........................   Passed    0.02 sec
+        Start 310: native_async_only_io_boundary_matrix
+207/504 Test #315: native_pinned_continuation_loan_cancel_quiescence ......   Passed    0.05 sec
+        Start 281: native_logical_critical_gate
+208/504 Test   #8: native_core_atomic_mutex_rw_admission ..................   Passed    0.04 sec
+        Start 271: native_assert_scalar_abi_contract
+209/504 Test #271: native_assert_scalar_abi_contract ......................   Passed    0.00 sec
+        Start 467: native_actor_supervisor_execution_authority
+210/504 Test #467: native_actor_supervisor_execution_authority ............   Passed    0.00 sec
+        Start 272: native_actor_local_unhandled_panic_bypass
+211/504 Test #272: native_actor_local_unhandled_panic_bypass ..............   Passed    0.00 sec
+        Start 274: native_effect_unwind_supervisor_control_bridge
+212/504 Test #281: native_logical_critical_gate ...........................   Passed    0.01 sec
+        Start 484: refreshed_actor_control_data_lane
+213/504 Test #274: native_effect_unwind_supervisor_control_bridge .........   Passed    0.00 sec
+        Start 286: native_actor_state_scope_nested_loan_fencing
+214/504 Test #286: native_actor_state_scope_nested_loan_fencing ...........   Passed    0.00 sec
+        Start 225: native_actor_group_managed_worker_readiness
+215/504 Test #484: refreshed_actor_control_data_lane ......................   Passed    0.00 sec
+        Start 481: native_ml_volatile_fence_and_mpa_failclosed
+216/504 Test #481: native_ml_volatile_fence_and_mpa_failclosed ............   Passed    0.00 sec
+        Start 500: value_boundary_admission
+217/504 Test #225: native_actor_group_managed_worker_readiness ............   Passed    0.02 sec
+        Start 480: native_actor_versioned_state_logical_races
+218/504 Test #480: native_actor_versioned_state_logical_races .............   Passed    0.00 sec
+        Start 275: native_effect_unwind_supervisor_end_to_end
+219/504 Test #348: native_colon_class_field_admission .....................   Passed    0.09 sec
+        Start 229: native_actor_port_bounded_owned_transport
+220/504 Test #275: native_effect_unwind_supervisor_end_to_end .............   Passed    0.00 sec
+        Start 288: native_exception_failure_precedence_and_diagnostics
+221/504 Test #229: native_actor_port_bounded_owned_transport ..............   Passed    0.00 sec
+        Start 238: dop_layout_checked_geometry
+222/504 Test #288: native_exception_failure_precedence_and_diagnostics ....   Passed    0.00 sec
+        Start 224: native_actor_resource_registry_quiescence
+223/504 Test #224: native_actor_resource_registry_quiescence ..............   Passed    0.00 sec
+        Start 485: native_test_assertions_remain_enabled
+224/504 Test #485: native_test_assertions_remain_enabled ..................   Passed    0.00 sec
+        Start 498: cortexm_source_actor_admission
+225/504 Test #238: dop_layout_checked_geometry ............................   Passed    0.01 sec
+        Start 453: native_fixed_arena_contract
+226/504 Test #453: native_fixed_arena_contract ............................   Passed    0.00 sec
+        Start  71: portable_target_abi_v1
+227/504 Test  #71: portable_target_abi_v1 .................................   Passed    0.00 sec
+        Start 455: native_actor_heap_no_tracing_gc
+228/504 Test #455: native_actor_heap_no_tracing_gc ........................   Passed    0.00 sec
+        Start 110: native_explicit_wasm32_target_ir
+229/504 Test #310: native_async_only_io_boundary_matrix ...................   Passed    0.07 sec
+        Start  36: native_int_array_unique_parallel_tokens
+230/504 Test  #36: native_int_array_unique_parallel_tokens ................   Passed    0.00 sec
+        Start  35: native_owned_region_unique_parallel_tokens
+231/504 Test  #35: native_owned_region_unique_parallel_tokens .............   Passed    0.00 sec
+        Start 314: native_async_io_completion_generation_races
+232/504 Test #500: value_boundary_admission ...............................   Passed    0.07 sec
+        Start  70: native_ownership_cfg_exact_once_field_destruction
+233/504 Test  #70: native_ownership_cfg_exact_once_field_destruction ......   Passed    0.00 sec
+        Start  20: native_callable_nominal_boundary
+234/504 Test #498: cortexm_source_actor_admission .........................   Passed    0.06 sec
+        Start  15: native_reduction_quantum_watchdog_host_only
+235/504 Test  #15: native_reduction_quantum_watchdog_host_only ............   Passed    0.00 sec
+        Start  18: native_int_array_model_differential
+236/504 Test #314: native_async_io_completion_generation_races ............   Passed    0.03 sec
+        Start 454: native_deterministic_graph_arena
+237/504 Test #110: native_explicit_wasm32_target_ir .......................   Passed    0.06 sec
+        Start  59: native_ctest_manifest_harness_adversarial
+238/504 Test #454: native_deterministic_graph_arena .......................   Passed    0.00 sec
+        Start 276: native_supervisor_failure_lane
+239/504 Test #276: native_supervisor_failure_lane .........................   Passed    0.00 sec
+        Start 268: native_supervisor_hierarchy_control
+240/504 Test  #18: native_int_array_model_differential ....................   Passed    0.01 sec
+        Start  12: native_core_log_severity_capacity_and_concurrency
+241/504 Test #268: native_supervisor_hierarchy_control ....................   Passed    0.00 sec
+        Start 228: native_pinned_actor_future_control_continuation
+242/504 Test #228: native_pinned_actor_future_control_continuation ........   Passed    0.00 sec
+        Start 269: native_supervisor_priority_control
+243/504 Test #269: native_supervisor_priority_control .....................   Passed    0.00 sec
+        Start 270: native_typed_exception_unwind
+244/504 Test #270: native_typed_exception_unwind ..........................   Passed    0.00 sec
+        Start 383: native_actor_epoch_deterministic_drop
+245/504 Test  #12: native_core_log_severity_capacity_and_concurrency ......   Passed    0.01 sec
+        Start 496: native_nominal_enum_overload_static_policy
+246/504 Test #383: native_actor_epoch_deterministic_drop ..................   Passed    0.00 sec
+        Start  22: native_scalar_generic_contract_harness_python_O
+247/504 Test #496: native_nominal_enum_overload_static_policy .............   Passed    0.00 sec
+        Start  14: native_array_result_nominal_closed_proof_host_only
+248/504 Test  #14: native_array_result_nominal_closed_proof_host_only .....   Passed    0.00 sec
+        Start 473: native_actor_scheduler_graph_heap_host_integration
+249/504 Test #473: native_actor_scheduler_graph_heap_host_integration .....   Passed    0.00 sec
+        Start  42: native_contract_positive_object_verifies
+250/504 Test  #20: native_callable_nominal_boundary .......................   Passed    0.06 sec
+        Start  69: native_ownership_cfg_dataflow_fixed_point
+251/504 Test  #69: native_ownership_cfg_dataflow_fixed_point ..............   Passed    0.00 sec
+        Start 382: native_owned_heap_deterministic_drop
+252/504 Test #382: native_owned_heap_deterministic_drop ...................   Passed    0.00 sec
+        Start  21: native_scalar_generic_contract_harness_selftest
+253/504 Test  #59: native_ctest_manifest_harness_adversarial ..............   Passed    0.06 sec
+        Start 267: native_actor_scalar_state_critical_lifetimes
+254/504 Test #267: native_actor_scalar_state_critical_lifetimes ...........   Passed    0.00 sec
+        Start 112: native_i64_module_contract_valid
+255/504 Test  #22: native_scalar_generic_contract_harness_python_O ........   Passed    0.05 sec
+        Start 415: reject_native_final_uninitialized
+256/504 Test  #42: native_contract_positive_object_verifies ...............   Passed    0.05 sec
+        Start 180: native_owned_identifier
+257/504 Test  #21: native_scalar_generic_contract_harness_selftest ........   Passed    0.04 sec
+        Start  89: native_using_typed_effects
+258/504 Test #415: reject_native_final_uninitialized ......................   Passed    0.03 sec
+        Start 203: reject_guest_actor_group_create
+259/504 Test #112: native_i64_module_contract_valid .......................   Passed    0.03 sec
+        Start 414: reject_native_const_alias_write
+260/504 Test #180: native_owned_identifier ................................   Passed    0.03 sec
+        Start  96: native_exit_reject_reserved_symbol
+261/504 Test  #89: native_using_typed_effects .............................   Passed    0.03 sec
+        Start 176: reject_owned_stack_duplicate_field
+262/504 Test #414: reject_native_const_alias_write ........................   Passed    0.03 sec
+        Start 256: reject_hyphenated_actor_critical_read_method
+263/504 Test #203: reject_guest_actor_group_create ........................   Passed    0.03 sec
+        Start 295: native_rt_copy_scalar
+264/504 Test  #96: native_exit_reject_reserved_symbol .....................   Passed    0.03 sec
+        Start 192: reject_local_moved_before_read
+265/504 Test #176: reject_owned_stack_duplicate_field .....................   Passed    0.03 sec
+        Start 428: reject_scalar_constructor_owned_int_arg
+266/504 Test #256: reject_hyphenated_actor_critical_read_method ...........   Passed    0.03 sec
+        Start 305: native_reborrow_mut_to_shared_ir
+267/504 Test #295: native_rt_copy_scalar ..................................   Passed    0.03 sec
+        Start 379: cfg_reject_missing_fallthrough
+268/504 Test #192: reject_local_moved_before_read .........................   Passed    0.03 sec
+        Start  67: native_rt_nested_loop_failclosed
+269/504 Test #428: reject_scalar_constructor_owned_int_arg ................   Passed    0.03 sec
+        Start 135: reject_native_defer_noncall
+270/504 Test #305: native_reborrow_mut_to_shared_ir .......................   Passed    0.03 sec
+271/504 Test #379: cfg_reject_missing_fallthrough .........................   Passed    0.03 sec
+        Start 197: native_contextual_method_identifier
+        Start 173: owned_stack_class
+272/504 Test  #67: native_rt_nested_loop_failclosed .......................   Passed    0.03 sec
+        Start 265: hyphenated_transform_minus_pipe
+273/504 Test #135: reject_native_defer_noncall ............................   Passed    0.03 sec
+        Start  99: native_exit_void_main_ir
+274/504 Test #197: native_contextual_method_identifier ....................   Passed    0.03 sec
+275/504 Test #173: owned_stack_class ......................................   Passed    0.03 sec
+        Start 337: native_name_arity_nested_loan_conflict
+        Start  87: native_integer_remainder_unavailable
+276/504 Test #265: hyphenated_transform_minus_pipe ........................   Passed    0.03 sec
+        Start 408: reject_native_private_array_size
+277/504 Test #337: native_name_arity_nested_loan_conflict .................   Passed    0.03 sec
+278/504 Test  #87: native_integer_remainder_unavailable ...................   Passed    0.03 sec
+        Start 370: class_reject_taken_field_reuse
+        Start 200: native_actor_final_group_field_gate
+279/504 Test  #99: native_exit_void_main_ir ...............................   Passed    0.03 sec
+        Start  66: native_rt_nested_for_failclosed
+280/504 Test #408: reject_native_private_array_size .......................   Passed    0.03 sec
+        Start 368: class_reject_unknown_secondary_field
+281/504 Test #200: native_actor_final_group_field_gate ....................   Passed    0.03 sec
+        Start 293: reject_reusable_case_write
+282/504 Test #370: class_reject_taken_field_reuse .........................   Passed    0.03 sec
+283/504 Test  #66: native_rt_nested_for_failclosed ........................   Passed    0.03 sec
+        Start 149: reject_caught_throw_array_size_operand
+        Start 363: class_reject_nonint_nested_field
+284/504 Test #368: class_reject_unknown_secondary_field ...................   Passed    0.03 sec
+        Start 213: source_future_typed_await_boundary
+285/504 Test #213: source_future_typed_await_boundary .....................   Passed    0.03 sec
+        Start 422: reject_scalar_constructor_arity
+286/504 Test #293: reject_reusable_case_write .............................   Passed    0.03 sec
+287/504 Test #149: reject_caught_throw_array_size_operand .................   Passed    0.03 sec
+288/504 Test #363: class_reject_nonint_nested_field .......................   Passed    0.03 sec
+        Start  95: native_exit_reject_main_arguments
+        Start 331: native_named_call_duplicate_slot
+        Start 233: reject_gpu_kernel
+289/504 Test  #95: native_exit_reject_main_arguments ......................   Passed    0.03 sec
+290/504 Test #331: native_named_call_duplicate_slot .......................   Passed    0.03 sec
+291/504 Test #233: reject_gpu_kernel ......................................   Passed    0.03 sec
+        Start 336: native_name_arity_conflicting_loans
+        Start 423: reject_scalar_constructor_effect_call
+        Start 296: native_rt_take_scalar
+292/504 Test #422: reject_scalar_constructor_arity ........................   Passed    0.03 sec
+        Start 300: reject_double_take
+293/504 Test #423: reject_scalar_constructor_effect_call ..................   Passed    0.03 sec
+294/504 Test #300: reject_double_take .....................................   Passed    0.03 sec
+        Start 140: reject_native_deferred_return_rebinding
+        Start 136: reject_native_defer_moved_return
+295/504 Test #336: native_name_arity_conflicting_loans ....................   Passed    0.03 sec
+296/504 Test #296: native_rt_take_scalar ..................................   Passed    0.03 sec
+        Start 215: source_nested_future_type_admission_fail_closed
+        Start 361: class_admit_ordered_legacy_two_field_layout
+297/504 Test #140: reject_native_deferred_return_rebinding ................   Passed    0.03 sec
+298/504 Test #136: reject_native_defer_moved_return .......................   Passed    0.03 sec
+299/504 Test #215: source_nested_future_type_admission_fail_closed ........   Passed    0.03 sec
+        Start  86: native_float_division_precedence_unavailable
+        Start  88: constant_main
+        Start 426: reject_scalar_constructor_owned_array
+300/504 Test #361: class_admit_ordered_legacy_two_field_layout ............   Passed    0.03 sec
+        Start 145: reject_caught_throw_nested_call
+301/504 Test  #86: native_float_division_precedence_unavailable ...........   Passed    0.03 sec
+302/504 Test #426: reject_scalar_constructor_owned_array ..................   Passed    0.03 sec
+303/504 Test #145: reject_caught_throw_nested_call ........................   Passed    0.03 sec
+        Start 262: reject_hyphenated_critical_suffix_as_invalid_name
+        Start 175: reject_owned_stack_unknown_field
+        Start 177: negative_literal
+304/504 Test  #88: constant_main ..........................................   Passed    0.03 sec
+        Start 341: native_name_arity_gap_reject
+305/504 Test #175: reject_owned_stack_unknown_field .......................   Passed    0.03 sec
+        Start 235: reject_gpu_expression
+306/504 Test #262: reject_hyphenated_critical_suffix_as_invalid_name ......   Passed    0.03 sec
+307/504 Test #177: negative_literal .......................................   Passed    0.03 sec
+308/504 Test #341: native_name_arity_gap_reject ...........................   Passed    0.03 sec
+        Start 254: reject_hyphenated_critical_write
+        Start 193: native_owned_local_shared_borrow
+        Start 154: reject_caught_throw_wasm32
+309/504 Test #154: reject_caught_throw_wasm32 .............................   Passed    0.03 sec
+        Start 303: native_reborrow_shared_ir
+310/504 Test #235: reject_gpu_expression ..................................   Passed    0.03 sec
+311/504 Test #254: reject_hyphenated_critical_write .......................   Passed    0.03 sec
+312/504 Test #193: native_owned_local_shared_borrow .......................   Passed    0.03 sec
+        Start 264: reject_hyphenated_transform_pipe
+        Start 152: reject_caught_throw_catch_array_size
+        Start 489: refreshed_actor_duplicate_field
+313/504 Test #264: reject_hyphenated_transform_pipe .......................   Passed    0.03 sec
+314/504 Test #152: reject_caught_throw_catch_array_size ...................   Passed    0.03 sec
+315/504 Test #489: refreshed_actor_duplicate_field ........................   Passed    0.03 sec
+        Start 204: reject_guest_actor_group_join
+        Start 189: reject_local_duplicate
+        Start 257: reject_hyphenated_actor_critical_write_after_fnc
+316/504 Test #303: native_reborrow_shared_ir ..............................   Passed    0.03 sec
+        Start 190: reject_local_forward_reference
+317/504 Test #204: reject_guest_actor_group_join ..........................   Passed    0.03 sec
+318/504 Test #189: reject_local_duplicate .................................   Passed    0.03 sec
+319/504 Test #257: reject_hyphenated_actor_critical_write_after_fnc .......   Passed    0.03 sec
+        Start 405: reject_native_private_field_read
+        Start 291: reject_dynamic_select_plan
+        Start 161: reject_unadmitted_trap_expression
+320/504 Test #190: reject_local_forward_reference .........................   Passed    0.03 sec
+        Start 410: reject_native_final_field_take
+321/504 Test #405: reject_native_private_field_read .......................   Passed    0.03 sec
+322/504 Test #291: reject_dynamic_select_plan .............................   Passed    0.03 sec
+323/504 Test #161: reject_unadmitted_trap_expression ......................   Passed    0.03 sec
+324/504 Test #410: reject_native_final_field_take .........................   Passed    0.03 sec
+        Start 186: owned_native_region_nested
+        Start 418: reject_native_const_alias_take
+        Start 261: reject_hyphenated_critical_spaced_as_invalid_name
+        Start 194: native_owned_local_mutable_borrow
+325/504 Test #261: reject_hyphenated_critical_spaced_as_invalid_name ......   Passed    0.03 sec
+        Start 330: native_named_call_unknown_label
+326/504 Test #418: reject_native_const_alias_take .........................   Passed    0.03 sec
+327/504 Test #194: native_owned_local_mutable_borrow ......................   Passed    0.03 sec
+        Start 302: native_loan_exclusive_ir
+        Start  63: native_rt_cooperate_failclosed
+328/504 Test #186: owned_native_region_nested .............................   Passed    0.03 sec
+        Start 150: reject_caught_throw_heap_owned_operand
+329/504 Test #330: native_named_call_unknown_label ........................   Passed    0.03 sec
+330/504 Test  #63: native_rt_cooperate_failclosed .........................   Passed    0.03 sec
+331/504 Test #150: reject_caught_throw_heap_owned_operand .................   Passed    0.03 sec
+        Start  68: native_rt_nested_cooperate_failclosed
+        Start  93: native_requires_rejects_unverified_wcet
+        Start 162: reject_nested_unadmitted_trap_expression
+332/504 Test #302: native_loan_exclusive_ir ...............................   Passed    0.03 sec
+        Start 307: reject_unsupported_native_io_blocking
+333/504 Test  #68: native_rt_nested_cooperate_failclosed ..................   Passed    0.03 sec
+334/504 Test  #93: native_requires_rejects_unverified_wcet ................   Passed    0.03 sec
+335/504 Test #162: reject_nested_unadmitted_trap_expression ...............   Passed    0.03 sec
+336/504 Test #307: reject_unsupported_native_io_blocking ..................   Passed    0.03 sec
+        Start 248: reject_rt_share
+        Start 298: reject_take_then_reuse
+        Start  64: native_rt_cooperate_expression_failclosed
+        Start 424: reject_scalar_constructor_unknown
+337/504 Test #248: reject_rt_share ........................................   Passed    0.03 sec
+338/504 Test #298: reject_take_then_reuse .................................   Passed    0.03 sec
+339/504 Test #424: reject_scalar_constructor_unknown ......................   Passed    0.03 sec
+        Start 252: reject_hyphenated_critical_read
+        Start 259: reject_hyphenated_actor_critical_read_after_fnc
+        Start 234: reject_quantum_kernel
+340/504 Test  #64: native_rt_cooperate_expression_failclosed ..............   Passed    0.03 sec
+        Start 141: reject_native_finally_override
+341/504 Test #252: reject_hyphenated_critical_read ........................   Passed    0.03 sec
+342/504 Test #234: reject_quantum_kernel ..................................   Passed    0.03 sec
+343/504 Test #141: reject_native_finally_override .........................   Passed    0.03 sec
+        Start 369: class_reject_byvalue_multifield_move
+        Start  91: native_using_duplicate_effect
+        Start 345: reject_oversized_integer
+344/504 Test #259: reject_hyphenated_actor_critical_read_after_fnc ........   Passed    0.03 sec
+        Start 260: reject_hyphenated_actor_critical_write_before_method
+345/504 Test  #91: native_using_duplicate_effect ..........................   Passed    0.03 sec
+346/504 Test #260: reject_hyphenated_actor_critical_write_before_method ...   Passed    0.03 sec
+        Start 371: class_reject_field_take_on_borrowed_owner
+        Start 198: native_actor_bare_method
+347/504 Test #369: class_reject_byvalue_multifield_move ...................   Passed    0.03 sec
+348/504 Test #345: reject_oversized_integer ...............................   Passed    0.03 sec
+        Start 160: reject_try_throw_capable_return
+        Start 172: arithmetic_precedence
+349/504 Test #172: arithmetic_precedence ..................................   Passed    0.03 sec
+        Start 357: class_reject_overlapping_borrows
+350/504 Test #371: class_reject_field_take_on_borrowed_owner ..............   Passed    0.03 sec
+351/504 Test #198: native_actor_bare_method ...............................   Passed    0.03 sec
+352/504 Test #160: reject_try_throw_capable_return ........................   Passed    0.03 sec
+        Start 202: reject_native_actor_group_await_spawn
+        Start 366: class_reject_immutable_exclusive_loan
+        Start 125: call_and_forward_ref
+353/504 Test #357: class_reject_overlapping_borrows .......................   Passed    0.03 sec
+354/504 Test #202: reject_native_actor_group_await_spawn ..................   Passed    0.03 sec
+355/504 Test #366: class_reject_immutable_exclusive_loan ..................   Passed    0.03 sec
+        Start 191: reject_local_unsupported_object
+        Start 147: reject_caught_throw_effect_signature
+        Start  61: native_rt_for_loop_failclosed
+356/504 Test #125: call_and_forward_ref ...................................   Passed    0.03 sec
+        Start 278: reject_raise_effect
+357/504 Test #147: reject_caught_throw_effect_signature ...................   Passed    0.03 sec
+358/504 Test  #61: native_rt_for_loop_failclosed ..........................   Passed    0.03 sec
+359/504 Test #278: reject_raise_effect ....................................   Passed    0.03 sec
+        Start 377: cfg_reject_multifield_class_return
+        Start 153: reject_caught_throw_finally_array_size
+        Start 258: reject_hyphenated_actor_critical_read_after_method
+360/504 Test #191: reject_local_unsupported_object ........................   Passed    0.03 sec
+        Start  90: native_using_unknown_effect
+361/504 Test #377: cfg_reject_multifield_class_return .....................   Passed    0.03 sec
+362/504 Test #153: reject_caught_throw_finally_array_size .................   Passed    0.03 sec
+        Start 364: class_reject_shared_write_secondary
+        Start 344: reject_duplicate_parameters
+363/504 Test #258: reject_hyphenated_actor_critical_read_after_method .....   Passed    0.03 sec
+364/504 Test  #90: native_using_unknown_effect ............................   Passed    0.03 sec
+        Start 146: reject_caught_throw_unsafe_defer
+        Start 301: native_loan_read_ir
+365/504 Test #364: class_reject_shared_write_secondary ....................   Passed    0.03 sec
+        Start 138: reject_native_defer_field_shared_borrow
+366/504 Test #344: reject_duplicate_parameters ............................   Passed    0.03 sec
+367/504 Test #146: reject_caught_throw_unsafe_defer .......................   Passed    0.03 sec
+368/504 Test #301: native_loan_read_ir ....................................   Passed    0.03 sec
+        Start 266: reject_suspend_critical
+        Start 338: native_name_arity_mode_mismatch
+        Start 355: class_exact_shared_ownership_diagnostic
+369/504 Test #138: reject_native_defer_field_shared_borrow ................   Passed    0.03 sec
+370/504 Test #266: reject_suspend_critical ................................   Passed    0.03 sec
+371/504 Test #338: native_name_arity_mode_mismatch ........................   Passed    0.03 sec
+        Start  65: native_rt_nested_while_failclosed
+        Start 380: cfg_reject_missing_fi
+        Start 417: reject_native_final_mut_write
+372/504 Test #355: class_exact_shared_ownership_diagnostic ................   Passed    0.03 sec
+        Start 299: reject_take_call_arg_overlap
+373/504 Test  #65: native_rt_nested_while_failclosed ......................   Passed    0.03 sec
+374/504 Test #380: cfg_reject_missing_fi ..................................   Passed    0.03 sec
+        Start 304: native_reborrow_mut_ir
+        Start  60: native_rt_while_loop_failclosed
+375/504 Test #417: reject_native_final_mut_write ..........................   Passed    0.03 sec
+376/504 Test #299: reject_take_call_arg_overlap ...........................   Passed    0.03 sec
+        Start 290: reject_static_select
+        Start 174: reject_owned_stack_escape
+377/504 Test  #60: native_rt_while_loop_failclosed ........................   Passed    0.03 sec
+378/504 Test #290: reject_static_select ...................................   Passed    0.03 sec
+379/504 Test #174: reject_owned_stack_escape ..............................   Passed    0.03 sec
+        Start 208: source_actor_typed_ref_nonspawn
+        Start 201: reject_native_actor_group_spawn
+        Start 409: reject_native_final_field_write
+380/504 Test #304: native_reborrow_mut_ir .................................   Passed    0.03 sec
+        Start 427: reject_scalar_constructor_effect_arg
+381/504 Test #208: source_actor_typed_ref_nonspawn ........................   Passed    0.03 sec
+        Start 491: refreshed_actor_immutable_write
+382/504 Test #201: reject_native_actor_group_spawn ........................   Passed    0.03 sec
+383/504 Test #409: reject_native_final_field_write ........................   Passed    0.03 sec
+384/504 Test #427: reject_scalar_constructor_effect_arg ...................   Passed    0.03 sec
+        Start 492: refreshed_actor_unknown_field
+        Start 367: class_reject_immutable_owner_field_write
+        Start 362: class_reject_duplicate_field
+385/504 Test #367: class_reject_immutable_owner_field_write ...............   Passed    0.03 sec
+        Start 372: class_reject_whole_borrow_of_partially_moved_object
+386/504 Test #491: refreshed_actor_immutable_write ........................   Passed    0.03 sec
+387/504 Test #492: refreshed_actor_unknown_field ..........................   Passed    0.03 sec
+388/504 Test #362: class_reject_duplicate_field ...........................   Passed    0.03 sec
+        Start 358: class_reject_unknown_field
+        Start 253: reject_hyphenated_critical_read_after_fnc
+        Start 157: reject_finally_continue_override
+389/504 Test #372: class_reject_whole_borrow_of_partially_moved_object ....   Passed    0.03 sec
+390/504 Test #253: reject_hyphenated_critical_read_after_fnc ..............   Passed    0.03 sec
+391/504 Test #157: reject_finally_continue_override .......................   Passed    0.03 sec
+        Start 195: reject_actor
+        Start 179: native_owned_lexical_lifetime
+        Start 187: reject_unsupported_native_heap_type
+392/504 Test #358: class_reject_unknown_field .............................   Passed    0.03 sec
+        Start 333: native_named_call_mut_borrow_conflict
+393/504 Test #195: reject_actor ...........................................   Passed    0.03 sec
+        Start 250: reject_suspends
+394/504 Test #179: native_owned_lexical_lifetime ..........................   Passed    0.03 sec
+395/504 Test #187: reject_unsupported_native_heap_type ....................   Passed    0.03 sec
+396/504 Test #333: native_named_call_mut_borrow_conflict ..................   Passed    0.03 sec
+        Start  85: native_float_division_unavailable
+        Start 280: reject_recover_effect
+        Start 159: reject_try_effectful_body
+397/504 Test #250: reject_suspends ........................................   Passed    0.03 sec
+398/504 Test  #85: native_float_division_unavailable ......................   Passed    0.03 sec
+        Start 487: refreshed_actor_abi_actor_collision
+        Start 493: refreshed_actor_unknown_write
+399/504 Test #280: reject_recover_effect ..................................   Passed    0.03 sec
+400/504 Test #159: reject_try_effectful_body ..............................   Passed    0.03 sec
+        Start 294: reject_undefined
+        Start 297: native_rt_share_scalar
+401/504 Test #487: refreshed_actor_abi_actor_collision ....................   Passed    0.03 sec
+402/504 Test #493: refreshed_actor_unknown_write ..........................   Passed    0.03 sec
+403/504 Test #294: reject_undefined .......................................   Passed    0.03 sec
+        Start 206: source_actor_typed_ref_admit
+        Start 374: class_reject_actor_borrowed_payload
+        Start 196: native_actor_explicit_method
+404/504 Test #297: native_rt_share_scalar .................................   Passed    0.03 sec
+        Start 359: class_reject_noncopy_value
+405/504 Test #374: class_reject_actor_borrowed_payload ....................   Passed    0.03 sec
+        Start 178: nested_comments
+406/504 Test #359: class_reject_noncopy_value .............................   Passed    0.03 sec
+        Start 244: native_borrowed_parameter
+407/504 Test #206: source_actor_typed_ref_admit ...........................   Passed    0.03 sec
+408/504 Test #196: native_actor_explicit_method ...........................   Passed    0.03 sec
+        Start 245: reject_rt_borrow_mut
+        Start 488: refreshed_actor_abi_func_collision
+409/504 Test #488: refreshed_actor_abi_func_collision .....................   Passed    0.03 sec
+        Start 139: reject_native_defer_field_moved_return
+410/504 Test #178: nested_comments ........................................   Passed    0.03 sec
+411/504 Test #244: native_borrowed_parameter ..............................   Passed    0.03 sec
+412/504 Test #245: reject_rt_borrow_mut ...................................   Passed    0.03 sec
+        Start 365: class_reject_overlap_across_fields
+        Start 251: reject_critical
+        Start 263: reject_hyphenated_nb_select
+413/504 Test #365: class_reject_overlap_across_fields .....................   Passed    0.03 sec
+        Start 111: module_main
+414/504 Test #139: reject_native_defer_field_moved_return .................   Passed    0.03 sec
+415/504 Test #251: reject_critical ........................................   Passed    0.03 sec
+416/504 Test #263: reject_hyphenated_nb_select ............................   Passed    0.03 sec
+        Start 313: pure_user_blocking_suffix
+        Start  98: native_exit_reject_unsupported_async_root
+        Start 163: reject_binary_operand_trap_expression
+417/504 Test  #98: native_exit_reject_unsupported_async_root ..............   Passed    0.04 sec
+        Start 429: reject_scalar_constructor_effect_body
+418/504 Test #163: reject_binary_operand_trap_expression ..................   Passed    0.04 sec
+        Start 151: reject_caught_throw_defer_array_size
+419/504 Test #111: module_main ............................................   Passed    0.04 sec
+420/504 Test #313: pure_user_blocking_suffix ..............................   Passed    0.04 sec
+        Start 158: reject_try_nonempty_catch
+        Start 207: source_actor_typed_ref_mismatch
+421/504 Test #429: reject_scalar_constructor_effect_body ..................   Passed    0.03 sec
+422/504 Test #158: reject_try_nonempty_catch ..............................   Passed    0.03 sec
+423/504 Test #207: source_actor_typed_ref_mismatch ........................   Passed    0.03 sec
+        Start 308: reject_unsupported_native_io_bare
+        Start 246: reject_rt_take
+        Start 425: reject_scalar_constructor_duplicate
+424/504 Test #151: reject_caught_throw_defer_array_size ...................   Passed    0.03 sec
+        Start 385: reject_native_private_filled_commit
+425/504 Test #308: reject_unsupported_native_io_bare ......................   Passed    0.03 sec
+426/504 Test #425: reject_scalar_constructor_duplicate ....................   Passed    0.03 sec
+427/504 Test #385: reject_native_private_filled_commit ....................   Passed    0.03 sec
+        Start  62: native_rt_unbounded_loop_failclosed
+        Start  92: native_critical_actor_state_not_lowered
+        Start 309: reject_unverified_target_header
+428/504 Test #246: reject_rt_take .........................................   Passed    0.03 sec
+        Start 205: reject_guest_actor_group_shadow
+429/504 Test #309: reject_unverified_target_header ........................   Passed    0.03 sec
+        Start 416: reject_native_val_alias_write
+430/504 Test  #62: native_rt_unbounded_loop_failclosed ....................   Passed    0.03 sec
+431/504 Test  #92: native_critical_actor_state_not_lowered ................   Passed    0.03 sec
+432/504 Test #205: reject_guest_actor_group_shadow ........................   Passed    0.03 sec
+        Start 155: reject_finally_return_override
+        Start 156: reject_finally_break_override
+        Start 384: reject_native_private_array_mutation
+433/504 Test #156: reject_finally_break_override ..........................   Passed    0.03 sec
+        Start 292: reject_select_plan_factory
+434/504 Test #416: reject_native_val_alias_write ..........................   Passed    0.03 sec
+435/504 Test #155: reject_finally_return_override .........................   Passed    0.03 sec
+436/504 Test #384: reject_native_private_array_mutation ...................   Passed    0.03 sec
+        Start 188: reject_local_uninitialized
+        Start 185: owned_native_heap_lowering
+        Start 354: class_reject_byvalue_mutation
+437/504 Test #354: class_reject_byvalue_mutation ..........................   Passed    0.03 sec
+        Start 243: reject_rt_borrow
+438/504 Test #292: reject_select_plan_factory .............................   Passed    0.03 sec
+439/504 Test #188: reject_local_uninitialized .............................   Passed    0.03 sec
+        Start 255: reject_hyphenated_critical_write_after_fnc
+        Start 490: refreshed_actor_field_shadow
+440/504 Test #185: owned_native_heap_lowering .............................   Passed    0.03 sec
+        Start 247: reject_rt_copy
+441/504 Test #243: reject_rt_borrow .......................................   Passed    0.03 sec
+442/504 Test #255: reject_hyphenated_critical_write_after_fnc .............   Passed    0.03 sec
+        Start 373: class_reject_actor_send_after_move
+        Start 356: class_reject_shared_mutation
+443/504 Test #490: refreshed_actor_field_shadow ...........................   Passed    0.03 sec
+444/504 Test #247: reject_rt_copy .........................................   Passed    0.03 sec
+        Start 148: reject_caught_throw_finally_call
+        Start 407: reject_native_private_field_take
+445/504 Test #373: class_reject_actor_send_after_move .....................   Passed    0.03 sec
+        Start 249: reject_unqualified_borrow_call
+446/504 Test #356: class_reject_shared_mutation ...........................   Passed    0.03 sec
+447/504 Test #148: reject_caught_throw_finally_call .......................   Passed    0.03 sec
+448/504 Test #407: reject_native_private_field_take .......................   Passed    0.03 sec
+        Start 381: cfg_reject_void_guard
+        Start 214: source_nested_option_type_admission_fail_closed
+        Start 375: cfg_reject_impure_move_condition
+449/504 Test #214: source_nested_option_type_admission_fail_closed ........   Passed    0.03 sec
+        Start 329: reject_wrong_arity
+450/504 Test #249: reject_unqualified_borrow_call .........................   Passed    0.03 sec
+451/504 Test #381: cfg_reject_void_guard ..................................   Passed    0.03 sec
+452/504 Test #375: cfg_reject_impure_move_condition .......................   Passed    0.03 sec
+        Start  94: native_actor_state_sealed_until_lowering
+        Start 199: native_actor_suspending_method_gate
+        Start 279: reject_panic_effect
+453/504 Test #199: native_actor_suspending_method_gate ....................   Passed    0.03 sec
+        Start 406: reject_native_private_field_write
+454/504 Test #329: reject_wrong_arity .....................................   Passed    0.03 sec
+455/504 Test  #94: native_actor_state_sealed_until_lowering ...............   Passed    0.03 sec
+456/504 Test #279: reject_panic_effect ....................................   Passed    0.03 sec
+        Start  97: native_exit_reject_unsupported_explicit_exit
+        Start 494: refreshed_actor_unsupported_field
+        Start 184: reject_owned_int_without_opt_in
+457/504 Test #184: reject_owned_int_without_opt_in ........................   Passed    0.03 sec
+        Start 332: native_named_call_positional_after_named
+458/504 Test #406: reject_native_private_field_write ......................   Passed    0.03 sec
+459/504 Test  #97: native_exit_reject_unsupported_explicit_exit ...........   Passed    0.03 sec
+460/504 Test #494: refreshed_actor_unsupported_field ......................   Passed    0.03 sec
+        Start 340: native_name_arity_main_overload_reject
+        Start 346: reject_unclosed_comment
+        Start 277: reject_throw_effect
+461/504 Test #332: native_named_call_positional_after_named ...............   Passed    0.03 sec
+462/504 Test #340: native_name_arity_main_overload_reject .................   Passed    0.03 sec
+463/504 Test #346: reject_unclosed_comment ................................   Passed    0.03 sec
+464/504 Test #277: reject_throw_effect ....................................   Passed    0.03 sec
+        Start 360: class_reject_suspend_boundary
+        Start  39: native_linked_queue_harness_adversarial
+        Start 325: native_user_tuple_call_is_ordinary
+        Start 236: reject_cpu_expression
+465/504 Test #360: class_reject_suspend_boundary ..........................   Passed    0.03 sec
+466/504 Test #236: reject_cpu_expression ..................................   Passed    0.03 sec
+        Start 122: native_contract_unlinked_import
+        Start 210: source_actor_await_ready_trace_runtime_ir
+467/504 Test #325: native_user_tuple_call_is_ordinary .....................   Passed    0.03 sec
+        Start 113: native_i64_module_contract_missing
+468/504 Test  #39: native_linked_queue_harness_adversarial ................   Passed    0.03 sec
+        Start 322: native_tuple_singleton_compact_failclosed
+469/504 Test #122: native_contract_unlinked_import ........................   Passed    0.03 sec
+470/504 Test #113: native_i64_module_contract_missing .....................   Passed    0.03 sec
+        Start 324: native_entry_generic_product_failclosed
+        Start 321: native_tuple_singleton_explicit_failclosed
+471/504 Test #210: source_actor_await_ready_trace_runtime_ir ..............   Passed    0.03 sec
+472/504 Test #322: native_tuple_singleton_compact_failclosed ..............   Passed    0.03 sec
+        Start 323: native_entry_value_failclosed
+        Start 334: reject_duplicates
+473/504 Test #324: native_entry_generic_product_failclosed ................   Passed    0.03 sec
+474/504 Test #321: native_tuple_singleton_explicit_failclosed .............   Passed    0.03 sec
+475/504 Test #323: native_entry_value_failclosed ..........................   Passed    0.03 sec
+        Start 320: native_tuple_empty_compact_failclosed
+        Start 209: source_actor_await_ready_continuation_ir
+        Start 319: native_tuple_empty_explicit_failclosed
+476/504 Test #334: reject_duplicates ......................................   Passed    0.03 sec
+        Start 326: native_local_entry_identifier_is_ordinary
+477/504 Test #320: native_tuple_empty_compact_failclosed ..................   Passed    0.03 sec
+478/504 Test #319: native_tuple_empty_explicit_failclosed .................   Passed    0.03 sec
+        Start 317: native_tuple_explicit_literal_failclosed
+        Start 335: reject_same_arity_different_names
+479/504 Test #209: source_actor_await_ready_continuation_ir ...............   Passed    0.03 sec
+480/504 Test #326: native_local_entry_identifier_is_ordinary ..............   Passed    0.03 sec
+        Start 339: native_name_arity_borrow_mode_duplicate
+        Start 123: native_contract_string_unimplemented
+481/504 Test #335: reject_same_arity_different_names ......................   Passed    0.03 sec
+482/504 Test #339: native_name_arity_borrow_mode_duplicate ................   Passed    0.03 sec
+483/504 Test #123: native_contract_string_unimplemented ...................   Passed    0.03 sec
+        Start 211: reject_source_actor_await_suspended_local
+        Start 121: native_i64_module_contract_duplicate
+        Start 219: reject_native_entry_return_until_parity
+484/504 Test #317: native_tuple_explicit_literal_failclosed ...............   Passed    0.03 sec
+        Start 114: native_i64_module_contract_private
+485/504 Test #211: reject_source_actor_await_suspended_local ..............   Passed    0.03 sec
+486/504 Test #219: reject_native_entry_return_until_parity ................   Passed    0.03 sec
+487/504 Test #114: native_i64_module_contract_private .....................   Passed    0.03 sec
+        Start 118: native_i64_module_contract_duplicate_parameter
+        Start 318: native_tuple_compact_literal_failclosed
+        Start 217: reject_native_entry_shadow_actor
+488/504 Test #121: native_i64_module_contract_duplicate ...................   Passed    0.03 sec
+        Start 126: native_named_call_lexical_ir_order
+489/504 Test #126: native_named_call_lexical_ir_order .....................   Passed    0.02 sec
+        Start 117: native_i64_module_contract_void
+490/504 Test #118: native_i64_module_contract_duplicate_parameter .........   Passed    0.03 sec
+        Start 212: reject_source_actor_await_callable_result
+491/504 Test #318: native_tuple_compact_literal_failclosed ................   Passed    0.03 sec
+492/504 Test #217: reject_native_entry_shadow_actor .......................   Passed    0.03 sec
+        Start 120: native_i64_module_contract_unknown
+        Start 216: reject_native_entry_shadow_class
+493/504 Test #117: native_i64_module_contract_void ........................   Passed    0.03 sec
+        Start 115: native_i64_module_contract_arity
+494/504 Test #212: reject_source_actor_await_callable_result ..............   Passed    0.03 sec
+495/504 Test #216: reject_native_entry_shadow_class .......................   Passed    0.03 sec
+        Start 116: native_i64_module_contract_borrow
+        Start 119: native_i64_module_contract_split_arrow
+496/504 Test #120: native_i64_module_contract_unknown .....................   Passed    0.03 sec
+        Start 218: reject_native_entry_parameter_until_parity
+497/504 Test #115: native_i64_module_contract_arity .......................   Passed    0.03 sec
+        Start 220: reject_native_entry_local_until_parity
+498/504 Test #119: native_i64_module_contract_split_arrow .................   Passed    0.03 sec
+        Start 312: native_strict_nonblocking_io_source_guard
+499/504 Test #116: native_i64_module_contract_borrow ......................   Passed    0.03 sec
+500/504 Test #218: reject_native_entry_parameter_until_parity .............   Passed    0.03 sec
+        Start  11: native_http_exchange_generation_ownership
+        Start 273: native_http_response_supervisor_guard
+501/504 Test #273: native_http_response_supervisor_guard ..................   Passed    0.00 sec
+502/504 Test #312: native_strict_nonblocking_io_source_guard ..............   Passed    0.02 sec
+503/504 Test  #11: native_http_exchange_generation_ownership ..............   Passed    0.02 sec
+504/504 Test #220: reject_native_entry_local_until_parity .................   Passed    0.03 sec
+
+100% tests passed out of 504
+
+Total Test time (real) = 183.02 sec
