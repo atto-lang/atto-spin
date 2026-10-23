@@ -1,0 +1,37 @@
+{
+  "sources": {
+    "llvm": {
+      "commit": "c7e4f28aa36f896e347e2c9a87f8feccc56a8c71",
+      "tree": "722a901e939a1202b7a8737fa5c0bfd90d8c674a",
+      "commit_base64": "dHJlZSA3MjJhOTAxZTkzOWExMjAyYjdhODczN2ZhNWMwYmZkOTBkOGM2NzRhCnBhcmVudCBiNDQ2NzlhNDg1NGQ2NWY2NjU3OTE2MTI1OTBhMjFjZmI5NTUyOTM4CmF1dGhvciBvcmVzb2Z0d2FyZSA8YWxleGFuZGVyLmQubWlsbHNAZ21haWwuY29tPiAxNzkyNzgxNTk1IC0wNTAwCmNvbW1pdHRlciBvcmVzb2Z0d2FyZSA8YWxleGFuZGVyLmQubWlsbHNAZ21haWwuY29tPiAxNzkyNzgxNTk1IC0wNTAwCgpCaW5kIGJvcnJvdyBtYXRyaXggQ0kgY29tbWFuZHMgdG8gdGhlaXIgY29tcGlsZXIgYW5kIHNhbml0aXplciBhcmd1bWVudHMK"
+    },
+    "java": {
+      "commit": "10792c332e6a31d685ca65960f841543fe95fbb8",
+      "tree": "5914320ff931b298c6e1e3fd1a3c88757627a69e",
+      "commit_base64": "dHJlZSA1OTE0MzIwZmY5MzFiMjk4YzZlMWUzZmQxYTNjODg3NTc2MjdhNjllCnBhcmVudCA3OWU4OGM2MjdlZmE5NTIyYTA5OTAwNzczMDFlYjY2MTFkZDkzMjBjCmF1dGhvciBvcmVzb2Z0d2FyZSA8YWxleGFuZGVyLmQubWlsbHNAZ21haWwuY29tPiAxNzkyNzgxNDc4IC0wNTAwCmNvbW1pdHRlciBvcmVzb2Z0d2FyZSA8YWxleGFuZGVyLmQubWlsbHNAZ21haWwuY29tPiAxNzkyNzgxNDc4IC0wNTAwCgpFbmZvcmNlIGFsbCAxNjIgc2hhcmVkIG5hdGl2ZSBhbmQgSmF2YSBib3Jyb3cgdmVjdG9ycyBpbiByZWdyZXNzaW9uIENJCg=="
+    }
+  },
+  "destination": "led-dynamo/leddy-e2e",
+  "destination_id": 1324139596,
+  "destination_visibility": "private",
+  "branch": "validation/borrow-matrix-20261023",
+  "mirror_commit": "b96cd28f515cc8a6f0ef4bec32b36f7ddc47578d",
+  "mirror_tree": "fdc8dcde4ef50e8304395441cdff761269333a16",
+  "source_subtree_hashes_verified": true,
+  "authorization": "User AGENTS.md budget fallback",
+  "production_runtime_changes": false,
+  "status": "COMPLETED",
+  "cross_org_source_credentials": false,
+  "run_id": 40007239817,
+  "run_url": "https://github.com/led-dynamo/leddy-e2e/actions/runs/40007239817",
+  "conclusion": "SUCCESS",
+  "job_id": 120598146741,
+  "native_matrix_cases": 144,
+  "native_accepted": 60,
+  "native_rejected": 84,
+  "java_differential_cases": 144,
+  "shared_corpus_vectors": 162,
+  "native_focused_ctests": 4,
+  "java_test_methods": 4,
+  "full_runtime_baseline_run": 39845008508
+}
