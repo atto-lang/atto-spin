@@ -43,5 +43,8 @@ declarations; its affected test passes locally, and the production runtime code
 is unchanged from the benchmark head. The backend pins include this repair.
 
 The exact-tree retry is [run 39845008508](https://github.com/led-dynamo/leddy-e2e/actions/runs/39845008508).
-No successful fallback result is claimed until its completed receipt exists;
-required origin repository checks remain separate.
+The retry **completed successfully**: 515 native CTests, 317 Java tests in 38
+suites, 48 module / 33 method / 37 bool native cases with 14 / 11 / 13 Java
+comparisons, and all three native HTTP ownership tests repeated five times.
+`linux-ci-receipt.json` binds the exact source trees, mirror commit and run/job
+identities. This success does not replace required origin repository merge checks.
