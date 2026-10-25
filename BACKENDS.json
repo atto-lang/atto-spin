@@ -1,0 +1,21 @@
+{
+  "java": {
+    "pin": "SOURCE_REF",
+    "suite": "scripts/test.sh",
+    "execution": "supported"
+  },
+  "llvm": {
+    "pin": "LLVM_SOURCE_REF",
+    "execution": "unsupported",
+    "rejection_probes": [
+      {
+        "path": "examples/mixed.ores",
+        "diagnostic": "oreslang-llvmc: actor requires at least one scalar field at byte 151"
+      },
+      {
+        "path": "src/spin.ores",
+        "diagnostic": "oreslang-llvmc: native class field supports only scalar int/bool or mut Array<int> at byte 289"
+      }
+    ]
+  }
+}

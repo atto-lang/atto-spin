@@ -1,0 +1,37 @@
+{
+  "spin_commit": "2c11bcf03752c092d42b9d796ac7ee0bc2feaf57",
+  "spin_dirty": true,
+  "java_source_commit": "4fe60a8b7d381b69695af17f5bfead27c5469da5",
+  "router_commit": "b736ecfeae9b2c702a672930f97209f5d27e090c",
+  "benchmark_sha256": "e8929f906a48e9a00acd406a9f672cdf6440ee38f150e0e9a5cd4c3d537fe715",
+  "fixture_sha256": "f39d2840bbb2e9a08e7c0b5970dd55101efa4348bca0f597080fbf1cb6fc0e39",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "cpus": 18,
+  "fd_limit": [
+    1048575,
+    9223372036854775807
+  ],
+  "java_tool_options": " -Xms256m -Xmx2g -Dores.runtime.carriers=java -Djdk.httpserver.maxConnections=20000",
+  "java_version": "openjdk version \"25.0.4.1\" 2026-08-18 LTS\nOpenJDK Runtime Environment Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS, mixed mode, sharing)\n",
+  "scope": "JVM interpreter; loopback single-client-process simultaneous one-request-per-task bursts; new TCP connections; no retries; actor limit is HTTP in-flight admission, not a reusable pool; backlog equals admission limit",
+  "configuration": {
+    "concurrency": [
+      100,
+      1000,
+      10000
+    ],
+    "actors": [
+      5,
+      20,
+      50,
+      300
+    ],
+    "modes": [
+      "shared",
+      "isolated"
+    ],
+    "repeats": 3,
+    "timeout": 20,
+    "output": "/Users/alexandermills/Documents/Codex/2026-10-07/in-t/outputs/spin-load-matrix"
+  }
+}
