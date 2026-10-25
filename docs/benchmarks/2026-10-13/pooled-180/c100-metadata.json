@@ -1,0 +1,21 @@
+{
+  "spin_commit": "3a015b5b4e79c99a8eb18fd1f84e9958ee260dc8",
+  "spin_dirty": true,
+  "runtime_commit": "62646c4372244723813ab06f2d122a6b2f5c0995",
+  "router_commit": "9a9529d66d7740b12bf919f0bd779c0e5a4064a7",
+  "driver_sha256": "ebd1bffdf3030434b8d584b6cd0310c86cc653c291f79cb096a03b0e60a0b8d6",
+  "fixture_sha256": "e9b53feca338d33faa115a535f437ec851a5fdd36d346fade9574f6bacdddb7f",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "cpus": 18,
+  "java_options": " -Xms256m -Xmx2g -Dores.runtime.carriers=java -Djdk.httpserver.maxConnections=20000",
+  "java_version": "openjdk version \"25.0.4.1\" 2026-08-18 LTS\nOpenJDK Runtime Environment Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS, mixed mode, sharing)\n",
+  "pool_workers_per_mode": 32,
+  "mix": "half shared clients, half isolated; fixed per connection; no retry",
+  "configuration": {
+    "concurrency": 100,
+    "seconds": 180.0,
+    "warmup": 10.0,
+    "timeout": 60,
+    "output": "/Users/alexandermills/Documents/Codex/2026-10-07/in-t/outputs/spin-pooled-180-c100"
+  }
+}

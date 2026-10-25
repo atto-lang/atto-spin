@@ -1,0 +1,140 @@
+{
+  "cold.core.actor.pools.startup": {
+    "count": 1,
+    "mean_ms": 1.49525,
+    "p50_ms": 1.49525,
+    "p95_ms": 1.49525
+  },
+  "cold.core.context.startup": {
+    "count": 1,
+    "mean_ms": 18.160667,
+    "p50_ms": 18.160667,
+    "p95_ms": 18.160667
+  },
+  "cold.core.http.accept.queue": {
+    "count": 1146,
+    "mean_ms": 14.323175,
+    "p50_ms": 11.426979,
+    "p95_ms": 29.238625
+  },
+  "cold.core.http.claim": {
+    "count": 1142,
+    "mean_ms": 0.351265,
+    "p50_ms": 0.215,
+    "p95_ms": 0.909541
+  },
+  "cold.core.http.dispatch": {
+    "count": 1142,
+    "mean_ms": 0.082943,
+    "p50_ms": 0.023208,
+    "p95_ms": 0.228417
+  },
+  "cold.core.http.io.work": {
+    "count": 1141,
+    "mean_ms": 0.479808,
+    "p50_ms": 0.250708,
+    "p95_ms": 1.494917
+  },
+  "cold.core.http.lifetime": {
+    "count": 1142,
+    "mean_ms": 15.725959,
+    "p50_ms": 12.642771,
+    "p95_ms": 31.440125
+  },
+  "cold.core.http.listen": {
+    "count": 1,
+    "mean_ms": 96.452583,
+    "p50_ms": 96.452583,
+    "p95_ms": 96.452583
+  },
+  "cold.core.http.receive": {
+    "count": 1237,
+    "mean_ms": 0.071569,
+    "p50_ms": 0.033708,
+    "p95_ms": 0.202084
+  },
+  "cold.core.http.timer.schedule": {
+    "count": 1237,
+    "mean_ms": 0.004247,
+    "p50_ms": 0.002667,
+    "p95_ms": 0.008958
+  },
+  "cold.core.stdio.write": {
+    "count": 1,
+    "mean_ms": 0.047792,
+    "p50_ms": 0.047792,
+    "p95_ms": 0.047792
+  },
+  "cold.core.vm.control.startup": {
+    "count": 1,
+    "mean_ms": 2.67325,
+    "p50_ms": 2.67325,
+    "p95_ms": 2.67325
+  },
+  "warm.accept.ready_to_resume": {
+    "count": 7845,
+    "mean_ms": 0.009001,
+    "p50_ms": 0.005458,
+    "p95_ms": 0.029167
+  },
+  "warm.actor.prepare": {
+    "count": 7845,
+    "mean_ms": 0.002762,
+    "p50_ms": 0.001792,
+    "p95_ms": 0.003917
+  },
+  "warm.admission.to_claim": {
+    "count": 7845,
+    "mean_ms": 0.215673,
+    "p50_ms": 0.189458,
+    "p95_ms": 0.417875
+  },
+  "warm.admission.to_dispatch": {
+    "count": 7845,
+    "mean_ms": 0.150697,
+    "p50_ms": 0.127625,
+    "p95_ms": 0.34325
+  },
+  "warm.admission.to_response_continuation": {
+    "count": 7845,
+    "mean_ms": 0.261365,
+    "p50_ms": 0.231625,
+    "p95_ms": 0.474167
+  },
+  "warm.http.admission_to_queue": {
+    "count": 7845,
+    "mean_ms": 0.002718,
+    "p50_ms": 0.001,
+    "p95_ms": 0.008458
+  },
+  "warm.http.queue": {
+    "count": 7845,
+    "mean_ms": 0.137564,
+    "p50_ms": 0.115833,
+    "p95_ms": 0.329458
+  },
+  "warm.mailbox.move_to_claim": {
+    "count": 7845,
+    "mean_ms": 0.023361,
+    "p50_ms": 0.018958,
+    "p95_ms": 0.047584
+  },
+  "warm.response.await": {
+    "count": 7845,
+    "mean_ms": 0.042931,
+    "p50_ms": 0.038375,
+    "p95_ms": 0.078
+  },
+  "warm.routing.dispatch": {
+    "count": 7845,
+    "mean_ms": 0.055558,
+    "p50_ms": 0.049917,
+    "p95_ms": 0.096125
+  },
+  "warm.supervisor.prepare": {
+    "count": 7845,
+    "mean_ms": 0.001414,
+    "p50_ms": 0.001083,
+    "p95_ms": 0.00225
+  }
+}

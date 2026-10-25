@@ -1,0 +1,28 @@
+{
+  "concurrency": 100,
+  "actor_mode": "isolated",
+  "measurement_seconds": 180.0,
+  "warmup_seconds": 10,
+  "drain_seconds": 0.013,
+  "connections_opened": 100,
+  "retries": 0,
+  "sampled_requests": 2432,
+  "failures": [],
+  "modes": {
+    "isolated": {
+      "requests_started_in_window": 2443920,
+      "completed_in_window": 2443820,
+      "mean_ms": 7.307,
+      "p50_ms": 7.08,
+      "p95_ms": 7.877,
+      "p99_ms": 12.716,
+      "completed_rps": 13576.78,
+      "distinct_workers_observed": 32,
+      "distinct_workers_with_warmup": 32,
+      "reused_responses": 2443920,
+      "warmup_requests": 123378
+    }
+  },
+  "client_event_loop_lag_p99_ms": 0.196,
+  "client_event_loop_lag_max_ms": 2.277
+}

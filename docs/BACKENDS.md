@@ -68,3 +68,10 @@ The backend checker validates the manifest and requires nonempty, unique, local
 LLVM probes with exact expected diagnostics. Crashes, internal errors, changed
 diagnostics, or accidental IR emission fail the check. Run its negative-contract
 regressions with `python3 scripts/test-backend-checker.py`.
+
+## Reusable-handler follow-up (2026-10-13)
+
+SOURCE_REF now pins `62646c4372244723813ab06f2d122a6b2f5c0995` for the opt-in
+pooled-handler runtime. The 2026-10-12 results above describe the earlier snapshot.
+The pooled integration and sustained experiment are documented in REUSABLE_ACTORS.md.
+LLVM package execution remains unsupported.

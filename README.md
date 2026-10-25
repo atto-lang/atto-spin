@@ -1,7 +1,8 @@
 # oreslang-spin
 
-An Oreslang HTTP framework that dispatches each matched request to a fresh
-shared actor or isolated actor. It uses `oreslang-http-routing` for route
+An Oreslang HTTP framework that dispatches each matched request to a shared
+actor or isolated actor. Handlers use fresh actors by default; opt-in pools reuse
+workers across requests. It uses `oreslang-http-routing` for route
 matching and native `http` capabilities from `oreslang-source.java` for I/O.
 
 This is a **draft HTTP/1.1 framework**. Its runtime and router dependencies are
@@ -116,3 +117,8 @@ when embedding in another host. No automatic handler retry is performed.
 
 See [the compiler compatibility contract](docs/BACKENDS.md) for pinned Java/LLVM
 revisions, reproducible checks, and unsupported features.
+
+## Reusable workers and sustained load
+
+See [reusable request actors](docs/REUSABLE_ACTORS.md) for
+`http.handler("Worker").pooled(32)` and three-minute keep-alive load tests.
