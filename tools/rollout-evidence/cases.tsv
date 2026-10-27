@@ -1,0 +1,4 @@
+request-actor-isolation	java	execution
+bounded-http-io	java	execution
+generation-drain	java	execution
+negative-admission	java	rejection
