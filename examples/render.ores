@@ -23,7 +23,7 @@ end
 
 pub async routine main(): void {
   val builder = spin.builder();
-  val home = http_routing.path("/", arr[]);
+  val home = http_routing.path("/page", arr[http_routing.literal("page")]);
   builder.get(rt borrow home, http.handler("HomePage")).unwrap();
   val app = builder.build().unwrap();
   val server = http.listen("127.0.0.1", 8080, 128, 1048576, 30000);

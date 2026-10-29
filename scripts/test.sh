@@ -20,7 +20,7 @@ bash "$root/dependencies/http-routing/scripts/test.sh"
 "$compiler" --check --platform=server "$root/examples/render.ores"
 render_output="$("$compiler" --platform=server "$root/tests/html_render.ores")"
 [[ "$render_output" == "HTML_RENDER_OK" ]] || {
-  printf 'Native HTML golden test failed: %s\\n' "$render_output" >&2
+  printf 'Native HTML golden test failed: %s\n' "$render_output" >&2
   exit 1
 }
 python3 "$root/tests/integration.py"

@@ -15,7 +15,7 @@ pub routine main(): void {
     stdio.println("FAIL: Unicode preservation");
     return;
   fi
-  if spin_html.Html.text("A\\u0000B").markup() != "A\\uFFFDB"; then
+  if spin_html.Html.text("A\u0000B").markup() != "A\uFFFDB"; then
     stdio.println("FAIL: NUL replacement");
     return;
   fi
