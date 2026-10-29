@@ -15,4 +15,12 @@ expected_router="$(git -C "$root" ls-files --stage dependencies/http-routing | a
 export ORESLANG_COMPILER="$compiler"
 bash "$root/dependencies/http-routing/scripts/test.sh"
 "$compiler" --check --platform=server "$root/examples/mixed.ores"
+# Pure guest-level rendering checks, no mock compiler or host renderer.
+"$compiler" --check --platform=server "$root/tests/html_render.ores"
+"$compiler" --check --platform=server "$root/examples/render.ores"
+render_output="$("$compiler" --platform=server "$root/tests/html_render.ores")"
+[[ "$render_output" == "HTML_RENDER_OK" ]] || {
+  printf 'Native HTML golden test failed: %s\\n' "$render_output" >&2
+  exit 1
+}
 python3 "$root/tests/integration.py"
