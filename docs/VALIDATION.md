@@ -1,5 +1,27 @@
 # Validation
 
+## Native acceptance from a fresh compiler build (2026-10-31)
+
+Run `bash scripts/ci-native.sh` from an exact-head Spin checkout with
+`ORESLANG_SOURCE_DIR` pointing to the full clean Java `SOURCE_REF` checkout
+and the router submodule initialized at the committed gitlink. The script:
+
+1. Rejects modified/staged/untracked Spin, Java compiler and router inputs.
+2. Requires an executable JDK 25, rejecting other Java major versions.
+3. Executes `mvn -B -ntp -q -DskipTests clean package dependency:build-classpath
+   -Dmdep.outputFile=target/classpath.txt` in that pinned compiler checkout.
+4. Requires fresh `OresMain.class` and a non-symlink, nonempty classpath file.
+5. Rechecks source admission and runs the actual native Spin HTTP integration via
+   `scripts/test.sh` before printing `SPIN_PINNED_NATIVE_ACCEPTANCE_PASS`.
+
+The mocked `scripts/test-preflight.sh` checks the *orchestration*, including
+wrong-JDK and Maven-failure rejection, but **does not** run native Oreslang.
+A successful native acceptance claim requires an actual runner/job/step
+receipt from `ci-native.sh` on an authorized full source checkout.
+
+Private source mirror restrictions remain enforced; a partial mirrored router
+subtree must not be relabeled as a complete exact-tree native test.
+
 The native HTTP and actor implementation is tested in the compiler repository's
 NativeHttpTest. It checks strict path decoding, malformed UTF-8, sender
 revocation, double move, wrong-actor claims, one-time claim, exactly-once
