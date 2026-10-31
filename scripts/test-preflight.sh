@@ -135,10 +135,10 @@ cat > "$tmp/mock-bin/mvn" <<'MAVEN'
 #!/usr/bin/env bash
 set -euo pipefail
 [[ "${MOCK_MAVEN_FAIL:-0}" != 1 ]] || exit 77
-printf '%s\\n' "$*" >> "$MOCK_MAVEN_RECORD"
+printf '%s\n' "$*" >> "$MOCK_MAVEN_RECORD"
 mkdir -p target/classes/dev/oreslang/launcher
-printf 'mock class\\n' > target/classes/dev/oreslang/launcher/OresMain.class
-printf 'mock classpath\\n' > target/classpath.txt
+printf 'mock class\n' > target/classes/dev/oreslang/launcher/OresMain.class
+printf 'mock classpath\n' > target/classpath.txt
 MAVEN
 chmod +x "$tmp/mock-bin/mvn"
 cat > "$tmp/bad-java" <<'JAVA'
