@@ -4,6 +4,10 @@ on:
     paths:
       - 'SOURCE_REF'
       - 'dependencies/http-routing'
+      - '.gitmodules'
+      - 'src/**'
+      - 'tests/**'
+      - 'examples/**'
       - 'scripts/check-pins.sh'
       - 'scripts/compiler.sh'
       - 'scripts/ci-native.sh'
@@ -15,6 +19,10 @@ on:
     paths:
       - 'SOURCE_REF'
       - 'dependencies/http-routing'
+      - '.gitmodules'
+      - 'src/**'
+      - 'tests/**'
+      - 'examples/**'
       - 'scripts/check-pins.sh'
       - 'scripts/compiler.sh'
       - 'scripts/ci-native.sh'
