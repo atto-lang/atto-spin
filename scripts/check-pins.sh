@@ -7,6 +7,14 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 source_dir="$(cd "$ORESLANG_SOURCE_DIR" && pwd -P)"
 expected="$(cat "$root/SOURCE_REF")"
 [[ "$expected" =~ ^[0-9a-f]{40}$ ]] || { echo 'Invalid SOURCE_REF' >&2; exit 65; }
+# The checked-in pin is authoritative. Neither worktree nor index overrides
+# may select a different compiler revision at launch time.
+[[ ! -L "$root/SOURCE_REF" ]] || { echo 'SOURCE_REF must not be a symlink' >&2; exit 65; }
+committed_ref="$(git -C "$root" show HEAD:SOURCE_REF 2>/dev/null)" || { echo 'Cannot inspect committed SOURCE_REF' >&2; exit 65; }
+[[ "$expected" == "$committed_ref" ]] || { echo 'SOURCE_REF differs from committed tree' >&2; exit 65; }
+committed_pin_blob="$(git -C "$root" rev-parse 'HEAD:SOURCE_REF' 2>/dev/null)" || { echo 'Cannot inspect committed SOURCE_REF blob' >&2; exit 65; }
+staged_pin_blob="$(git -C "$root" rev-parse ':SOURCE_REF' 2>/dev/null)" || { echo 'Cannot inspect staged SOURCE_REF blob' >&2; exit 65; }
+[[ "$staged_pin_blob" == "$committed_pin_blob" ]] || { echo 'SOURCE_REF index differs from committed tree' >&2; exit 65; }
 source_top="$(git -C "$source_dir" rev-parse --show-toplevel 2>/dev/null)" || { echo 'Cannot inspect compiler checkout root' >&2; exit 65; }
 [[ "$(cd "$source_top" && pwd -P)" == "$source_dir" ]] || { echo 'Compiler must be its own Git checkout root' >&2; exit 65; }
 source_head="$(git -C "$source_dir" rev-parse --verify HEAD 2>/dev/null)" || { echo 'Cannot inspect compiler revision' >&2; exit 65; }
