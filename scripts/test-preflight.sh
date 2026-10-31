@@ -19,6 +19,7 @@ git -C "$tmp/router" -c user.name=Audit -c user.email=audit@example.invalid comm
 cp "$root/scripts/test.sh" "$tmp/project/scripts/test.sh"
 cp "$root/scripts/check-pins.sh" "$tmp/project/scripts/check-pins.sh"
 cp "$root/scripts/compiler.sh" "$tmp/project/scripts/compiler.sh"
+cp "$root/scripts/ci-native.sh" "$tmp/project/scripts/ci-native.sh"
 printf '%s\n' "$ref" > "$tmp/project/SOURCE_REF"
 printf 'sample\n' > "$tmp/project/examples/mixed.ores"
 printf 'print("integration fixture OK")\n' > "$tmp/project/tests/integration.py"
@@ -32,6 +33,10 @@ mkdir -p "$tmp/compiler-source/target"
 printf 'fake-classpath\n' > "$tmp/compiler-source/target/classpath.txt"
 cat > "$tmp/fake-java" <<'JAVA'
 #!/usr/bin/env bash
+if [[ "${1:-}" == '-version' ]]; then
+  echo 'openjdk version "25.0.1" (MOCK ONLY)' >&2
+  exit 0
+fi
 [[ "$*" == *"dev.oreslang.launcher.OresMain"* ]] || exit 80
 echo 'mock launcher reached'
 JAVA
@@ -123,4 +128,49 @@ export -f git
 expect_failure 'Cannot inspect router checkout status'
 unset -f git
 run >/dev/null
+# Validate the new native-acceptance *orchestration* with doubles only.
+# This does not compile any Oreslang code or establish native acceptance.
+mkdir -p "$tmp/mock-bin"
+cat > "$tmp/mock-bin/mvn" <<'MAVEN'
+#!/usr/bin/env bash
+set -euo pipefail
+[[ "${MOCK_MAVEN_FAIL:-0}" != 1 ]] || exit 77
+printf '%s\\n' "$*" >> "$MOCK_MAVEN_RECORD"
+mkdir -p target/classes/dev/oreslang/launcher
+printf 'mock class\\n' > target/classes/dev/oreslang/launcher/OresMain.class
+printf 'mock classpath\\n' > target/classpath.txt
+MAVEN
+chmod +x "$tmp/mock-bin/mvn"
+cat > "$tmp/bad-java" <<'JAVA'
+#!/usr/bin/env bash
+echo 'openjdk version "21.0.1" (MOCK ONLY)' >&2
+JAVA
+chmod +x "$tmp/bad-java"
+export MOCK_MAVEN_RECORD="$tmp/mock-maven-invocations"
+run_native_mock() {
+  PATH="$tmp/mock-bin:$PATH" ORES_JAVA="$tmp/fake-java" bash "$tmp/project/scripts/ci-native.sh"
+}
+native_mock_output="$(run_native_mock)"
+[[ "$native_mock_output" == *SPIN_PINNED_NATIVE_ACCEPTANCE_PASS* ]] || {
+  echo 'Fresh-build acceptance mock did not reach final gate' >&2
+  exit 1
+}
+grep -Fx -- '-B -ntp -q -DskipTests clean package dependency:build-classpath -Dmdep.outputFile=target/classpath.txt' "$MOCK_MAVEN_RECORD" >/dev/null || {
+  echo 'Native acceptance did not clean and rebuild the pinned compiler' >&2
+  exit 1
+}
+: > "$MOCK_MAVEN_RECORD"
+if PATH="$tmp/mock-bin:$PATH" ORES_JAVA="$tmp/bad-java" bash "$tmp/project/scripts/ci-native.sh" > /dev/null 2>&1; then
+  echo 'Native acceptance accepted wrong JDK major' >&2
+  exit 1
+fi
+[[ ! -s "$MOCK_MAVEN_RECORD" ]] || {
+  echo 'Native acceptance invoked Maven before rejecting wrong JDK' >&2
+  exit 1
+}
+if MOCK_MAVEN_FAIL=1 run_native_mock > /dev/null 2>&1; then
+  echo 'Native acceptance ignored compiler rebuild failure' >&2
+  exit 1
+fi
+echo 'Spin clean compiler rebuild orchestration mocks: PASS (not native execution)'
 echo "Spin compiler/router provenance preflight: PASS"
