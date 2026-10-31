@@ -98,6 +98,9 @@ SSE-style response streaming, and graceful shutdown.
 ## Verify and measure
 
 ```sh
+# Freshly rebuild the exact SOURCE_REF compiler with JDK 25, then run all Spin tests.
+bash scripts/ci-native.sh
+# For a previously built local compiler (NOT native build-provenance certification):
 ./scripts/test.sh
 ORESLANG_COMPILER="$PWD/scripts/compiler.sh" python3 scripts/benchmark.py
 ```
