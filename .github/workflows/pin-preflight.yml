@@ -29,6 +29,9 @@ jobs:
         with:
           persist-credentials: false
       - name: Shell syntax
-        run: bash -n scripts/check-pins.sh scripts/compiler.sh scripts/test.sh scripts/test-preflight.sh
+        run: |
+          for script in scripts/check-pins.sh scripts/compiler.sh scripts/test.sh scripts/test-preflight.sh; do
+            bash -n "$script"
+          done
       - name: Mocked admission regressions (not native Oreslang execution)
         run: bash scripts/test-preflight.sh
