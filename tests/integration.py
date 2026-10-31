@@ -58,6 +58,27 @@ def main():
             status, _, body = req('/shared', headers={'X-Respond-And-Continue':'yes'})
             check(status == 403 and body == b'middleware response',
                   'middleware response is not overwritten by a second handler dispatch')
+            for path, method in (('/missing', 'GET'), ('/shared', 'POST'),
+                                 ('/shared', 'OPTIONS'), ('/auth', 'GET')):
+                status, headers, body = req(path, method, headers={'X-Respond-And-Continue':'yes'})
+                check(status == 403 and body == b'middleware response' and
+                      headers.get('x-spin-responder') != 'actor',
+                      'transferred middleware response dominates route fallback for '+method+' '+path)
+            for path, method in (('/shared', 'POST'), ('/shared', 'OPTIONS')):
+                status, headers, body = req(path, method, headers={'X-Stop-Without-Response':'yes'})
+                check(status == 500 and body == b'Internal Server Error' and
+                      headers.get('x-spin-responder') == 'actor',
+                      'abandoned middleware exchange fails closed before method fallback')
+            status, headers, body = req('/shared', 'HEAD',
+                                        headers={'X-Stop-Without-Response':'yes'})
+            check(status == 500 and body == b'' and headers.get('x-spin-responder') == 'actor',
+                  'HEAD abandonment preserves no-body semantics')
+            with contextlib.closing(http.client.HTTPConnection('127.0.0.1', port, timeout=8)) as conn:
+                check(req('/shared', headers={'X-Respond-And-Continue':'yes'},
+                          connection=conn)[0] == 403,
+                      'middleware transfer on persistent connection')
+                check(req('/shared', connection=conn)[0] == 200,
+                      'persistent connection remains usable after middleware transfer')
             check(req('/shared')[0] == 200, 'supervisor recovers after terminal middleware cases')
             status, headers, _ = req('/shared', 'POST')
             check(status == 405 and headers['allow'] == 'GET, HEAD, OPTIONS', 'method not allowed')
