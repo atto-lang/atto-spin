@@ -50,6 +50,15 @@ def main():
             check(req('/shared')[0] == 200, 'literal route still responds after dynamic requests')
             check(req('/shared', headers={'X-Fail':'yes'})[0] == 500, 'middleware failure contained')
             check(req('/shared')[0] == 200, 'supervisor survives middleware failure')
+            status, headers, body = req('/shared', headers={'X-Stop-Without-Response':'yes'})
+            check(status == 500 and body == b'Internal Server Error' and headers.get('x-spin-responder') == 'actor',
+                  'false middleware without response fails closed through actor response')
+            check(req('/missing', headers={'X-Stop-Without-Response':'yes'})[0] == 500,
+                  'middleware abandonment also fails closed on unmatched route')
+            status, _, body = req('/shared', headers={'X-Respond-And-Continue':'yes'})
+            check(status == 403 and body == b'middleware response',
+                  'middleware response is not overwritten by a second handler dispatch')
+            check(req('/shared')[0] == 200, 'supervisor recovers after terminal middleware cases')
             status, headers, _ = req('/shared', 'POST')
             check(status == 405 and headers['allow'] == 'GET, HEAD, OPTIONS', 'method not allowed')
             status, headers, body = req('/shared', 'HEAD')
