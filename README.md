@@ -74,8 +74,12 @@ OPTIONS, 404, 405, and Allow synthesis come from the router.
 `builder.use(hook)` registers a `Fnc<bool(borrow HttpExchange)>` supervisor middleware.
 Hooks run in registration order after routing metadata/captures are attached,
 including for framework-generated errors and OPTIONS. Return true to continue;
-return false after scheduling a response to stop dispatch. A hook may inspect
-pipeline_id or contract_id to select auth/validation rules. Actor-local processing
+return false after scheduling a response to stop dispatch. A hook returning
+false without transferring the response produces an actor-owned HTTP 500 rather
+than leaving the client hanging. If a hook has already transferred the response,
+the framework stops dispatch even when the hook incorrectly returns true;
+another hook or handler cannot reuse the revoked supervisor exchange. A hook
+may inspect pipeline_id or contract_id to select auth/validation rules. Actor-local processing
 belongs in that actor's receive method or synchronous helper functions, where
 it cannot retain a supervisor closure. Builder operations return Result and a
 second build or later registration fails.
