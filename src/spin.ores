@@ -78,7 +78,18 @@ define module spin as
           self.bindings.get(decision.handler_id).prepare(rt borrow exchange);
         fi
         for (const hook of self.middleware) {
-          if !hook(rt borrow exchange); then return; fi
+          if !hook(rt borrow exchange); then
+            // A hook may stop only after transferring the reply. Otherwise,
+            // fail closed rather than retaining an unanswered exchange.
+            if exchange.can_respond; then
+              self.framework_reply(rt borrow mut exchange, "spin.500");
+            fi
+            return;
+          fi
+          // A hook may accidentally return true after responding. The
+          // original supervisor capability is now revoked; never dispatch
+          // it a second time to a handler or another middleware hook.
+          if !exchange.can_respond; then return; fi
         }
         if decision.is_match(); then
           self.bindings.get(decision.handler_id).dispatch(rt borrow mut exchange);
