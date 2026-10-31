@@ -60,9 +60,20 @@ printf 'invalid\n' > "$tmp/project/SOURCE_REF"
 expect_failure 'Invalid SOURCE_REF'
 if run_launcher >/dev/null 2>&1; then echo 'Launcher accepted invalid SOURCE_REF' >&2; exit 1; fi
 printf '%040d\n' 0 > "$tmp/project/SOURCE_REF"
-expect_failure 'Compiler revision differs from SOURCE_REF'
+expect_failure 'SOURCE_REF differs from committed tree'
 if run_launcher >/dev/null 2>&1; then echo 'Launcher accepted wrong compiler SHA' >&2; exit 1; fi
+git -C "$tmp/project" add SOURCE_REF
+expect_failure 'SOURCE_REF differs from committed tree'
+if run_launcher >/dev/null 2>&1; then echo 'Launcher accepted staged SOURCE_REF change' >&2; exit 1; fi
+git -C "$tmp/project" reset -q HEAD -- SOURCE_REF
 printf '%s\n' "$ref" > "$tmp/project/SOURCE_REF"
+printf '%040d\n' 0 > "$tmp/project/SOURCE_REF"
+git -C "$tmp/project" add SOURCE_REF
+printf '%s\n' "$ref" > "$tmp/project/SOURCE_REF"
+expect_failure 'SOURCE_REF index differs from committed tree'
+if run_launcher >/dev/null 2>&1; then echo 'Launcher accepted index-only SOURCE_REF change' >&2; exit 1; fi
+git -C "$tmp/project" reset -q HEAD -- SOURCE_REF
+run >/dev/null
 printf 'dirty\n' >> "$tmp/compiler-source/tracked"
 expect_failure 'Compiler checkout must be clean'
 git -C "$tmp/compiler-source" restore tracked
