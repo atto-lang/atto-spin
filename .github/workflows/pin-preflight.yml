@@ -6,6 +6,7 @@ on:
       - 'dependencies/http-routing'
       - 'scripts/check-pins.sh'
       - 'scripts/compiler.sh'
+      - 'scripts/ci-native.sh'
       - 'scripts/test.sh'
       - 'scripts/test-preflight.sh'
       - '.github/workflows/pin-preflight.yml'
@@ -16,6 +17,7 @@ on:
       - 'dependencies/http-routing'
       - 'scripts/check-pins.sh'
       - 'scripts/compiler.sh'
+      - 'scripts/ci-native.sh'
       - 'scripts/test.sh'
       - 'scripts/test-preflight.sh'
       - '.github/workflows/pin-preflight.yml'
@@ -47,7 +49,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for script in scripts/check-pins.sh scripts/compiler.sh scripts/test.sh scripts/test-preflight.sh; do
+          for script in scripts/check-pins.sh scripts/compiler.sh scripts/ci-native.sh scripts/test.sh scripts/test-preflight.sh; do
             bash -n "$script"
           done
       - name: Mocked admission regressions (not native Oreslang execution)
