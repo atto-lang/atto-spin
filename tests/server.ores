@@ -71,6 +71,16 @@ pub async routine main(): void {
   val builder = spin.builder();
   val Fnc<bool(borrow HttpExchange)> headers = |borrow HttpExchange request| -> {
     request.set_header("X-Spin", "test");
+    if request.header("X-Stop-Without-Response") == "yes"; then
+      // Intentionally broken middleware must not strand this exchange.
+      return false;
+    fi
+    if request.header("X-Respond-And-Continue") == "yes"; then
+      // An already-transferred response may not reach another middleware
+      // or handler even when the hook mistakenly returns true.
+      request.respond(403, "text/plain", "middleware response");
+      return true;
+    fi
     if request.header("X-Fail") == "yes"; then
       request.set_header("Bad Header", "invalid");
     fi
