@@ -49,6 +49,6 @@ bash "$root/scripts/check-pins.sh"
 printf 'SPIN_SOURCE_HEAD=%s\n' "$(git -C "$root" rev-parse HEAD)"
 printf 'SPIN_COMPILER_HEAD=%s\n' "$(git -C "$source_dir" rev-parse HEAD)"
 printf 'SPIN_ROUTER_HEAD=%s\n' "$(git -C "$root/dependencies/http-routing" rev-parse HEAD)"
-printf 'SPIN_COMPILER_LAUNCHER_SHA256=%s\n' "$(sha256sum "$source_dir/target/classes/dev/oreslang/launcher/OresMain.class" | cut -d ' ' -f 1)"
+printf 'SPIN_COMPILER_LAUNCHER_SHA256=%s\n' "$(python3 -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$source_dir/target/classes/dev/oreslang/launcher/OresMain.class")"
 ORES_JAVA="$java_bin" bash "$root/scripts/test.sh"
 echo 'SPIN_PINNED_NATIVE_ACCEPTANCE_PASS'
