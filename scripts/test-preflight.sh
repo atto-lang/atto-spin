@@ -99,6 +99,15 @@ expect_failure 'Router revision differs from committed gitlink'
 git -C "$router" checkout -q --detach "$old_router_ref"
 git -C "$tmp/project" add dependencies/http-routing
 run >/dev/null
+printf 'modified application fixture\n' >> "$tmp/project/examples/mixed.ores"
+expect_failure 'Spin checkout must be clean'
+git -C "$tmp/project" add examples/mixed.ores
+expect_failure 'Spin checkout must be clean'
+git -C "$tmp/project" restore --staged --worktree examples/mixed.ores
+printf 'untracked source\n' > "$tmp/project/rogue.ores"
+expect_failure 'Spin checkout must be clean'
+rm "$tmp/project/rogue.ores"
+run >/dev/null
 git() {
   if [[ "$*" == *" status "* ]]; then return 128; fi
   command git "$@"
