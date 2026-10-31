@@ -59,6 +59,9 @@ run >/dev/null
 printf 'invalid\n' > "$tmp/project/SOURCE_REF"
 expect_failure 'Invalid SOURCE_REF'
 if run_launcher >/dev/null 2>&1; then echo 'Launcher accepted invalid SOURCE_REF' >&2; exit 1; fi
+printf '%040d\n' 0 > "$tmp/project/SOURCE_REF"
+expect_failure 'Compiler revision differs from SOURCE_REF'
+if run_launcher >/dev/null 2>&1; then echo 'Launcher accepted wrong compiler SHA' >&2; exit 1; fi
 printf '%s\n' "$ref" > "$tmp/project/SOURCE_REF"
 printf 'dirty\n' >> "$tmp/compiler-source/tracked"
 expect_failure 'Compiler checkout must be clean'
@@ -80,6 +83,8 @@ git -C "$router" -c user.name=Audit -c user.email=audit@example.invalid commit -
 git -C "$tmp/project" add dependencies/http-routing
 expect_failure 'Router index gitlink differs from committed tree'
 if run_launcher >/dev/null 2>&1; then echo 'Launcher accepted staged router gitlink' >&2; exit 1; fi
+git -C "$tmp/project" reset -q HEAD -- dependencies/http-routing
+expect_failure 'Router revision differs from committed gitlink'
 git -C "$router" checkout -q --detach "$old_router_ref"
 git -C "$tmp/project" add dependencies/http-routing
 run >/dev/null
