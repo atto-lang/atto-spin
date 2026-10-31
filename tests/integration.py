@@ -31,6 +31,7 @@ def main():
             status, headers, body = req('/shared')
             check((status, body, headers['x-actor-mode']) == (200,b'shared','shared'), 'shared route')
             check(headers['x-spin'] == 'test' and len(headers['x-request-id']) == 36, 'middleware and request ID')
+            check(headers.get('x-spin-second-hook') == 'yes', 'nonterminal request reaches second middleware')
             check(req('/private')[2] == b'private', 'isolated route')
             check(req('/echo', 'POST', 'private-body')[2] == b'private-body', 'body and helper Future flattening')
             check(req('/binary', 'POST', bytes(range(256)))[2] == bytes(range(256)), 'binary body and response streaming')
@@ -51,8 +52,9 @@ def main():
             check(req('/shared', headers={'X-Fail':'yes'})[0] == 500, 'middleware failure contained')
             check(req('/shared')[0] == 200, 'supervisor survives middleware failure')
             status, headers, body = req('/shared', headers={'X-Stop-Without-Response':'yes'})
-            check(status == 500 and body == b'Internal Server Error' and headers.get('x-spin-responder') == 'actor',
-                  'false middleware without response fails closed through actor response')
+            check(status == 500 and body == b'Internal Server Error' and headers.get('x-spin-responder') == 'actor' and
+                  'x-spin-second-hook' not in headers,
+                  'abandoned middleware exchange skips later hooks and fails closed')
             check(req('/missing', headers={'X-Stop-Without-Response':'yes'})[0] == 500,
                   'middleware abandonment also fails closed on unmatched route')
             status, _, body = req('/shared', headers={'X-Respond-And-Continue':'yes'})
@@ -62,17 +64,19 @@ def main():
                                  ('/shared', 'OPTIONS'), ('/auth', 'GET')):
                 status, headers, body = req(path, method, headers={'X-Respond-And-Continue':'yes'})
                 check(status == 403 and body == b'middleware response' and
-                      headers.get('x-spin-responder') != 'actor',
-                      'transferred middleware response dominates route fallback for '+method+' '+path)
+                      headers.get('x-spin-responder') != 'actor' and
+                      'x-spin-second-hook' not in headers,
+                      'transferred middleware response skips later hooks and fallback for '+method+' '+path)
             for path, method in (('/shared', 'POST'), ('/shared', 'OPTIONS')):
                 status, headers, body = req(path, method, headers={'X-Stop-Without-Response':'yes'})
                 check(status == 500 and body == b'Internal Server Error' and
-                      headers.get('x-spin-responder') == 'actor',
-                      'abandoned middleware exchange fails closed before method fallback')
+                      headers.get('x-spin-responder') == 'actor' and 'x-spin-second-hook' not in headers,
+                      'abandoned middleware exchange skips later hooks before method fallback')
             status, headers, body = req('/shared', 'HEAD',
                                         headers={'X-Stop-Without-Response':'yes'})
-            check(status == 500 and body == b'' and headers.get('x-spin-responder') == 'actor',
-                  'HEAD abandonment preserves no-body semantics')
+            check(status == 500 and body == b'' and headers.get('x-spin-responder') == 'actor' and
+                  'x-spin-second-hook' not in headers,
+                  'HEAD abandonment suppresses body and skips later middleware')
             with contextlib.closing(http.client.HTTPConnection('127.0.0.1', port, timeout=8)) as conn:
                 check(req('/shared', headers={'X-Respond-And-Continue':'yes'},
                           connection=conn)[0] == 403,
@@ -86,7 +90,11 @@ def main():
             check(status == 200 and body == b'' and headers['content-length'] == '6', 'HEAD suppression')
             status, headers, body = req('/shared', 'OPTIONS', headers={'Origin':'https://example.test'})
             check(status == 204 and headers['allow'] == 'GET, HEAD, OPTIONS' and headers['access-control-allow-origin'] == 'https://example.test', 'OPTIONS and middleware')
-            check(req('/auth')[0] == 401 and req('/auth', headers={'Authorization':'Bearer test'})[0] == 200, 'route pipeline auth')
+            unauthorized_status, unauthorized_headers, _ = req('/auth')
+            authorized_status, authorized_headers, _ = req('/auth', headers={'Authorization':'Bearer test'})
+            check(unauthorized_status == 401 and 'x-spin-second-hook' not in unauthorized_headers and
+                  authorized_status == 200 and authorized_headers.get('x-spin-second-hook') == 'yes',
+                  'authorization denial skips subsequent hooks; acceptance runs them')
             check(req('/stream')[2] == b'data: one\n\ndata: two\n\n', 'response streaming')
             check(req('/stream', 'HEAD')[2] == b'', 'HEAD suppresses streamed writes')
             check(req('/echo', 'POST', 'x'*2048)[0] == 413, 'body limit')
