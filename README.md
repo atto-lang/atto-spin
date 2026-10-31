@@ -105,7 +105,8 @@ ORESLANG_COMPILER="$PWD/scripts/compiler.sh" python3 scripts/benchmark.py
 Tests require clean compiler/router checkouts at exact pins and execute native
 Oreslang, not a compiler test double.
 The launcher also rejects compiler revisions differing from `SOURCE_REF`, dirty
-compiler/router trees, and router submodule pointers that differ from the
+compiler/router trees, any worktree or index substitution of the committed
+`SOURCE_REF` blob, and router submodule pointers that differ from the
 committed `HEAD` gitlink (including index-only substitutions). The
 `bash scripts/test-preflight.sh` regression uses local mock repositories; it
 checks preflight logic, **not** Oreslang guest execution. These checks establish
