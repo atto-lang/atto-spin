@@ -39,3 +39,11 @@ staged_router="$(git -C "$root" rev-parse ':dependencies/http-routing' 2>/dev/nu
 [[ "$staged_router" == "$expected_router" ]] || { echo 'Router index gitlink differs from committed tree' >&2; exit 65; }
 router_head="$(git -C "$router" rev-parse --verify HEAD 2>/dev/null)" || { echo 'Cannot inspect router revision' >&2; exit 65; }
 [[ "$router_head" == "$expected_router" ]] || { echo 'Router revision differs from committed gitlink' >&2; exit 65; }
+
+# The compiler/router pins alone do not attest the Spin sources under test.
+# Ignore submodule worktrees here because the router is checked separately.
+project_status="$(git -C "$root" status --porcelain --untracked-files=all --ignore-submodules=all)" || {
+  echo 'Cannot inspect Spin checkout status' >&2
+  exit 65
+}
+[[ -z "$project_status" ]] || { echo 'Spin checkout must be clean' >&2; exit 65; }
