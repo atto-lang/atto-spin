@@ -6,7 +6,8 @@ trap 'rm -rf "$tmp"' EXIT
 mkdir -p "$tmp/compiler-source" "$tmp/router" "$tmp/project/scripts" "$tmp/project/tests" "$tmp/project/examples" "$tmp/project/dependencies"
 git -C "$tmp/compiler-source" init -q
 printf 'compiler source\n' > "$tmp/compiler-source/tracked"
-git -C "$tmp/compiler-source" add tracked
+printf 'target/\n' > "$tmp/compiler-source/.gitignore"
+git -C "$tmp/compiler-source" add tracked .gitignore
 git -C "$tmp/compiler-source" -c user.name=Audit -c user.email=audit@example.invalid commit -qm init
 ref="$(git -C "$tmp/compiler-source" rev-parse HEAD)"
 git -C "$tmp/router" init -q
@@ -16,6 +17,8 @@ printf 'router\n' > "$tmp/router/tracked"
 git -C "$tmp/router" add .
 git -C "$tmp/router" -c user.name=Audit -c user.email=audit@example.invalid commit -qm init
 cp "$root/scripts/test.sh" "$tmp/project/scripts/test.sh"
+cp "$root/scripts/check-pins.sh" "$tmp/project/scripts/check-pins.sh"
+cp "$root/scripts/compiler.sh" "$tmp/project/scripts/compiler.sh"
 printf '%s\n' "$ref" > "$tmp/project/SOURCE_REF"
 printf 'sample\n' > "$tmp/project/examples/mixed.ores"
 printf 'print("integration fixture OK")\n' > "$tmp/project/tests/integration.py"
@@ -25,12 +28,21 @@ set -euo pipefail
 [[ "$1" = '--check' && "$2" = '--platform=server' ]]
 COMPILER
 chmod +x "$tmp/compiler"
+mkdir -p "$tmp/compiler-source/target"
+printf 'fake-classpath\n' > "$tmp/compiler-source/target/classpath.txt"
+cat > "$tmp/fake-java" <<'JAVA'
+#!/usr/bin/env bash
+[[ "$*" == *"dev.oreslang.launcher.OresMain"* ]] || exit 80
+echo 'mock launcher reached'
+JAVA
+chmod +x "$tmp/fake-java"
 git -C "$tmp/project" init -q
 git -C "$tmp/project" -c protocol.file.allow=always submodule add -q "$tmp/router" dependencies/http-routing
 git -C "$tmp/project" add .
 git -C "$tmp/project" -c user.name=Audit -c user.email=audit@example.invalid commit -qm fixture
 export ORESLANG_COMPILER="$tmp/compiler" ORESLANG_SOURCE_DIR="$tmp/compiler-source"
 run() { bash "$tmp/project/scripts/test.sh"; }
+run_launcher() { ORES_JAVA="$tmp/fake-java" bash "$tmp/project/scripts/compiler.sh" --check --platform=server; }
 expect_failure() {
   local needle="$1" output
   if output="$(run 2>&1)"; then
@@ -43,6 +55,11 @@ expect_failure() {
   fi
 }
 run >/dev/null
+[[ "$(run_launcher)" == 'mock launcher reached' ]] || { echo 'Pinned launcher did not execute' >&2; exit 1; }
+printf 'invalid\n' > "$tmp/project/SOURCE_REF"
+expect_failure 'Invalid SOURCE_REF'
+if run_launcher >/dev/null 2>&1; then echo 'Launcher accepted invalid SOURCE_REF' >&2; exit 1; fi
+printf '%s\n' "$ref" > "$tmp/project/SOURCE_REF"
 printf 'dirty\n' >> "$tmp/compiler-source/tracked"
 expect_failure 'Compiler checkout must be clean'
 git -C "$tmp/compiler-source" restore tracked
@@ -55,6 +72,17 @@ git -C "$tmp/project/dependencies/http-routing" restore tracked
 printf 'untracked\n' > "$tmp/project/dependencies/http-routing/untracked"
 expect_failure 'Router checkout must be clean'
 rm "$tmp/project/dependencies/http-routing/untracked"
+router="$tmp/project/dependencies/http-routing"
+old_router_ref="$(git -C "$router" rev-parse HEAD)"
+printf 'second\n' >> "$router/tracked"
+git -C "$router" add tracked
+git -C "$router" -c user.name=Audit -c user.email=audit@example.invalid commit -qm second
+git -C "$tmp/project" add dependencies/http-routing
+expect_failure 'Router index gitlink differs from committed tree'
+if run_launcher >/dev/null 2>&1; then echo 'Launcher accepted staged router gitlink' >&2; exit 1; fi
+git -C "$router" checkout -q --detach "$old_router_ref"
+git -C "$tmp/project" add dependencies/http-routing
+run >/dev/null
 git() {
   if [[ "$*" == *" status "* ]]; then return 128; fi
   command git "$@"
