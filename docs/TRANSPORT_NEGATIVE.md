@@ -11,8 +11,8 @@ not `http.client`-normalized headers. The 7 rejection cases cover:
 - duplicate Host headers; and
 - a 12-KiB header exceeding the server's declared ingress bound.
 
-A malformed request must receive at most one 4xx response and close, or close
-immediately. A 2xx response (including one for a smuggled second request),
+A malformed request must receive at most one 4xx response and close (or a
+501 for unsupported transfer coding), or close immediately. A 2xx response (including one for a smuggled second request),
 an open socket, or an unparseable partial response fails. A final valid GET
 confirms the listener remains healthy after the rejected traffic.
 
