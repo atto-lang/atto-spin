@@ -57,6 +57,24 @@ not a code-generation, ABI, networking, or actor-isolation test. Once imports an
 runtime APIs are implemented, replace these rejection probes with executable
 semantic tests before changing `execution` to `supported`.
 
+## Wasm, Cranelift and .NET
+
+These are distinct Oreslang source repositories, but **Spin HTTP package
+execution is unverified** on all three. Their presence in `BACKENDS.json`
+is a coverage-inventory and fail-closed gate, not a portability result.
+
+`python3 scripts/check-backend.py wasm`,
+`python3 scripts/check-backend.py cranelift` and
+`python3 scripts/check-backend.py net` intentionally return nonzero.
+A change to any of these statuses requires actual exact-head compiled guest
+HTTP/actor/ownership tests, a verified transport implementation and an
+independent backend acceptance receipt. `python3 scripts/test-backend-checker.py`
+exercises these denial semantics using host-only tests.
+
+For new Java-native HTTP framing and request-smuggling regressions, see
+[TRANSPORT_NEGATIVE.md](TRANSPORT_NEGATIVE.md). Tests require the real
+compiler and listener and are not covered by negative manifest validation.
+
 ## Local validation (2026-10-12)
 
 Java: `4fe60a8b7d381b69695af17f5bfead27c5469da5`.
