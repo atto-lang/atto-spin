@@ -60,6 +60,14 @@ class BackendChecks(unittest.TestCase):
             with self.subTest(backend=backend), self.assertRaises(RuntimeError): self.load()
             del self.contract[backend]['fake_receipt']
 
+    def test_unverified_backend_cli_never_returns_success(self):
+        self.load()
+        for backend in ('wasm', 'cranelift', 'net'):
+            with self.subTest(backend=backend):
+                with patch.object(sys, 'argv', ['check-backend.py', backend]):
+                    with self.assertRaisesRegex(RuntimeError, 'is unverified'):
+                        checker.main()
+
     def test_specific_actor_boundary_diagnostic(self):
         self.contract['llvm']['rejection_probes'][0]['diagnostic'] = 'oreslang-llvmc: actor requires at least one scalar field at byte 151'
         self.assertEqual(self.load(), self.contract)
