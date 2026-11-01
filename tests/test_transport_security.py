@@ -19,6 +19,12 @@ class WireHarnessTests(unittest.TestCase):
         with patch.object(ts, '_exchange', return_value=(b'', True)):
             self.assertEqual(ts.assert_rejected(1, 'case', b'wire'), 1)
 
+    def test_unsupported_transfer_coding_allows_exact_501(self):
+        with patch.object(ts, '_exchange', return_value=(b'HTTP/1.1 501 Not Implemented\\r\\n\\r\\n', True)):
+            self.assertEqual(ts.assert_rejected(1, 'unsupported_transfer_coding', b'wire'), 1)
+            with self.assertRaises(AssertionError):
+                ts.assert_rejected(1, 'te_and_cl_conflict', b'wire')
+
     def test_open_or_malformed_or_success_rejected(self):
         for response, closed in ((b'', False), (b'HTTP/1.1 400 Bad Request\r\n', False),
                                  (b'HTTP/1.1 200 OK\r\n', True),
