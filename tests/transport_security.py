@@ -44,12 +44,13 @@ def _statuses(data):
 def assert_rejected(port, name, request):
     """Reject the bad frame and never serve an embedded pipelined request.
 
-    An explicit 4xx followed by close, or an immediate silent close, is valid.
-    A hanging connection or 2xx/3xx/5xx response fails the security gate.
+    A 4xx or (only for an unsupported coding) 501 followed by close, or an
+    immediate silent close, is valid. Hanging/successful responses fail.
     """
     data, closed = _exchange(port, request)
     statuses = _statuses(data)
-    if not closed or (statuses and (len(statuses) != 1 or statuses[0] < 400 or statuses[0] > 499)):
+    permitted = bool(statuses) and (400 <= statuses[0] <= 499 or (name == 'unsupported_transfer_coding' and statuses[0] == 501))
+    if not closed or (statuses and (len(statuses) != 1 or not permitted)):
         raise AssertionError(f'{name}: expected closed reject connection; status={statuses}, closed={closed}, head={data[:256]!r}')
     if not statuses and data:
         raise AssertionError(f'{name}: unparseable bytes before close: {data[:256]!r}')
