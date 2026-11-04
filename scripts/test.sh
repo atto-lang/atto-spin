@@ -15,4 +15,7 @@ expected_router="$(git -C "$root" ls-files --stage dependencies/http-routing | a
 export ORESLANG_COMPILER="$compiler"
 bash "$root/dependencies/http-routing/scripts/test.sh"
 "$compiler" --check --platform=server "$root/examples/mixed.ores"
+# Explicitly register the native builder regression: checking alone is not execution.
+"$compiler" --check --platform=server "$root/tests/builder_contracts_20261101.ores"
+"$compiler" --platform=server "$root/tests/builder_contracts_20261101.ores"
 python3 "$root/tests/integration.py"
