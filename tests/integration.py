@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Black-box HTTP checks against native Oreslang actors; no simulated compiler."""
 import contextlib, concurrent.futures, http.client, json, os, pathlib, queue, socket, subprocess, threading, time
+import transport_security
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 COMPILER = os.environ.get('ORESLANG_COMPILER', 'oreslang-compiler')
@@ -62,6 +63,7 @@ def main():
             check(req('/echo', 'POST', 'x'*2048)[0] == 413, 'body limit')
             check(req('/echo', 'POST', iter([b'a'*600,b'b'*600]))[0] == 413, 'chunked body limit')
             check(req('/users/%C0%AF')[0] == 400, 'invalid UTF-8 path')
+            checks += transport_security.run(port)  # real raw-wire protocol and post-rejection recovery
             check(req('/crash')[0] == 500, 'actor crash cleanup')
             check(req('/startup-failure')[0] == 500, 'actor startup failure cleanup')
             check(req('/timeout')[0] == 504, 'deadline cleanup')

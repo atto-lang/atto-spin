@@ -10,6 +10,12 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 
+UNVERIFIED = {
+    'wasm': 'oreslang-source.wasm',
+    'cranelift': 'oreslang-source.cranelift',
+    'net': 'oreslang-source.net',
+}
+
 def git(directory, *args):
     return subprocess.check_output(['git', '-C', str(directory), *args], text=True).strip()
 
@@ -39,9 +45,16 @@ def local_file(relative):
 
 def load_contract():
     contract = json.loads((ROOT / 'BACKENDS.json').read_text())
-    if not isinstance(contract, dict) or set(contract) != {'java', 'llvm'}:
-        raise RuntimeError('Expected java and llvm backend contracts')
+    if not isinstance(contract, dict) or set(contract) != {'java', 'llvm', *UNVERIFIED}:
+        raise RuntimeError('Expected exactly java, llvm, wasm, cranelift and net backend contracts')
     java, llvm = contract['java'], contract['llvm']
+    # Unimplemented backend capabilities must not be silently promoted by
+    # changing manifest metadata or pointing at a different source repository.
+    for backend, source_repo in UNVERIFIED.items():
+        entry = contract[backend]
+        if (not isinstance(entry, dict) or set(entry) != {'source_repo', 'execution', 'evidence'}
+                or entry != {'source_repo': source_repo, 'execution': 'unverified', 'evidence': 'none'}):
+            raise RuntimeError(f'{backend}: missing native Spin guest evidence; keep execution unverified')
     if not isinstance(java, dict) or not isinstance(llvm, dict):
         raise RuntimeError('Backend contracts must be objects')
     if java.get('pin') != 'SOURCE_REF' or llvm.get('pin') != 'LLVM_SOURCE_REF':
@@ -81,9 +94,12 @@ def check_positive(result):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('backend', choices=['java', 'llvm'])
+    parser.add_argument('backend', choices=['java', 'llvm', *UNVERIFIED])
     args = parser.parse_args()
     contract = load_contract()
+    if args.backend in UNVERIFIED:
+        raise RuntimeError(f'{args.backend} Spin HTTP package execution is unverified; '
+                           'a backend compiler build or source-only check is not native parity')
     if args.backend == 'java':
         require_source('ORESLANG_SOURCE_DIR', 'SOURCE_REF')
         env = dict(os.environ)

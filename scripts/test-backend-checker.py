@@ -26,12 +26,48 @@ class BackendChecks(unittest.TestCase):
         (self.root/'probe.ores').write_text('import unsupported;\n')
         self.contract = {'java': {'pin': 'SOURCE_REF', 'suite': 'suite.sh', 'execution': 'supported'},
                          'llvm': {'pin': 'LLVM_SOURCE_REF', 'execution': 'unsupported', 'rejection_probes': [
-                             {'path': 'probe.ores', 'diagnostic': 'oreslang-llvmc: expected fnc or routine at byte 0'}]}}
+                             {'path': 'probe.ores', 'diagnostic': 'oreslang-llvmc: expected fnc or routine at byte 0'}]},
+                         'wasm': {'source_repo': 'oreslang-source.wasm', 'execution': 'unverified', 'evidence': 'none'},
+                         'cranelift': {'source_repo': 'oreslang-source.cranelift', 'execution': 'unverified', 'evidence': 'none'},
+                         'net': {'source_repo': 'oreslang-source.net', 'execution': 'unverified', 'evidence': 'none'}}
     def load(self):
         (self.root/'BACKENDS.json').write_text(json.dumps(self.contract))
         return checker.load_contract()
     def test_valid_contract(self):
         self.assertEqual(self.load(), self.contract)
+    def test_five_backend_manifest_cannot_silently_promote(self):
+        self.assertEqual(set(self.load()), {'java', 'llvm', 'wasm', 'cranelift', 'net'})
+        for backend in ('wasm', 'cranelift', 'net'):
+            for field, bad in (('execution', 'supported'), ('execution', 'partial'),
+                               ('source_repo', 'oreslang-source.java'), ('evidence', 'unit-tests-only')):
+                with self.subTest(backend=backend, field=field, bad=bad):
+                    original = self.contract[backend][field]
+                    self.contract[backend][field] = bad
+                    with self.assertRaises(RuntimeError): self.load()
+                    self.contract[backend][field] = original
+
+    def test_missing_or_invented_backend_fails_closed(self):
+        for backend in ('wasm', 'cranelift', 'net'):
+            value = self.contract.pop(backend)
+            with self.subTest(missing=backend), self.assertRaises(RuntimeError): self.load()
+            self.contract[backend] = value
+        self.contract['forge'] = {'execution': 'supported'}
+        with self.assertRaises(RuntimeError): self.load()
+
+    def test_unverified_backend_requires_specific_schema(self):
+        for backend in ('wasm', 'cranelift', 'net'):
+            self.contract[backend]['fake_receipt'] = 'pass'
+            with self.subTest(backend=backend), self.assertRaises(RuntimeError): self.load()
+            del self.contract[backend]['fake_receipt']
+
+    def test_unverified_backend_cli_never_returns_success(self):
+        self.load()
+        for backend in ('wasm', 'cranelift', 'net'):
+            with self.subTest(backend=backend):
+                with patch.object(sys, 'argv', ['check-backend.py', backend]):
+                    with self.assertRaisesRegex(RuntimeError, 'is unverified'):
+                        checker.main()
+
     def test_specific_actor_boundary_diagnostic(self):
         self.contract['llvm']['rejection_probes'][0]['diagnostic'] = 'oreslang-llvmc: actor requires at least one scalar field at byte 151'
         self.assertEqual(self.load(), self.contract)
