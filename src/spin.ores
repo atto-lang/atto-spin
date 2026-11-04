@@ -81,15 +81,15 @@ define module spin as
           if !hook(rt borrow exchange); then return; fi
         }
         if decision.is_match(); then
-          self.bindings.get(decision.handler_id).dispatch(rt borrow mut exchange);
+          self.bindings.get(decision.handler_id).dispatch(rt mut borrow exchange);
           return;
         fi
         if decision.is_not_found(); then
-          self.framework_reply(rt borrow mut exchange, "spin.404");
+          self.framework_reply(rt mut borrow exchange, "spin.404");
           return;
         fi
         if decision.is_limit_exceeded(); then
-          self.framework_reply(rt borrow mut exchange, "spin.414");
+          self.framework_reply(rt mut borrow exchange, "spin.414");
           return;
         fi
         let String allowed = "";
@@ -101,14 +101,14 @@ define module spin as
         }
         exchange.set_header("Allow", allowed);
         if decision.is_automatic_options(); then
-          self.framework_reply(rt borrow mut exchange, "spin.204");
+          self.framework_reply(rt mut borrow exchange, "spin.204");
         else
-          self.framework_reply(rt borrow mut exchange, "spin.405");
+          self.framework_reply(rt mut borrow exchange, "spin.405");
         fi
         return;
       } catch (failure) {
         if exchange.can_respond; then
-          self.framework_reply(rt borrow mut exchange, "spin.500");
+          self.framework_reply(rt mut borrow exchange, "spin.500");
         fi
         return;
       }
