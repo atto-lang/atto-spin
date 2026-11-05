@@ -146,4 +146,37 @@ class BackendChecks(unittest.TestCase):
             with patch.object(checker,'git',side_effect=subprocess.CalledProcessError(128,['git'])):
                 with self.assertRaises(subprocess.CalledProcessError): checker.require_source('BACKEND_TEST_SOURCE','SOURCE_REF')
 
+    def test_java_suite_and_llvm_probe_cannot_escape_checkout_root(self):
+        self.contract['java']['suite'] = '../../foreign.sh'
+        with self.assertRaises(RuntimeError):
+            self.load()
+        self.contract['java']['suite'] = 'suite.sh'
+        with tempfile.TemporaryDirectory() as outside:
+            (Path(outside) / 'foreign.ores').write_text('pub fnc main() {}\n')
+            (self.root / 'outside-linked').symlink_to(outside, target_is_directory=True)
+            self.contract['llvm']['rejection_probes'][0]['path'] = 'outside-linked/foreign.ores'
+            with self.assertRaises(RuntimeError):
+                self.load()
+
+    def test_nonsemantic_process_failure_cannot_imitate_precise_llvm_rejection(self):
+        probe = self.contract['llvm']['rejection_probes'][0]
+        for code in (0, 2, 125, 255, -9):
+            with self.subTest(exit_code=code), self.assertRaises(RuntimeError):
+                checker.check_rejection(
+                    subprocess.CompletedProcess([], code, '', probe['diagnostic'] + '\n'),
+                    probe,
+                )
+        for diagnostic in ('', 'unrelated parser error', probe['diagnostic'] + '\nsecond error'):
+            with self.subTest(diagnostic=diagnostic), self.assertRaises(RuntimeError):
+                checker.check_rejection(
+                    subprocess.CompletedProcess([], 1, '', diagnostic),
+                    probe,
+                )
+
+    def test_invalid_java_source_pin_cannot_use_an_unversioned_branch_name(self):
+        (self.root / 'SOURCE_REF').write_text('main\n')
+        with patch.dict(os.environ, {'ORESLANG_SOURCE_DIR': str(self.root)}):
+            with self.assertRaisesRegex(RuntimeError, 'Invalid SOURCE_REF'):
+                checker.require_source('ORESLANG_SOURCE_DIR', 'SOURCE_REF')
+
 if __name__ == '__main__': unittest.main()
