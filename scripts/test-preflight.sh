@@ -18,11 +18,14 @@ git -C "$tmp/router" -c user.name=Audit -c user.email=audit@example.invalid comm
 cp "$root/scripts/test.sh" "$tmp/project/scripts/test.sh"
 printf '%s\n' "$ref" > "$tmp/project/SOURCE_REF"
 printf 'sample\n' > "$tmp/project/examples/mixed.atto"
+printf 'sample\n' > "$tmp/project/tests/builder_contracts_20261101.atto"
 printf 'print("integration fixture OK")\n' > "$tmp/project/tests/integration.py"
+# Provenance fixture only: test.sh both checks and executes server sources.
 cat > "$tmp/compiler" <<'COMPILER'
 #!/usr/bin/env bash
 set -euo pipefail
-[[ "$1" = '--check' && "$2" = '--platform=server' ]]
+[[ "$1" = '--check' && "$2" = '--platform=server' && -f "$3" ]] \
+  || [[ "$1" = '--platform=server' && -f "$2" ]]
 COMPILER
 chmod +x "$tmp/compiler"
 git -C "$tmp/project" init -q

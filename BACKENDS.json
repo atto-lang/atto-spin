@@ -17,5 +17,20 @@
         "diagnostic": "oreslang-llvmc: actor requires at least one scalar field at byte 372 [file: spin.atto]"
       }
     ]
+  },
+  "wasm": {
+    "source_repo": "oreslang-source.wasm",
+    "execution": "unverified",
+    "evidence": "none"
+  },
+  "cranelift": {
+    "source_repo": "oreslang-source.cranelift",
+    "execution": "unverified",
+    "evidence": "none"
+  },
+  "net": {
+    "source_repo": "oreslang-source.net",
+    "execution": "unverified",
+    "evidence": "none"
   }
 }
