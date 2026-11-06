@@ -25,3 +25,18 @@ until #2498 is fixed.**
 
 LLVM gate (`scripts/check-backend.py llvm`), checker self-tests and the provenance
 preflight pass. LLVM package execution remains unsupported.
+
+## AttoLang `.atto` sources
+
+`src/spin.atto`, `examples/mixed.atto` and the six `tests/*-server.atto` fixtures are
+the canonical sources (pure renames). Scripts, generated temp fixtures, the project
+config and the LLVM probes follow. Historical receipts under `docs/benchmarks/` keep
+their original `.ores` names. Java `main` does not accept `.atto` yet, so `SOURCE_REF`
+pins `00afec5384` (`integration/atto-2460-with-2497-20261103` in oreslang-source.java:
+#2460 `.atto` admission merged with #2497); the router submodule is
+oreslang-http-routing#34.
+
+At these pins the results are identical to the `.ores` run above: router semantics and
+the `examples/mixed.atto` check pass, and `tests/server.atto` fails only checks 78 and 95
+and the shutdown wait (#2498). The LLVM gate, the checker self-tests, the provenance
+preflight and the load/profiling unit tests pass.

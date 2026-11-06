@@ -17,7 +17,7 @@ git -C "$tmp/router" add .
 git -C "$tmp/router" -c user.name=Audit -c user.email=audit@example.invalid commit -qm init
 cp "$root/scripts/test.sh" "$tmp/project/scripts/test.sh"
 printf '%s\n' "$ref" > "$tmp/project/SOURCE_REF"
-printf 'sample\n' > "$tmp/project/examples/mixed.ores"
+printf 'sample\n' > "$tmp/project/examples/mixed.atto"
 printf 'print("integration fixture OK")\n' > "$tmp/project/tests/integration.py"
 cat > "$tmp/compiler" <<'COMPILER'
 #!/usr/bin/env bash

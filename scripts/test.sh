@@ -14,5 +14,5 @@ expected_router="$(git -C "$root" ls-files --stage dependencies/http-routing | a
 [[ "$(git -C "$root/dependencies/http-routing" rev-parse HEAD)" == "$expected_router" ]] || { echo 'Router revision differs from gitlink' >&2; exit 65; }
 export ORESLANG_COMPILER="$compiler"
 bash "$root/dependencies/http-routing/scripts/test.sh"
-"$compiler" --check --platform=server "$root/examples/mixed.ores"
+"$compiler" --check --platform=server "$root/examples/mixed.atto"
 python3 "$root/tests/integration.py"

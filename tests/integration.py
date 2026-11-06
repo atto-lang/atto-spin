@@ -6,8 +6,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 COMPILER = os.environ.get('ORESLANG_COMPILER', 'oreslang-compiler')
 
 def main():
-    subprocess.run([COMPILER, '--check', '--platform=server', str(ROOT/'tests/server.ores')], check=True, cwd=ROOT)
-    with subprocess.Popen([COMPILER, '--platform=server', '--allow-net=127.0.0.1:0', str(ROOT/'tests/server.ores')], cwd=ROOT,
+    subprocess.run([COMPILER, '--check', '--platform=server', str(ROOT/'tests/server.atto')], check=True, cwd=ROOT)
+    with subprocess.Popen([COMPILER, '--platform=server', '--allow-net=127.0.0.1:0', str(ROOT/'tests/server.atto')], cwd=ROOT,
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as server:
         lines, errors = queue.Queue(), []
         threading.Thread(target=lambda: [lines.put(line.strip()) for line in server.stdout], daemon=True).start()

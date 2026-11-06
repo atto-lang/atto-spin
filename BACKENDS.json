@@ -9,12 +9,12 @@
     "execution": "unsupported",
     "rejection_probes": [
       {
-        "path": "examples/mixed.ores",
-        "diagnostic": "oreslang-llvmc: actor requires at least one scalar field at byte 151 [file: mixed.ores]"
+        "path": "examples/mixed.atto",
+        "diagnostic": "oreslang-llvmc: actor requires at least one scalar field at byte 151 [file: mixed.atto]"
       },
       {
-        "path": "src/spin.ores",
-        "diagnostic": "oreslang-llvmc: actor requires at least one scalar field at byte 372 [file: spin.ores]"
+        "path": "src/spin.atto",
+        "diagnostic": "oreslang-llvmc: actor requires at least one scalar field at byte 372 [file: spin.atto]"
       }
     ]
   }
