@@ -3,7 +3,7 @@
 Status: **candidate only / NOT_EXECUTED / must not merge as parity evidence**.
 
 - Spin base: PR #35 head `0cdeb333ce77d389237601d82e0bede931e59f8a`.
-- Java source pin: `8e8d6b35ddb021e80e8e60fadaff233f0aed1bc0`, the current candidate head of
+- Java source pin: `932b3b044bca5a5ddf56237c8e4f2a7b7d18238e`, the current candidate head of
   [Java #2629](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2629).
 - Router submodule pin: merged router `main` `de85570f26351f25d0bb3d9a80e930d9a5cbb0f1`,
   with Git tree `b18acbf38bb68ab4fe439d9959563010afb57716`.
@@ -38,7 +38,7 @@ no inference that source-free canaries establish compiler-backed guest parity.
 
 ## 2026-11-07 case expansion
 
-This candidate now pins Java #2629's revised raw-wire regression head `8e8d6b35ddb021e80e8e60fadaff233f0aed1bc0`.
+This candidate now pins Java #2629's revised raw-wire regression head `932b3b044bca5a5ddf56237c8e4f2a7b7d18238e`.
 Three new HTTP/1.1 raw-wire cases cover mixed-case duplicate Host headers, blank Host,
 and missing Host. A standalone JDK 21 host harness returned the expected 200/400
 codes with connection closure and listener recovery across 9/9 cases; this does
@@ -46,9 +46,19 @@ codes with connection closure and listener recovery across 9/9 cases; this does
 
 ## November 7, 2026 TE/CL defense-in-depth head update
 
-Pinned Java #2629 head `8e8d6b35ddb021e80e8e60fadaff233f0aed1bc0`, which adds explicit host-header and
+Pinned Java #2629 head `932b3b044bca5a5ddf56237c8e4f2a7b7d18238e`, which adds explicit host-header and
 TE/CL framing admission to the host adapter plus dedicated unit and raw-wire
 regression coverage. The JDK 21 standalone wire probe observed that duplicate
 Content-Length and TE/CL conflicts are rejected by JDK **before** its handler;
 this is a parser-level rejection, not proof that AttoLang code ran. Record
 host rejections and statuses distinctly from actual guest execution.
+
+## Raw-wire negative response-body characterization
+
+JDK 21 parser-level HTTP 400 responses for duplicate Content-Length and TE/CL
+may contain an explanatory response body. The Java #2629 raw-wire regression now
+reads at most 64 KiB before asserting connection EOF; it does not incorrectly
+require the error response to be empty. A separately executed local JDK socket
+harness passed **13/13** request/status/close/recovery probes after this fix,
+including 400 responses with bodies of 52 and 65 bytes. This is not an
+execution of the PR JUnit tests or a compiler-backed Spin guest.
