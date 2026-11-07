@@ -3,7 +3,7 @@
 Status: **candidate only / NOT_EXECUTED / must not merge as parity evidence**.
 
 - Spin base: PR #35 head `0cdeb333ce77d389237601d82e0bede931e59f8a`.
-- Java source pin: `2d05dce7bd41e921d79fe79c72d6e7b90a3ed363`, the current candidate head of
+- Java source pin: `6fcfc377eaedb1403a7233f3a3d9b6946dd52e97`, the current candidate head of
   [Java #2629](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2629).
 - Router submodule pin: merged router `main` `de85570f26351f25d0bb3d9a80e930d9a5cbb0f1`,
   with Git tree `b18acbf38bb68ab4fe439d9959563010afb57716`.
@@ -38,7 +38,7 @@ no inference that source-free canaries establish compiler-backed guest parity.
 
 ## 2026-11-07 case expansion
 
-This candidate now pins Java #2629's revised raw-wire regression head `2d05dce7bd41e921d79fe79c72d6e7b90a3ed363`.
+This candidate now pins Java #2629's revised raw-wire regression head `6fcfc377eaedb1403a7233f3a3d9b6946dd52e97`.
 Three new HTTP/1.1 raw-wire cases cover mixed-case duplicate Host headers, blank Host,
 and missing Host. A standalone JDK 21 host harness returned the expected 200/400
 codes with connection closure and listener recovery across 9/9 cases; this does
@@ -46,7 +46,7 @@ codes with connection closure and listener recovery across 9/9 cases; this does
 
 ## November 7, 2026 TE/CL defense-in-depth head update
 
-Pinned Java #2629 head `2d05dce7bd41e921d79fe79c72d6e7b90a3ed363`, which adds explicit host-header and
+Pinned Java #2629 head `6fcfc377eaedb1403a7233f3a3d9b6946dd52e97`, which adds explicit host-header and
 TE/CL framing admission to the host adapter plus dedicated unit and raw-wire
 regression coverage. The JDK 21 standalone wire probe observed that duplicate
 Content-Length and TE/CL conflicts are rejected by JDK **before** its handler;
@@ -79,7 +79,7 @@ execution of the PR JUnit tests or a compiler-backed Spin guest.
   oracle and extended to **10 host-only test methods**, including silent close,
   404/500, double response, middleware bypass, and 501 exclusivity.
   `scripts/test.sh` now runs the host-only oracle suite before guest tests.
-- Java #2629 exact source head `2d05dce7bd41e921d79fe79c72d6e7b90a3ed363` adds a native JDK raw-wire
+- Java #2629 exact source head `6fcfc377eaedb1403a7233f3a3d9b6946dd52e97` adds a native JDK raw-wire
   regression that counts successful header admission and completed body reads.
   The host-only regression explicitly distinguishes a malformed chunk
   discovered after admission from a Host/TE/CL denial before guest dispatch.
@@ -87,3 +87,11 @@ execution of the PR JUnit tests or a compiler-backed Spin guest.
 These are code changes and test registrations, **NOT_EXECUTED** on hosted
 GitHub Actions. They do not prove the actual AttoLang guest works until the
 full exact-pinned server integration is executed on an admitted source runner.
+
+## 2026-11-07 source doc pin refresh
+
+Java #2629's new exact head `6fcfc377eaedb1403a7233f3a3d9b6946dd52e97` only clarifies the Host, TE/CL and
+post-admission malformed-body security documentation relative to the prior
+pinned head; its runtime/test behavior remains unchanged. The exact Spin
+integration replay remains **NOT_EXECUTED** and CI runner admission remains
+blocked. Do not mistake this metadata synchronization for an execution pass.
