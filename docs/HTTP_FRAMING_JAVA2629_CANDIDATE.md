@@ -20,9 +20,12 @@ Status: **candidate only / NOT_EXECUTED / must not merge as parity evidence**.
    guest-executed `.atto` source.
 4. Boot `tests/server.atto` from a clean compiler tip. Run
    `tests/transport_security.py` against a real HTTP socket and assert:
-   - malformed chunk-size `Z` => 4xx, close, no guest handler dispatch
-   - two `Host` fields => 4xx, close, no guest handler dispatch
-   - 12 KiB header field => 4xx, close, no guest handler dispatch
+   - malformed chunk-size `Z` => 4xx, close, and no successful processing
+     of the rejected body. The body is read after request admission, so this
+     does **not** currently prove the guest was never scheduled or that an
+     actor performed no pre-read side effects
+   - two `Host` fields => 4xx, close, rejected before guest dispatch
+   - 12 KiB header field => 4xx, close, rejected before guest dispatch
    - existing TE+CL, duplicate CL, negative CL and unsupported TE cases remain rejected
    - good subsequent requests recover and all 102 guest integration checks continue passing.
 5. Record exact Spin head/tree, Java source head/tree, router gitlink/tree, workflow
