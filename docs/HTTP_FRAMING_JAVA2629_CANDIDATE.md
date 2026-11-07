@@ -3,7 +3,7 @@
 Status: **candidate only / NOT_EXECUTED / must not merge as parity evidence**.
 
 - Spin base: PR #35 head `0cdeb333ce77d389237601d82e0bede931e59f8a`.
-- Java source pin: `de411f807d2cd9ac9d281f626a705441e2d010ff`, the current candidate head of
+- Java source pin: `daf3d91b284f3a55f96fcb47db8125340dbb4796`, the current candidate head of
   [Java #2629](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2629).
 - Router submodule pin: merged router `main` `de85570f26351f25d0bb3d9a80e930d9a5cbb0f1`,
   with Git tree `b18acbf38bb68ab4fe439d9959563010afb57716`.
@@ -35,3 +35,11 @@ Status: **candidate only / NOT_EXECUTED / must not merge as parity evidence**.
 
 **Security:** no cross-org private-source transfer, no fabricated green checks and
 no inference that source-free canaries establish compiler-backed guest parity.
+
+## 2026-11-07 case expansion
+
+This candidate now pins Java #2629's revised raw-wire regression head `daf3d91b284f3a55f96fcb47db8125340dbb4796`.
+Three new HTTP/1.1 raw-wire cases cover mixed-case duplicate Host headers, blank Host,
+and missing Host. A standalone JDK 21 host harness returned the expected 200/400
+codes with connection closure and listener recovery across 9/9 cases; this does
+**not** count as a Java #2629 JUnit or compiler-backed Spin `.atto` run.
