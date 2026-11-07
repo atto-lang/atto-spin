@@ -12,6 +12,8 @@ router_status="$(git -C "$root/dependencies/http-routing" status --porcelain --u
 [[ -z "$router_status" ]] || { echo 'Router checkout must be clean' >&2; exit 65; }
 expected_router="$(git -C "$root" ls-files --stage dependencies/http-routing | awk '{print $2}')"
 [[ "$(git -C "$root/dependencies/http-routing" rev-parse HEAD)" == "$expected_router" ]] || { echo 'Router revision differs from gitlink' >&2; exit 65; }
+# This is host-only assertion-oracle evidence; run before guest compilation.
+python3 -m unittest discover -s "$root/tests" -p 'test_transport_security.py' -v
 export ORESLANG_COMPILER="$compiler"
 bash "$root/dependencies/http-routing/scripts/test.sh"
 "$compiler" --check --platform=server "$root/examples/mixed.atto"
