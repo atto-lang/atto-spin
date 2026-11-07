@@ -1,12 +1,12 @@
 # Compiler main tips — 2026-11-06
 
-Pins at this revision (all `main` tips except the router, which is the head of its open repin PR):
+Pins initially recorded on November 6; the router pin was updated to merged `main` on November 7:
 
 | Dependency | Pin |
 |---|---|
 | oreslang-source.java (`SOURCE_REF`) | `main` `67ff8ad05b`: `.atto` admission (#2460), formatting-borrow fix (#2497), slot-leak fix (#2521) |
 | oreslang-source.llvm (`LLVM_SOURCE_REF`) | `main` `16e986c4c7`, LLVM 21.1.8 |
-| `dependencies/http-routing` | `50408cdde0` (oreslang-http-routing#46: router `main` + Java/LLVM tips) |
+| `dependencies/http-routing` | `de85570f26` (merged oreslang-http-routing#46, router `main`; identical Git tree to reviewed `50408cdde0`) |
 | `dependencies/otel` | `main` `ee6aa6f54c` |
 
 Sources are canonical `.atto`, including `tests/builder_contracts_20261101.atto` from #32.
@@ -41,3 +41,12 @@ unit tests pass. `scripts/test-preflight.sh` passes again; on `main` it failed b
 The local Java checkout used `git update-index --skip-worktree .github/pull_request_template.md`
 for one path, because Java `main` tracks case-colliding templates
 ([oreslang-source.java#2567](https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/2567)).
+
+## 2026-11-07 router merge-parent pin reconciliation
+
+Router PR #46 is merged; its `main` commit `de85570f26351f25d0bb3d9a80e930d9a5cbb0f1`
+and the former pin `50408cdde0ef5b75f974a0019419d09c9e51692e` both point to Git tree
+`b18acbf38bb68ab4fe439d9959563010afb57716`. The gitlink now follows router `main`
+without changing any router source bytes. This is a provenance update only; it is **not**
+a new exact-head compiler or HTTP guest-execution receipt, and the three raw-wire framing
+failures and zero-step hosted Actions remain release blockers.
