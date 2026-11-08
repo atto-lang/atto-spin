@@ -6,11 +6,11 @@ import transport_security
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 COMPILER = os.environ.get('ORESLANG_COMPILER', 'oreslang-compiler')
 
-# Keep the 102 established actor/HTTP checks separate from the 20 rejection
+# Keep the 102 established actor/HTTP checks separate from the 23 rejection
 # frames and two positive controls in tests/transport_security.py. Update
 # these constants deliberately when the actual integration matrix changes.
 EXPECTED_FUNCTIONAL_CHECKS = 102
-EXPECTED_RAW_WIRE_CHECKS = 22
+EXPECTED_RAW_WIRE_CHECKS = 25
 
 def require_condition(ok, label):
     # Python's assert is stripped under -O / PYTHONOPTIMIZE. A release
