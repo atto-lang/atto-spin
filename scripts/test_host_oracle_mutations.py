@@ -16,6 +16,7 @@ TEST = ROOT / 'tests' / 'test_transport_security.py'
 
 # Every mutation must be killed by a named behavior assertion, not an ImportError
 # or syntax failure. Matching anchors exactly once avoids vacuous tests.
+EXPECTED_TESTS = 39
 MUTATIONS = (
     ('length-framing',
      'if len(body) != int(lengths[0]):', 'if False:',
@@ -38,6 +39,17 @@ MUTATIONS = (
     ('no-length-pipelining',
      "elif re.search(rb'(?:\\A|\\r\\n)HTTP/1\\.[01] [0-9]{3}[ \\r]', body):",
      'elif False:', 'test_close_delimited_fake_second_response_is_rejected'),
+
+    ('half-close-incomplete-body',
+     'sock.shutdown(socket.SHUT_WR)',
+     'pass', 'test_half_close_unblocks_incomplete_request_body'),
+    ('strict-response-capture-bound',
+     'sock.recv(min(8192, 65536 - len(data)))',
+     'sock.recv(8192)', 'test_response_capture_is_bounded_to_65536_bytes'),
+    ('repeated-te-501-compatibility',
+     "if name in ('unsupported_transfer_coding', 'repeated_te') else {400}",
+     "if name == 'unsupported_transfer_coding' else {400}",
+     'test_repeated_transfer_encoding_can_be_501_from_jdk_parser'),
 )
 
 
@@ -58,15 +70,15 @@ def run_case(label, source):
 def main():
     source = SRC.read_text(encoding='utf-8')
     baseline = run_case('baseline', source)
-    if baseline.returncode != 0 or 'Ran 36 tests' not in baseline.stderr:
-        raise SystemExit(f'baseline must run all 36 host-only tests: {baseline.stderr[-2500:]}')
-    print('PASS: baseline 36/36 host-only tests')
+    if baseline.returncode != 0 or f'Ran {EXPECTED_TESTS} tests' not in baseline.stderr:
+        raise SystemExit(f'baseline must run all {EXPECTED_TESTS} host-only tests: {baseline.stderr[-2500:]}')
+    print(f'PASS: baseline {EXPECTED_TESTS}/{EXPECTED_TESTS} host-only tests')
     for label, old, new, expected_test in MUTATIONS:
         if source.count(old) != 1:
             raise SystemExit(f'FAIL: {label} source mutation anchor count={source.count(old)}')
         mutant = run_case(label, source.replace(old, new, 1))
         failure = f'FAIL: {expected_test} '
-        if (mutant.returncode == 0 or 'Ran 36 tests' not in mutant.stderr
+        if (mutant.returncode == 0 or f'Ran {EXPECTED_TESTS} tests' not in mutant.stderr
                 or failure not in mutant.stderr):
             raise SystemExit(f'FAIL: {label} mutation survived or failed without targeted '
                              f'assertion: {mutant.stderr[-2500:]}')

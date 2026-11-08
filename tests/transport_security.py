@@ -17,6 +17,15 @@ def _exchange(port, payload, timeout=_TIMEOUT):
     with socket.create_connection(('127.0.0.1', port), timeout=timeout) as sock:
         sock.settimeout(timeout)
         sock.sendall(payload)
+        # A malformed request may advertise a body larger than the bytes sent.
+        # EOF is part of the probe: otherwise the JDK may retain the socket
+        # while trying to drain the unread input after sending a 400.
+        try:
+            sock.shutdown(socket.SHUT_WR)
+        except OSError:
+            # The HTTP parser may already have closed/rejected the peer.
+            # The response and closure checks below still fail closed.
+            pass
         # Every negative probe has all bytes needed to decide rejection.
         # A deadline is a failure, not an accepted no-response result.
         deadline = time.monotonic() + timeout
@@ -24,7 +33,7 @@ def _exchange(port, payload, timeout=_TIMEOUT):
         while time.monotonic() < deadline and len(data) < 65536:
             sock.settimeout(max(0.01, deadline - time.monotonic()))
             try:
-                chunk = sock.recv(8192)
+                chunk = sock.recv(min(8192, 65536 - len(data)))
             except socket.timeout:
                 break
             except ConnectionResetError:
@@ -122,7 +131,7 @@ def assert_rejected(port, name, request):
     if not closed:
         raise AssertionError(f'{name}: response did not close; prefix={data[:128]!r}')
     status, headers, _ = _response(data)
-    expected = {400, 501} if name == 'unsupported_transfer_coding' else {400}
+    expected = {400, 501} if name in ('unsupported_transfer_coding', 'repeated_te') else {400}
     if status not in expected:
         raise AssertionError(
             f'{name}: expected one explicit {sorted(expected)} response; '

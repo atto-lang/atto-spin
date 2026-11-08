@@ -220,6 +220,67 @@ class WireHarnessTests(unittest.TestCase):
         with self.assertRaisesRegex(AssertionError, 'control bytes'):
             self.case(headers=b'X-Attacker: good\x7fbad\r\n')
 
+    def test_repeated_transfer_encoding_can_be_501_from_jdk_parser(self):
+        # The JDK rejects duplicate Transfer-Encoding in the HTTP parser
+        # with 501; it never hands this request to the AttoLang admission gate.
+        self.assertEqual(self.case(b'HTTP/1.1 501 Not Implemented',
+                                   name='repeated_te'), 1)
+        with self.assertRaises(AssertionError):
+            self.case(b'HTTP/1.1 501 Not Implemented', name='te_and_cl_conflict')
+
+    def test_half_close_unblocks_incomplete_request_body(self):
+        # Regression: a POST advertising more data than it sends can leave
+        # JDK-style draining waiting for EOF after an HTTP 400 was emitted.
+        listener = socket.socket()
+        listener.bind(('127.0.0.1', 0))
+        listener.listen(1)
+        listener.settimeout(2)
+        port = listener.getsockname()[1]
+        errors = []
+        def serve():
+            try:
+                client, _ = listener.accept()
+                with client:
+                    client.settimeout(2)
+                    while client.recv(1024):
+                        pass
+                    client.sendall(b'HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n')
+            except Exception as exc:
+                errors.append(exc)
+            finally:
+                listener.close()
+        thread = threading.Thread(target=serve, daemon=True)
+        thread.start()
+        try:
+            response, closed = ts._exchange(port, b'POST /bad HTTP/1.1\r\n'
+                                      b'Host: localhost\r\nContent-Length: 8\r\n\r\nx', timeout=1.5)
+            self.assertTrue(closed, response[:128])
+            self.assertTrue(response.startswith(b'HTTP/1.1 400'), response[:128])
+        finally:
+            thread.join(timeout=2.5)
+        self.assertFalse(thread.is_alive(), 'peer reader never observed request EOF')
+        self.assertEqual(errors, [])
+
+    def test_response_capture_is_bounded_to_65536_bytes(self):
+        # Deterministic read boundaries: one short first recv makes the last
+        # read one byte. An unbounded recv(8192) would cross the 64 KiB cap.
+        class Stream:
+            calls = 0
+            def __enter__(self): return self
+            def __exit__(self, *_): return None
+            def sendall(self, *_): pass
+            def shutdown(self, *_): pass
+            def settimeout(self, *_): pass
+            def recv(self, n):
+                self.calls += 1
+                if self.calls == 1:
+                    return b'x' * min(8191, n)
+                return b'x' * n
+        with patch.object(ts.socket, 'create_connection', return_value=Stream()):
+            response, closed = ts._exchange(0, b'GET / HTTP/1.1\r\n\r\n', timeout=1.5)
+        self.assertEqual(len(response), 65536)
+        self.assertFalse(closed, 'truncated response must never appear cleanly closed')
+
     def test_socket_client_reads_full_reply(self):
         listener = socket.socket()
         listener.bind(('127.0.0.1', 0))
