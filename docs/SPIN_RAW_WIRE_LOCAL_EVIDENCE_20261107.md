@@ -192,3 +192,23 @@ This is HOST_ONLY_EXACT_BLOB execution. The live server.atto suite
 (16 negative requests and two positive controls) has not executed against
 the real AttoLang compiler/runtime. Source-org GitHub Actions jobs still
 fail runner admission with zero executed steps. No CI or guest-parity claim.
+
+## 2026-11-07 current Spin pin and guest receipt policy
+
+Latest raw-wire source/test/mutation blobs: `523cb08a1d4658097fcba57665d2f4015b45f730`,
+`04b2094d87130c55982d77b48f31603af7faf169`, and
+`d729ba7e70d60bf728b6f64e8382c62d468f82fa`, respectively.
+**39/39** exact-blob host unit tests pass locally and **10/10** targeted
+source mutations are killed; a minimal JDK21 host reproducing the Java
+admission rules completed **18/18** raw-wire model requests. This is not guest
+compiler execution and did not involve a transfer of the Java source tree.
+
+Spin now pins Java draft #2659 exact head `0cf6583ec9621c7cbb2da84db90d8e5136419a99` for its eventual
+compiler-backed guest execution (rather than old merged #2629 head). The
+integration receipt checks exactly **102 base + 18 raw-wire = 120** tests,
+and guards still reject failures under `python -O`. Six additional local
+checks passed against an isolated exact helper reproduction, with the new
+`tests/test_integration_receipt.py` test file Git blob
+`bc7b7e2514c184a402eb7a1328fec96d14d9e145` verified locally.
+The full integration.py module/guest run is **NOT_EXECUTED**, and the six
+receipt tests are not evidence of complete compiler-backed AttoLang support.

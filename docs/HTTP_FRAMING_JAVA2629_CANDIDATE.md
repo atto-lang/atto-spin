@@ -95,3 +95,21 @@ post-admission malformed-body security documentation relative to the prior
 pinned head; its runtime/test behavior remains unchanged. The exact Spin
 integration replay remains **NOT_EXECUTED** and CI runner admission remains
 blocked. Do not mistake this metadata synchronization for an execution pass.
+
+## 2026-11-07 current compiler candidate: Java #2659
+
+For the *next* compiler-backed integration run, this Spin branch now pins
+Java [PR #2659](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2659)
+exact head `0cf6583ec9621c7cbb2da84db90d8e5136419a99`, the HTTP error-origin status fix built on
+merged Java #2629. This newer pin **supersedes previous pinned source
+references above only for future test execution**; earlier local host receipts
+remain historical and are not rewritten as Java #2659 full-repository tests.
+
+The full `tests/integration.py` suite now requires exactly 102 functional
+actor/HTTP checks and 18 actual raw-wire socket checks (**120 total**),
+checks independently that the actual wire matrix returned 18, and fails
+explicitly under Python `-O` rather than relying on stripped `assert`
+statements. Six isolated receipt-helper tests cover correct counts, short or
+extra counts, and optimized-Python failure. The actual 120-check native
+`.atto` suite remains **NOT_EXECUTED** until original-org runner admission
+is restored. Java #2659 is DRAFT and must receive independent review.
