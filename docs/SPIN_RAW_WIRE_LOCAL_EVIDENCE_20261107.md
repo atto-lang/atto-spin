@@ -152,3 +152,43 @@ the host oracle to 26 methods. These are **host-only** checks, not a
 `.atto` server run. The real Spin actor guest's **16 malformed requests
 and two positive controls remain NOT_EXECUTED**. Do not infer
 full-request, runtime actor, or backend parity from this local receipt.
+
+
+## Exact-blob 36/36 and seven-target mutation gate — 2026-11-07
+
+Independent local Git SHA-1 hashes of the fetched, executed host-test files
+match the objects written to Spin #37:
+
+| File | Verified SHA-1 blob |
+| --- | --- |
+| tests/transport_security.py | 07be11569dc78f8d9c17f6a295bf23584d968e4f |
+| tests/test_transport_security.py | a555ac1a9cd695153bc26d6be7c75bfa3cca4295 |
+| scripts/test_host_oracle_mutations.py | da7ad8ef44f43e8f60df65b7e006ad1af615ed13 |
+
+Source and tests were committed at 778ba6780159b877072f49a3e981161dc317c0ef;
+the independent negative mutation gate was committed at
+49fff35478bd28b66ba4439fd839aa192a7a098e.
+
+**Executed locally using Python 3.13.5:**
+
+- python -B -m unittest discover -s tests -p test_transport_security.py -v
+  → **36/36 PASS**.
+- python -B scripts/test_host_oracle_mutations.py → baseline **36/36 PASS**
+  and **7/7 source mutations KILLED by named assertion failures**.
+- Mutants: bypass fixed-length response framing, guest-marker isolation,
+  response connection closure, strict status, chunk terminator, control
+  bytes in response headers, and unframed secondary HTTP response rejection.
+- Each mutation compiled/imported in a separate temporary directory and
+  failed because an expected named test assertion fired; unrelated syntax
+  and import errors are not accepted as evidence.
+- Valid chunked responses are now decoded within a 64 KiB bound. Bad hex
+  sizes, truncation, trailers and pipelined replies fail closed.
+- A correct length-delimited body containing apparent HTTP status text is
+  accepted without falsely claiming a second HTTP response.
+
+The two new host workflows now run the mutation script from both
+scripts/test.sh and .github/workflows/framing-parity-contract.yml.
+This is HOST_ONLY_EXACT_BLOB execution. The live server.atto suite
+(16 negative requests and two positive controls) has not executed against
+the real AttoLang compiler/runtime. Source-org GitHub Actions jobs still
+fail runner admission with zero executed steps. No CI or guest-parity claim.
