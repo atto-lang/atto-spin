@@ -14,6 +14,7 @@ expected_router="$(git -C "$root" ls-files --stage dependencies/http-routing | a
 [[ "$(git -C "$root/dependencies/http-routing" rev-parse HEAD)" == "$expected_router" ]] || { echo 'Router revision differs from gitlink' >&2; exit 65; }
 # This is host-only assertion-oracle evidence; run before guest compilation.
 python3 -m unittest discover -s "$root/tests" -p 'test_transport_security.py' -v
+python3 -B -m unittest discover -s "$root/tests" -p 'test_integration_receipt.py' -v
 python3 -B "$root/scripts/test_host_oracle_mutations.py"
 export ORESLANG_COMPILER="$compiler"
 bash "$root/dependencies/http-routing/scripts/test.sh"

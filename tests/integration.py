@@ -6,6 +6,29 @@ import transport_security
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 COMPILER = os.environ.get('ORESLANG_COMPILER', 'oreslang-compiler')
 
+# Keep the 102 established actor/HTTP checks separate from the 16 rejection
+# frames and two positive controls in tests/transport_security.py. Update
+# these constants deliberately when the actual integration matrix changes.
+EXPECTED_FUNCTIONAL_CHECKS = 102
+EXPECTED_RAW_WIRE_CHECKS = 18
+
+def require_condition(ok, label):
+    # Python's assert is stripped under -O / PYTHONOPTIMIZE. A release
+    # test must not silently pass if run by an optimized Python interpreter.
+    if not ok:
+        raise AssertionError(label)
+
+def verify_guest_receipt(total_checks, raw_wire_checks):
+    if raw_wire_checks != EXPECTED_RAW_WIRE_CHECKS:
+        raise AssertionError(
+            f'raw-wire checks {raw_wire_checks} != {EXPECTED_RAW_WIRE_CHECKS}')
+    functional_checks = total_checks - raw_wire_checks
+    if functional_checks != EXPECTED_FUNCTIONAL_CHECKS:
+        raise AssertionError(
+            f'functional checks {functional_checks} != {EXPECTED_FUNCTIONAL_CHECKS}')
+    return {'checks': total_checks, 'functional_checks': functional_checks,
+            'raw_wire_checks': raw_wire_checks}
+
 def main():
     subprocess.run([COMPILER, '--check', '--platform=server', str(ROOT/'tests/server.atto')], check=True, cwd=ROOT)
     with subprocess.Popen([COMPILER, '--platform=server', '--allow-net=127.0.0.1:0', str(ROOT/'tests/server.atto')], cwd=ROOT,
@@ -27,7 +50,7 @@ def main():
             checks = 0
             def check(ok, label):
                 nonlocal checks
-                assert ok, label
+                require_condition(ok, label)
                 checks += 1
             status, headers, body = req('/shared')
             check((status, body, headers['x-actor-mode']) == (200,b'shared','shared'), 'shared route')
@@ -63,7 +86,8 @@ def main():
             check(req('/echo', 'POST', 'x'*2048)[0] == 413, 'body limit')
             check(req('/echo', 'POST', iter([b'a'*600,b'b'*600]))[0] == 413, 'chunked body limit')
             check(req('/users/%C0%AF')[0] == 400, 'invalid UTF-8 path')
-            checks += transport_security.run(port)  # real raw-wire protocol and post-rejection recovery
+            raw_wire_checks = transport_security.run(port)
+            checks += raw_wire_checks  # real raw-wire protocol, not a host mock
             check(req('/crash')[0] == 500, 'actor crash cleanup')
             check(req('/startup-failure')[0] == 500, 'actor startup failure cleanup')
             check(req('/timeout')[0] == 504, 'deadline cleanup')
@@ -96,7 +120,8 @@ def main():
             server.wait(timeout=10)
             check(server.returncode == 0, 'clean process exit: '+''.join(errors[-20:]))
             check(lines.get(timeout=5) == '0', 'zero active exchanges after shutdown')
-            print(json.dumps({'checks': checks, 'result':'PASS'}))
+            receipt = verify_guest_receipt(checks, raw_wire_checks)
+            print(json.dumps({**receipt, 'result': 'PASS'}))
         except Exception:
             print(''.join(errors[-50:]))
             raise
