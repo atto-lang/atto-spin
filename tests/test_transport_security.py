@@ -58,8 +58,13 @@ class WireHarnessTests(unittest.TestCase):
                                    headers=b'X-Spin: test\r\n'), 1)
 
     def test_bounded_response_body_is_allowed(self):
-        self.assertEqual(self.case(headers=b'Content-Type: text/plain\r\n',
-                                   tail=b'error from JDK parser'), 1)
+        body = b'error from JDK parser'
+        reply = (b'HTTP/1.1 400 Bad Request\r\n'
+                 + b'Content-Type: text/plain\r\n'
+                 + b'Content-Length: ' + str(len(body)).encode() + b'\r\n\r\n'
+                 + body)
+        with patch.object(ts, '_exchange', return_value=(reply, True)):
+            self.assertEqual(ts.assert_rejected(1, 'duplicate_host', b'bad request'), 1)
 
     def test_rejects_status_line_not_at_offset_zero(self):
         with self.assertRaises(AssertionError):
