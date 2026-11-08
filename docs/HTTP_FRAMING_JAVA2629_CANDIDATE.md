@@ -129,3 +129,28 @@ returned **4/4 expected HTTP statuses and connection closures** (200, 413,
 `tests/server.atto`. Spin's existing 120-check gate must still be run
 against the actual compiler and actor runtime after source-org Actions
 runner admission is restored.
+
+## 2026-11-07 current Host-authority security gate — 124 live guest checks
+
+The current Spin `SOURCE_REF` pins Java [PR #2659](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2659)
+exact head `f7539ae7f11ea78feacd85b297f6b685c1b76056`, including strict Host authority syntax and typed
+request-body quota provenance. This supersedes the older pins above **only**
+for future end-to-end execution; previously executed local host receipts
+remain historical.
+
+Added four malformed Host raw-wire frames: nondecimal port, empty host,
+port 65536, and malformed bracketed IPv6. This brings the live wire matrix
+to **20 rejection probes plus two positive controls = 22**, while the
+existing functional actor/HTTP checks remain 102. The release receipt now
+requires **124 total guest checks (102 functional + 22 raw-wire)**. A
+separate host-side receipt test asserts that all four named authority probes
+are actually visited and that both positive controls are run.
+
+The prior **39/39 host-only response oracle** and **10/10 deliberate
+mutation kills** are unchanged and do not prove these four new probes
+have run against the real `server.atto`. The isolated Java21 model
+reported 38/38 direct host admission/status assertions and 8/8 actual
+JDK socket replies for the new Host authority guard; these are **not**
+compiler-backed guest evidence. Real 124-check execution remains
+**NOT_EXECUTED** pending origin-private runner admission and independent
+review. No cross-organization private-source transfer.
