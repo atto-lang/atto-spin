@@ -154,3 +154,17 @@ JDK socket replies for the new Host authority guard; these are **not**
 compiler-backed guest evidence. Real 124-check execution remains
 **NOT_EXECUTED** pending origin-private runner admission and independent
 review. No cross-organization private-source transfer.
+
+## November 8 — Host authority raw-wire expansion (authored, NOT EXECUTED)
+
+This branch now requires **127** live guest-integration checks: the established
+102 functional checks, **23** malformed HTTP wire rejections, and two positive
+recovery/chunked controls. Three new wire probes deny an empty Host port
+(`localhost:`), unbracketed IPv6 (`::1`), and a percent-escaped Host
+authority (`example.test%20attacker`). The source-free receipt regression
+asserts all seven named malformed Host cases are visited and refuses both
+under-counting and surplus counts. These are proposed live socket tests;
+this section does **not** claim that the Java compiler, Spin actor guest,
+or any physical target executed. The existing `SOURCE_REF` remains pinned
+to its reviewed Java candidate rather than silently tracking an active
+Java PR head. Revalidate that exact Java tree before any guest claim.
