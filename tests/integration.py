@@ -37,7 +37,8 @@ def main():
         threading.Thread(target=lambda: [lines.put(line.strip()) for line in server.stdout], daemon=True).start()
         threading.Thread(target=lambda: [errors.append(line) for line in server.stderr], daemon=True).start()
         try:
-            assert lines.get(timeout=15) == 'true', 'builder must reject a second build'
+            require_condition(lines.get(timeout=15) == 'true',
+                              'builder must reject a second build')
             port = int(lines.get(timeout=5))
             def req(path, method='GET', body=None, headers=None, connection=None):
                 conn = connection or http.client.HTTPConnection('127.0.0.1', port, timeout=8)
