@@ -212,3 +212,19 @@ checks passed against an isolated exact helper reproduction, with the new
 `bc7b7e2514c184a402eb7a1328fec96d14d9e145` verified locally.
 The full integration.py module/guest run is **NOT_EXECUTED**, and the six
 receipt tests are not evidence of complete compiler-backed AttoLang support.
+
+## 2026-11-07 typed HTTP 413 quota re-pin
+
+The **current executable compiler source pin** is Java [PR #2659](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2659)
+head `81ffb6d5a4882da29dae970e698bbaaa71227560`, which changes the quota admission status logic
+from message-text matching to the dedicated `RequestBodyTooLargeException`
+and adds declared-limit versus malformed-length JDK wire regressions.
+This supersedes older source pins **only for future exact-head execution**;
+historical local receipts are unchanged.
+
+An independent *isolated* JDK21 host-model check of the new Java policy
+returned **4/4 expected HTTP statuses and connection closures** (200, 413,
+400, and recovered 200). That is not execution of Java #2659 JUnit or Spin
+`tests/server.atto`. Spin's existing 120-check gate must still be run
+against the actual compiler and actor runtime after source-org Actions
+runner admission is restored.

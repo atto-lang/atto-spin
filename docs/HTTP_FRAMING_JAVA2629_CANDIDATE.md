@@ -113,3 +113,19 @@ statements. Six isolated receipt-helper tests cover correct counts, short or
 extra counts, and optimized-Python failure. The actual 120-check native
 `.atto` suite remains **NOT_EXECUTED** until original-org runner admission
 is restored. Java #2659 is DRAFT and must receive independent review.
+
+## 2026-11-07 typed HTTP 413 quota re-pin
+
+The **current executable compiler source pin** is Java [PR #2659](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2659)
+head `81ffb6d5a4882da29dae970e698bbaaa71227560`, which changes the quota admission status logic
+from message-text matching to the dedicated `RequestBodyTooLargeException`
+and adds declared-limit versus malformed-length JDK wire regressions.
+This supersedes older source pins **only for future exact-head execution**;
+historical local receipts are unchanged.
+
+An independent *isolated* JDK21 host-model check of the new Java policy
+returned **4/4 expected HTTP statuses and connection closures** (200, 413,
+400, and recovered 200). That is not execution of Java #2659 JUnit or Spin
+`tests/server.atto`. Spin's existing 120-check gate must still be run
+against the actual compiler and actor runtime after source-org Actions
+runner admission is restored.
