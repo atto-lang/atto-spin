@@ -122,6 +122,41 @@ class WireHarnessTests(unittest.TestCase):
             with self.assertRaises(AssertionError):
                 ts.assert_rejected(1, 'duplicate_host', b'bad')
 
+    def test_jdk_21_unsupported_transfer_501_with_body(self):
+        body = b'<h1>501 Not Implemented</h1>Unsupported Transfer-Encoding value'
+        self.assertEqual(len(body), 63)
+        reply = (b'HTTP/1.1 501 Not Implemented\r\n'
+                 b'Content-Length: 63\r\nContent-Type: text/html\r\n'
+                 b'Connection: close\r\n\r\n' + body)
+        with patch.object(ts, '_exchange', return_value=(reply, True)):
+            self.assertEqual(ts.assert_rejected(1, 'unsupported_transfer_coding', b'bad'), 1)
+            with self.assertRaises(AssertionError):
+                ts.assert_rejected(1, 'duplicate_host', b'bad')
+
+    def test_jdk_21_conflicting_cl_400_with_body(self):
+        body = b'<h1>400 Bad Request</h1>Conflicting or malformed headers detected'
+        self.assertEqual(len(body), 65)
+        reply = (b'HTTP/1.1 400 Bad Request\r\n'
+                 b'Content-Length: 65\r\nContent-Type: text/html\r\n'
+                 b'Connection: close\r\n\r\n' + body)
+        with patch.object(ts, '_exchange', return_value=(reply, True)):
+            self.assertEqual(ts.assert_rejected(1, 'te_and_cl_conflict', b'bad'), 1)
+
+    def test_jdk_21_parser_accepts_missing_host_but_spin_must_deny_it(self):
+        # JDK default handler responds 200 to missing Host. Spin's own
+        # admission guard must convert that to HTTP 400 before guest dispatch.
+        reply = (b'HTTP/1.1 200 OK\r\nContent-length: 0\r\n\r\n')
+        with patch.object(ts, '_exchange', return_value=(reply, True)):
+            with self.assertRaises(AssertionError):
+                ts.assert_rejected(1, 'missing_host', b'bad')
+
+    def test_excessively_long_response_length_is_bounded_before_int_parse(self):
+        reply = (b'HTTP/1.1 400 Bad Request\r\nContent-Length: '
+                 + b'9' * 5000 + b'\r\n\r\n')
+        with patch.object(ts, '_exchange', return_value=(reply, True)):
+            with self.assertRaisesRegex(AssertionError, 'capture bound'):
+                ts.assert_rejected(1, 'duplicate_host', b'bad')
+
     def test_socket_client_reads_full_reply(self):
         listener = socket.socket()
         listener.bind(('127.0.0.1', 0))

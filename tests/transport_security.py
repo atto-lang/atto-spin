@@ -72,6 +72,10 @@ def _response(data):
     if lengths:
         if not re.fullmatch(rb'[0-9]+', lengths[0]):
             raise AssertionError('malformed response content-length')
+        # _exchange() caps the response at 64 KiB. Reject huge decimal
+        # strings before int() to avoid a giant-number parse or ValueError.
+        if len(lengths[0]) > 5 or int(lengths[0]) > 65536:
+            raise AssertionError('declared response length exceeds capture bound')
         if len(body) != int(lengths[0]):
             raise AssertionError('truncated or surplus HTTP response bytes')
     elif transfers:
