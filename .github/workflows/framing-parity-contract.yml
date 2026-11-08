@@ -7,6 +7,7 @@ on:
       - 'scripts/test-backend-checker.py'
       - 'tests/transport_security.py'
       - 'tests/test_transport_security.py'
+      - 'scripts/test_host_oracle_mutations.py'
       - 'tests/integration.py'
       - '.github/workflows/framing-parity-contract.yml'
   push:
@@ -38,5 +39,6 @@ jobs:
         run: |
           set -euo pipefail
           python3 -B -m unittest discover -s tests -p 'test_transport_security.py' -v
+          python3 -B scripts/test_host_oracle_mutations.py
           python3 -B scripts/test-backend-checker.py
           echo SPIN_HOST_CONTRACT_ONLY_PASS
