@@ -63,3 +63,50 @@ host tests with nonzero steps, then execute all pinned `.atto` Spin guest
 integration and raw-wire probes with a known clean Java compiler checkout,
 record job/attempt, test output, exact Git trees and independent approval.
 Never promote a source-only host test to compiler-backed guest proof.
+
+## Supplemental exact-blob replay — 2026-11-07, HTTP response framing
+
+Latest source/test head before this evidence-doc commit:
+`f0b827a178ecbb60ac17418ed3d311aa47d02149`.
+
+Two **new exact file identities** were compared with `git hash-object`
+after fetching GitHub PR #37. The local Git SHA-1s matched GitHub exactly:
+
+| Path | Git blob SHA-1 |
+| --- | --- |
+| `tests/transport_security.py` | `518932fecdadd3f88cf6821cf00acb214228152e` |
+| `tests/test_transport_security.py` | `61be1eb160f825738944cdbd22a9d90a46652ef9` |
+
+Local environment Linux x86_64, Python 3.13.5, Git 2.47.3.
+
+```bash
+python -m py_compile tests/transport_security.py
+python -B -m unittest discover -s tests -p 'test_transport_security.py' -v
+```
+
+**Result: 22/22 executed tests PASS** (0.005 s, source-only/host assertion
+layer). New negatives include forged leading junk before a status line,
+missing CRLF header terminator, duplicate/ambiguous response Content-Length,
+truncated/surplus body, invalid header names, obsolete folded headers,
+response Transfer-Encoding+Content-Length, and embedded fake statuses.
+
+Four independent deliberate mutations were then exercised using the same
+**22-test** suite, each failing by a **named unittest assertion**:
+
+1. `if len(body) != int(lengths[0])` → `if False`:
+   **KILLED** by surplus and truncated body tests (two failures).
+2. Duplicate response CL/TE+CL rejection → `if False`:
+   **KILLED** by duplicate CL and TE+CL tests (two failures).
+3. Guest `X-Spin` middleware marker rejection → `if False`:
+   **KILLED** by `test_rejected_header_must_not_enter_guest_middleware`.
+4. Socket-close enforcement → `if False`:
+   **KILLED** by the open-connection negative status test.
+
+No unrelated syntax/compile errors counted as mutant kills.
+The actual `tests/transport_security.py::run(port)` **16 malformed frames
+and two positive controls have NOT been executed against compiler-backed
+`tests/server.atto`**, and this exact head has no successful stepful hosted
+Actions evidence. These local tests do not certify guest execution or AOT.
+
+The earlier 10/10 / 3-mutant subsection above remains a historical receipt
+for the older blobs; this subsection supersedes it for the newer test files.
