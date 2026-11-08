@@ -63,6 +63,8 @@ def _response(data):
         if (not name or any(c <= 32 or c >= 127 for c in name)
                 or any(c in b'()<>@,;:\\"/[]?={}\t' for c in name)):
             raise AssertionError(f'invalid response header name: {name[:128]!r}')
+        if any((c < 32 and c != 9) or c == 127 for c in value):
+            raise AssertionError('control bytes in HTTP response header value')
         name = name.lower()
         headers.setdefault(name, []).append(value.strip())
     lengths = headers.get(b'content-length', [])
@@ -79,11 +81,38 @@ def _response(data):
         if len(body) != int(lengths[0]):
             raise AssertionError('truncated or surplus HTTP response bytes')
     elif transfers:
-        if transfers != [b'chunked']:
+        if [value.lower() for value in transfers] != [b'chunked']:
             raise AssertionError('unsupported response transfer framing')
-        # The server normally emits fixed-length replies for our probes.
-        # Refuse unparsed chunk framing rather than count misleading bytes.
-        raise AssertionError('chunked response requires an explicit decoder')
+        # Parse chunk boundaries, rather than accepting an arbitrary suffix
+        # after a nominal 400. Limit each hex size to 8 digits and the total
+        # decoded bytes to the same 64 KiB socket capture budget.
+        payload = bytearray()
+        position = 0
+        while True:
+            end = body.find(b'\r\n', position)
+            if end < 0 or end - position > 8:
+                raise AssertionError('missing or oversized response chunk-size line')
+            size_text = body[position:end]
+            if not re.fullmatch(rb'[0-9A-Fa-f]{1,8}', size_text):
+                raise AssertionError('malformed response chunk size')
+            size = int(size_text, 16)
+            position = end + 2
+            if size == 0:
+                # Trailers and second/pipelined responses are not part of the
+                # Spin contract. Do not silently accept uninspected bytes.
+                if body[position:] != b'\r\n':
+                    raise AssertionError('trailing bytes after final HTTP chunk')
+                break
+            if (size > 65536 - len(payload)
+                    or body[position + size:position + size + 2] != b'\r\n'):
+                raise AssertionError('truncated or oversized HTTP response chunk')
+            payload.extend(body[position:position + size])
+            position += size + 2
+        body = bytes(payload)
+    elif re.search(rb'(?:\A|\r\n)HTTP/1\.[01] [0-9]{3}[ \r]', body):
+        # For close-delimited responses a second status-looking line is
+        # ambiguous. Fail closed rather than claim only one reply was sent.
+        raise AssertionError('unframed extra HTTP response detected')
     return int(first.group(1)), headers, body
 
 
@@ -93,12 +122,11 @@ def assert_rejected(port, name, request):
     if not closed:
         raise AssertionError(f'{name}: response did not close; prefix={data[:128]!r}')
     status, headers, _ = _response(data)
-    statuses = _statuses(data)
     expected = {400, 501} if name == 'unsupported_transfer_coding' else {400}
-    if status not in expected or statuses != [status]:
+    if status not in expected:
         raise AssertionError(
             f'{name}: expected one explicit {sorted(expected)} response; '
-            f'statuses={statuses}, prefix={data[:256]!r}')
+            f'actual={status}, prefix={data[:256]!r}')
     if name != 'invalid_chunk_size' and b'x-spin' in headers:
         # Malformed chunk framing may be discovered only after the request
         # entered an actor, unlike header denial before guest dispatch.
@@ -134,7 +162,7 @@ def run(port):
     # An otherwise valid request must still work after malformed connections.
     data, closed = _exchange(port, sentinel)
     status, headers, body = _response(data)
-    if not closed or status != 200 or body != b'shared' or _statuses(data) != [200]:
+    if not closed or status != 200 or body != b'shared':
         raise AssertionError(f'listener recovery: expected complete closed 200 shared; '
                              f'status={status}, closed={closed}, body={body[:128]!r}')
     checks += 1
@@ -145,7 +173,7 @@ def run(port):
                      + b'3\r\nabc\r\n0\r\n\r\n')
     data, closed = _exchange(port, valid_chunked)
     status, headers, body = _response(data)
-    if not closed or status != 200 or body != b'abc' or _statuses(data) != [200]:
+    if not closed or status != 200 or body != b'abc':
         raise AssertionError(f'valid chunked request regressed: '
                              f'status={status}, closed={closed}, body={body[:128]!r}')
     return checks + 1

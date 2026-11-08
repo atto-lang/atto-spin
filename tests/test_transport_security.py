@@ -157,6 +157,69 @@ class WireHarnessTests(unittest.TestCase):
             with self.assertRaisesRegex(AssertionError, 'capture bound'):
                 ts.assert_rejected(1, 'duplicate_host', b'bad')
 
+    def test_content_length_body_with_http_status_looking_text_is_valid(self):
+        body = b'client text\r\nHTTP/1.1 200 OK\r\nnot another response'
+        raw = (b'HTTP/1.1 400 Bad Request\r\nContent-Length: '
+               + str(len(body)).encode() + b'\r\n\r\n' + body)
+        with patch.object(ts, '_exchange', return_value=(raw, True)):
+            self.assertEqual(ts.assert_rejected(1, 'duplicate_host', b'bad'), 1)
+
+    def test_close_delimited_fake_second_response_is_rejected(self):
+        raw = (b'HTTP/1.1 400 Bad Request\r\n\r\n'
+               b'hello\r\nHTTP/1.1 200 OK\r\n\r\n')
+        with patch.object(ts, '_exchange', return_value=(raw, True)):
+            with self.assertRaises(AssertionError):
+                ts.assert_rejected(1, 'duplicate_host', b'bad')
+
+    def test_valid_chunked_response_is_decoded(self):
+        raw = (b'HTTP/1.1 400 Bad Request\r\nTransfer-Encoding: chunked\r\n\r\n'
+               b'5\r\nerror\r\n0\r\n\r\n')
+        with patch.object(ts, '_exchange', return_value=(raw, True)):
+            self.assertEqual(ts.assert_rejected(1, 'duplicate_host', b'bad'), 1)
+            self.assertEqual(ts._response(raw)[2], b'error')
+
+    def test_chunked_response_case_insensitive_coding(self):
+        raw = (b'HTTP/1.1 400 Bad Request\r\nTransfer-Encoding: Chunked\r\n\r\n'
+               b'0\r\n\r\n')
+        with patch.object(ts, '_exchange', return_value=(raw, True)):
+            self.assertEqual(ts.assert_rejected(1, 'duplicate_host', b'bad'), 1)
+
+    def test_chunked_response_malformed_size_fails(self):
+        raw = (b'HTTP/1.1 400 Bad Request\r\nTransfer-Encoding: chunked\r\n\r\n'
+               b'Z\r\nabc\r\n0\r\n\r\n')
+        with patch.object(ts, '_exchange', return_value=(raw, True)):
+            with self.assertRaisesRegex(AssertionError, 'chunk size'):
+                ts.assert_rejected(1, 'duplicate_host', b'bad')
+
+    def test_chunked_response_truncated_data_fails(self):
+        raw = (b'HTTP/1.1 400 Bad Request\r\nTransfer-Encoding: chunked\r\n\r\n'
+               b'5\r\nabc\r\n0\r\n\r\n')
+        with patch.object(ts, '_exchange', return_value=(raw, True)):
+            with self.assertRaisesRegex(AssertionError, 'chunk'):
+                ts.assert_rejected(1, 'duplicate_host', b'bad')
+
+    def test_chunked_response_pipelined_reply_fails(self):
+        raw = (b'HTTP/1.1 400 Bad Request\r\nTransfer-Encoding: chunked\r\n\r\n'
+               b'0\r\n\r\nHTTP/1.1 200 OK\r\n\r\n')
+        with patch.object(ts, '_exchange', return_value=(raw, True)):
+            with self.assertRaisesRegex(AssertionError, 'trailing'):
+                ts.assert_rejected(1, 'duplicate_host', b'bad')
+
+    def test_chunked_response_trailers_fail_closed(self):
+        raw = (b'HTTP/1.1 400 Bad Request\r\nTransfer-Encoding: chunked\r\n\r\n'
+               b'0\r\nX-Extra: injected\r\n\r\n')
+        with patch.object(ts, '_exchange', return_value=(raw, True)):
+            with self.assertRaisesRegex(AssertionError, 'trailing'):
+                ts.assert_rejected(1, 'duplicate_host', b'bad')
+
+    def test_response_header_value_control_byte_is_rejected(self):
+        with self.assertRaisesRegex(AssertionError, 'control bytes'):
+            self.case(headers=b'X-Attacker: good\x00bad\r\n')
+
+    def test_response_header_value_del_is_rejected(self):
+        with self.assertRaisesRegex(AssertionError, 'control bytes'):
+            self.case(headers=b'X-Attacker: good\x7fbad\r\n')
+
     def test_socket_client_reads_full_reply(self):
         listener = socket.socket()
         listener.bind(('127.0.0.1', 0))
