@@ -166,6 +166,9 @@ def run(port):
         ('host_empty_authority', b'GET /shared HTTP/1.1\r\nHost: :8080\r\nConnection: close\r\n\r\n'),
         ('host_out_of_range_port', b'GET /shared HTTP/1.1\r\nHost: localhost:65536\r\nConnection: close\r\n\r\n'),
         ('host_invalid_ipv6', b'GET /shared HTTP/1.1\r\nHost: [gggg]\r\nConnection: close\r\n\r\n'),
+        ('host_empty_port', b'GET /shared HTTP/1.1\r\nHost: localhost:\r\nConnection: close\r\n\r\n'),
+        ('host_unbracketed_ipv6', b'GET /shared HTTP/1.1\r\nHost: ::1\r\nConnection: close\r\n\r\n'),
+        ('host_percent_encoded_space', b'GET /shared HTTP/1.1\r\nHost: example.test%20attacker\r\nConnection: close\r\n\r\n'),
         ('host_uri_delimiter', b'GET /shared HTTP/1.1\r\nHost: localhost/other\r\nConnection: close\r\n\r\n'),
         ('oversized_header', b'GET /shared HTTP/1.1\r\nHost: localhost\r\nX-Oversized: ' + b'x'*12000 + b'\r\nConnection: close\r\n\r\n'),
     )
