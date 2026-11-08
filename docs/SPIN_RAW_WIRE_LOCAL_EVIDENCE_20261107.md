@@ -110,3 +110,45 @@ Actions evidence. These local tests do not certify guest execution or AOT.
 
 The earlier 10/10 / 3-mutant subsection above remains a historical receipt
 for the older blobs; this subsection supersedes it for the newer test files.
+
+## Latest exact-blob replay: 26/26 host tests and 6/6 JDK responses
+
+The current PR's raw-wire host source/test files, fetched at pre-receipt
+head `76eaad0a8ec219463a3e78025c60f62f465ff453`, were independently reproduced in a local isolated test
+directory, with `git hash-object` matching the GitHub source blobs:
+
+| File | Verified Git blob SHA-1 |
+| --- | --- |
+| `tests/transport_security.py` | `2dab3514b0ed62a679600767f20c4ec02698619d` |
+| `tests/test_transport_security.py` | `ce0a6e531ffa499c29dc81f2eaf8d7c720eca0eb` |
+
+Executed under Linux x86_64, Python 3.13.5:
+`python -B -m unittest discover -s tests -p test_transport_security.py -v` →
+**26/26 PASS**. Four deliberately weakened source variants were again killed
+by specific test assertions: bypass response-body length, bypass duplicate
+response Content-Length/TE+CL rejection, bypass guest marker isolation, and
+bypass connection closure.
+
+**JDK 21 host characterization:** Independently compiled a minimal local
+`com.sun.net.httpserver.HttpServer` and sent six raw HTTP/1.1 requests.
+The exact Spin parser accepted the **six actual captured raw responses** with
+the expected statuses and body sizes:
+
+| Request case | JDK status | Response body |
+| --- | --- | --- |
+| valid GET | 200 | 0 bytes |
+| unsupported `Transfer-Encoding: gzip` | 501 | 63 bytes |
+| conflicting TE/CL | 400 | 65 bytes |
+| duplicate Content-Length | 400 | 65 bytes |
+| HTTP/1.1 missing Host (no AttoLang gate) | 200 | 0 bytes |
+| invalid chunk size | 400 | 0 bytes |
+
+That fifth case demonstrates why AttoLang's **own Host gate** is necessary;
+stock JDK's missing-Host response is not a security rejection.
+
+The PR now contains four additional regression methods for those JDK
+response patterns and a bounded numeric `Content-Length` parse, bringing
+the host oracle to 26 methods. These are **host-only** checks, not a
+`.atto` server run. The real Spin actor guest's **16 malformed requests
+and two positive controls remain NOT_EXECUTED**. Do not infer
+full-request, runtime actor, or backend parity from this local receipt.
