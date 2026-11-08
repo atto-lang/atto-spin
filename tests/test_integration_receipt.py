@@ -18,33 +18,35 @@ import transport_security
 class IntegrationReceiptContract(unittest.TestCase):
     def test_full_contract_accepts_exact_functional_and_wire_counts(self):
         self.assertEqual(
-            integration.verify_guest_receipt(124, 22),
-            {'checks': 124, 'functional_checks': 102, 'raw_wire_checks': 22})
+            integration.verify_guest_receipt(127, 25),
+            {'checks': 127, 'functional_checks': 102, 'raw_wire_checks': 25})
 
     def test_rejects_short_raw_wire_matrix(self):
         with self.assertRaisesRegex(AssertionError, 'raw-wire checks'):
-            integration.verify_guest_receipt(123, 21)
+            integration.verify_guest_receipt(126, 24)
 
     def test_rejects_short_functional_suite(self):
         with self.assertRaisesRegex(AssertionError, 'functional checks'):
-            integration.verify_guest_receipt(123, 22)
+            integration.verify_guest_receipt(126, 25)
 
     def test_rejects_unexpected_extra_count(self):
         with self.assertRaises(AssertionError):
-            integration.verify_guest_receipt(125, 22)
+            integration.verify_guest_receipt(128, 25)
 
-    def test_raw_wire_manifest_includes_four_malformed_authority_cases(self):
+    def test_raw_wire_manifest_includes_seven_malformed_authority_cases(self):
         good_shared = (b'HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\nshared', True)
         good_chunked = (b'HTTP/1.1 200 OK\r\nContent-Length: 3\r\n\r\nabc', True)
         with patch.object(transport_security, 'assert_rejected', return_value=1) as rejected:
             with patch.object(transport_security, '_exchange',
                               side_effect=[good_shared, good_chunked]) as exchanges:
-                self.assertEqual(transport_security.run(0), 22)
-        self.assertEqual(rejected.call_count, 20)
+                self.assertEqual(transport_security.run(0), 25)
+        self.assertEqual(rejected.call_count, 23)
         self.assertEqual(exchanges.call_count, 2)
         names = [call.args[1] for call in rejected.call_args_list]
         for name in ('host_nonnumeric_port', 'host_empty_authority',
-                     'host_out_of_range_port', 'host_invalid_ipv6'):
+                     'host_out_of_range_port', 'host_invalid_ipv6',
+                     'host_empty_port', 'host_unbracketed_ipv6',
+                     'host_percent_encoded_space'):
             self.assertIn(name, names)
 
     def test_condition_requires_success_at_normal_optimization(self):
