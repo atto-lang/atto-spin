@@ -61,6 +61,62 @@ class WireHarnessTests(unittest.TestCase):
         self.assertEqual(self.case(headers=b'Content-Type: text/plain\r\n',
                                    tail=b'error from JDK parser'), 1)
 
+    def test_rejects_status_line_not_at_offset_zero(self):
+        with self.assertRaises(AssertionError):
+            self.case(status=b'junk\r\nHTTP/1.1 400 Bad Request')
+
+    def test_rejects_missing_final_header_terminator(self):
+        with patch.object(ts, '_exchange', return_value=(b'HTTP/1.1 400 Bad Request\r\n', True)):
+            with self.assertRaises(AssertionError):
+                ts.assert_rejected(1, 'duplicate_host', b'bad')
+
+    def test_rejects_truncated_response_body(self):
+        with patch.object(ts, '_exchange', return_value=(
+                b'HTTP/1.1 400 Bad Request\r\nContent-Length: 99\r\n\r\nshort', True)):
+            with self.assertRaises(AssertionError):
+                ts.assert_rejected(1, 'duplicate_host', b'bad')
+
+    def test_rejects_surplus_bytes_after_declared_body(self):
+        with self.assertRaises(AssertionError):
+            self.case(tail=b'extra bytes after Content-Length 0')
+
+    def test_rejects_duplicate_response_content_lengths(self):
+        with self.assertRaises(AssertionError):
+            self.case(headers=b'Content-Length: 0\r\n')
+
+    def test_rejects_response_transfer_encoding_and_content_length(self):
+        with self.assertRaises(AssertionError):
+            self.case(headers=b'Transfer-Encoding: chunked\r\n')
+
+    def test_rejects_malformed_response_header(self):
+        with self.assertRaises(AssertionError):
+            self.case(headers=b'Not-A-Header\r\n')
+
+    def test_rejects_folded_response_header(self):
+        with self.assertRaises(AssertionError):
+            self.case(headers=b'X-Info: okay\r\n continuation\r\n')
+
+    def test_rejects_invalid_response_header_name(self):
+        with self.assertRaises(AssertionError):
+            self.case(headers=b'X Test: bad\r\n')
+
+    def test_rejects_nonnumeric_response_content_length(self):
+        with patch.object(ts, '_exchange', return_value=(
+                b'HTTP/1.1 400 Bad Request\r\nContent-Length: +1\r\n\r\nx', True)):
+            with self.assertRaises(AssertionError):
+                ts.assert_rejected(1, 'duplicate_host', b'bad')
+
+    def test_exact_length_error_body_is_allowed(self):
+        with patch.object(ts, '_exchange', return_value=(
+                b'HTTP/1.1 400 Bad Request\r\nContent-Length: 5\r\n\r\nerror', True)):
+            self.assertEqual(ts.assert_rejected(1, 'duplicate_host', b'bad'), 1)
+
+    def test_false_success_from_embedded_status_is_rejected(self):
+        with patch.object(ts, '_exchange', return_value=(
+                b'error-body\r\nHTTP/1.1 400 Bad Request\r\n\r\n', True)):
+            with self.assertRaises(AssertionError):
+                ts.assert_rejected(1, 'duplicate_host', b'bad')
+
     def test_socket_client_reads_full_reply(self):
         listener = socket.socket()
         listener.bind(('127.0.0.1', 0))

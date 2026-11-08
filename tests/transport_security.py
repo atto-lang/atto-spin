@@ -41,26 +41,64 @@ def _statuses(data):
     return [int(m.group(1)) for m in _STATUS.finditer(data)]
 
 
-def assert_rejected(port, name, request):
-    """Require an explicit HTTP client error and close, never a silent drop.
+def _response(data):
+    """Parse a complete closed HTTP/1.x response, not text resembling one.
 
-    Pre-admission header faults must also bypass guest middleware (X-Spin).
-    A deliberate server-side 4xx is not proven by a closed socket alone.
+    This is an assertion helper, not a production HTTP client. Fail closed on
+    ambiguous response framing, incomplete headers, duplicated lengths and
+    trailers/pipelined bytes hidden after a declared body length.
     """
+    head, separator, body = data.partition(b'\r\n\r\n')
+    if not separator:
+        raise AssertionError(f'HTTP response missing complete header terminator: {data[:128]!r}')
+    lines = head.split(b'\r\n')
+    first = re.fullmatch(rb'HTTP/1\.[01] ([0-9]{3})(?: [\x20-\x7e]*)?', lines[0])
+    if first is None:
+        raise AssertionError(f'HTTP response status must be first line: {lines[0][:128]!r}')
+    headers = {}
+    for line in lines[1:]:
+        if b':' not in line or line.startswith((b' ', b'\t')):
+            raise AssertionError(f'malformed response header: {line[:128]!r}')
+        name, value = line.split(b':', 1)
+        if (not name or any(c <= 32 or c >= 127 for c in name)
+                or any(c in b'()<>@,;:\\"/[]?={}\t' for c in name)):
+            raise AssertionError(f'invalid response header name: {name[:128]!r}')
+        name = name.lower()
+        headers.setdefault(name, []).append(value.strip())
+    lengths = headers.get(b'content-length', [])
+    transfers = headers.get(b'transfer-encoding', [])
+    if len(lengths) > 1 or (lengths and transfers):
+        raise AssertionError('ambiguous response body framing')
+    if lengths:
+        if not re.fullmatch(rb'[0-9]+', lengths[0]):
+            raise AssertionError('malformed response content-length')
+        if len(body) != int(lengths[0]):
+            raise AssertionError('truncated or surplus HTTP response bytes')
+    elif transfers:
+        if transfers != [b'chunked']:
+            raise AssertionError('unsupported response transfer framing')
+        # The server normally emits fixed-length replies for our probes.
+        # Refuse unparsed chunk framing rather than count misleading bytes.
+        raise AssertionError('chunked response requires an explicit decoder')
+    return int(first.group(1)), headers, body
+
+
+def assert_rejected(port, name, request):
+    """Require a complete explicit error and EOF, not a silent socket drop."""
     data, closed = _exchange(port, request)
+    if not closed:
+        raise AssertionError(f'{name}: response did not close; prefix={data[:128]!r}')
+    status, headers, _ = _response(data)
     statuses = _statuses(data)
     expected = {400, 501} if name == 'unsupported_transfer_coding' else {400}
-    if not closed or len(statuses) != 1 or statuses[0] not in expected:
+    if status not in expected or statuses != [status]:
         raise AssertionError(
-            f'{name}: expected one explicit {sorted(expected)} response and EOF; '
-            f'statuses={statuses}, closed={closed}, head={data[:256]!r}')
-    if name != 'invalid_chunk_size':
-        # Invalid body framing can be discovered by the already admitted
-        # request actor, but Host/TE/CL/header rejection must happen before
-        # that actor or its middleware is ever called.
-        header_block = data.partition(b'\r\n\r\n')[0].lower()
-        if b'\r\nx-spin:' in header_block:
-            raise AssertionError(f'{name}: guest middleware ran for a rejected request')
+            f'{name}: expected one explicit {sorted(expected)} response; '
+            f'statuses={statuses}, prefix={data[:256]!r}')
+    if name != 'invalid_chunk_size' and b'x-spin' in headers:
+        # Malformed chunk framing may be discovered only after the request
+        # entered an actor, unlike header denial before guest dispatch.
+        raise AssertionError(f'{name}: guest middleware ran for a rejected request')
     return 1
 
 
@@ -91,16 +129,19 @@ def run(port):
         checks += assert_rejected(port, name, wire)
     # An otherwise valid request must still work after malformed connections.
     data, closed = _exchange(port, sentinel)
-    statuses = _statuses(data)
-    if not closed or statuses != [200] or b'shared' not in data:
-        raise AssertionError(f'listener recovery: expected closed 200 shared, got status={statuses}, closed={closed}: {data[:256]!r}')
+    status, headers, body = _response(data)
+    if not closed or status != 200 or body != b'shared' or _statuses(data) != [200]:
+        raise AssertionError(f'listener recovery: expected complete closed 200 shared; '
+                             f'status={status}, closed={closed}, body={body[:128]!r}')
     checks += 1
-    # Transfer-Encoding: chunked must remain functional after strict denial.
+    # Transfer-Encoding: chunked *request* must remain functional. The
+    # response is a bounded buffered 200, not a chunked response.
     valid_chunked = (prefix + b'Transfer-Encoding: chunked\r\n'
                      + b'Connection: close\r\n\r\n'
                      + b'3\r\nabc\r\n0\r\n\r\n')
     data, closed = _exchange(port, valid_chunked)
-    statuses = _statuses(data)
-    if not closed or statuses != [200] or not data.endswith(b'abc'):
-        raise AssertionError(f'valid chunked body regressed: statuses={statuses}, closed={closed}, tail={data[-256:]!r}')
+    status, headers, body = _response(data)
+    if not closed or status != 200 or body != b'abc' or _statuses(data) != [200]:
+        raise AssertionError(f'valid chunked request regressed: '
+                             f'status={status}, closed={closed}, body={body[:128]!r}')
     return checks + 1
