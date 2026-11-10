@@ -9,6 +9,34 @@ transfer and mailbox delivery do not by themselves prove this storage boundary.
 Tenant-VM work for untrusted actors comes after independent actor arenas and
 frames are established; a tenant VM cannot substitute for that requirement.
 
+One **logical receive invocation** owns one stack, including its nested call
+frames. Await/resume and carrier migration must retain that invocation's exact
+execution context. An unrelated DATA message gets a fresh context; overlapping
+invocations need disjoint live stack storage and the same aggregate actor heap
+quota. Completed invocations may reuse scrubbed arena bytes. A carrier's machine
+stack or thread-local identity cannot substitute for this logical stack.
+
+The three backend implementations currently have different executed scopes:
+
+- [Java #2781](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2781)
+  reconciles actor-owned scalar frames with current main. It passes 69 frame
+  tests, 39 boundary tests, seven low-stack guest tests, and Spin's real routing,
+  builder and 110 HTTP checks. General native guest allocation remains open.
+- [LLVM #1649](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1649)
+  executes restricted source-compiled scalar actors with disjoint native frame
+  arenas, actor-local quota failure, sibling/replacement survival and sanitizers.
+- [.NET #459](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/459),
+  commit `7eca08807cc7f23379b89169a68d4e6ed49e0c97`, binds synchronous receive
+  stacks to exact-issued execution contexts, scrubs on completion/failure, and
+  rejects later-DATA frame reuse while retaining persistent heap data. Its full
+  managed verification executable passes, and its macOS arm64 NativeAOT host
+  probe passes three runs with four private heaps and native budget reclamation.
+  General compiler-generated `.atto` actors, authenticated continuation resume,
+  concurrently live invocation stacks, and Linux/Windows execution remain open.
+
+These results do not establish complete actor-memory separation across all three
+compilers. Spin's LLVM and .NET package capability gates remain unchanged.
+
 The current Java Spin HTTP tests prove request capability behavior and executed
 HTTP responses, not complete allocation/frame lowering or an independent GC heap
 for every actor. LLVM Spin package execution remains unsupported at its pin.
