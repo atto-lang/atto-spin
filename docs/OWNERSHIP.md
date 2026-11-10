@@ -12,6 +12,9 @@ frames are established; a tenant VM cannot substitute for that requirement.
 The [shared-memory and mailbox contract](SHARED_MEMORY_AND_MAILBOXES.md)
 separates guarded shared regions from actor-private storage and describes the
 MessagePack data/capability boundary and remaining backend gates.
+The [canonical checker checkpoint](BORROW_CHECKER_CHECKPOINT_20261110.md)
+records merged Rust loop/projection analysis and exact-tree CI evidence, while
+keeping independent compiler-adapter and runtime-isolation requirements open.
 
 Each **execution context owns one logical stack**, including its nested call
 frames. A receive is one entry point that can create an execution context;
