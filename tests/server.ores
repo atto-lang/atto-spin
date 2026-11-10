@@ -1,5 +1,5 @@
 import module spin from "../src/spin";
-import module http_routing from "../dependencies/http-routing/src/http_routing";
+import module http_routing from "../dependencies/http-routing/src/http_routing.atto";
 
 define actor SharedReply as
   let int count = 0;
