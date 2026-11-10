@@ -28,6 +28,13 @@ logical stack.
 
 The three backend implementations currently have different executed scopes:
 
+- [Java #2796](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2796)
+  combines the frame integration below with sealed-state RW loans on current
+  main. It passes 306 focused tests plus four admission tests, 31 low-stack
+  source/frame tests and Spin's 110 HTTP checks. Critical scopes retain the
+  caller's execution identity and private frame allocation domain. Guest source
+  scheduling remains serial; host RW overlap does not prove concurrent-default
+  guests or general shared application-region access.
 - [Java #2781](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2781)
   reconciles actor-owned scalar frames with current main. It passes 71 frame
   tests, 39 boundary tests, seven low-stack guest tests, and Spin's real routing,

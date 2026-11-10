@@ -79,3 +79,12 @@ revocation/quiescence, arena ownership and mailbox codec conformance tests.
 
 See [request ownership](OWNERSHIP.md) for HTTP capability and backend evidence
 boundaries. Tenant-VM work follows independent actor-private heaps and stacks.
+
+Java [#2796](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2796)
+integrates the private sealed-state loans from #2747 with current main and
+execution-owned frames. Canonical critical scopes retain the caller's logical
+execution identity. It passes 306 focused tests plus four admission cases,
+31 low-stack source/frame tests and Spin's 110 HTTP checks locally. This is
+actor-private state access, not supervisor-visible shared application memory.
+Guest admission remains serial; scheduler-owned async RW contention and the
+three-backend shared-region contract remain open.

@@ -1,9 +1,9 @@
 # Current compiler compatibility, 2026-11-10
 
-Java compiler: `2e21d99af9f7b4b5564647fb9b914da0be1ac22c` (actor-frame integration PR #2781, including fetched main).
+Java compiler: `e6098659c2e1641564bb5835b4dbb92a6a00b1a8` (sealed-state/frame integration PR #2796, preserving #2781/#2747 and fetched main).
 LLVM compiler: `a0119fb17c1f74f4a9e2503deaedaee15ad2fc51` (the router parity
 branch, including fetched main `0ee037ca3e5dd9ac6ac1e9cc3d40f19ee6326a9c`).
-Routing: `9741ac1da25e3f276ccb5949adc5b1b324c1c4d8`, based on routing main
+Routing: `504c65b9df9c468e4a2718d44aa3ec5f2554146d`, based on routing main
 `de85570f26351f25d0bb3d9a80e930d9a5cbb0f1` with the Java pin aligned.
 
 The shared Spin source now uses canonical `rt mut borrow` and imports the
@@ -34,7 +34,7 @@ no-GC IR audit. These are compiler/guest-subset results, not Spin server executi
 
 ## Actor-frame integration follow-up
 
-Spin now pins Java `2e21d99af9f7b4b5564647fb9b914da0be1ac22c` from
+The preceding frame checkpoint used Java `2e21d99af9f7b4b5564647fb9b914da0be1ac22c` from
 [PR #2781](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2781)
 and routing `9741ac1da25e3f276ccb5949adc5b1b324c1c4d8`. The Java branch
 semantically merges the actor scalar-frame stack with main
@@ -53,3 +53,19 @@ frames, independent actor collectors, or full stack/heap separation. LLVM Spin
 execution stays unsupported at its unchanged pin; .NET Spin execution remains
 unverified and part of the active parity work. Tenant-VM work follows proof of
 actor-private heaps/arenas and stacks, as described in [OWNERSHIP.md](OWNERSHIP.md).
+
+## Sealed-state/frame follow-up
+
+The current Java and routing pins above execute Spin's complete routing,
+builder and 110 HTTP checks. Java PR #2796 reconciles sealed state with the
+frame branch: canonical `critical-read`/`critical-write`, exact logical context
+and actor allocation identity, immediate lexical callback ownership, and
+physical notification/STOP retirement fences. Nine migrated local fixtures use
+`.atto` and `rt mut borrow` with exact updated blob checks.
+
+The compiler passes 306 focused tests plus four current-main admission tests;
+31 selected source/conformance/frame tests pass under `-Xss512k`. This is local
+JVM evidence. Source CI is billing-blocked and not claimed as executed. Guest
+actors remain physically serial; concurrent-default guest admission and queued
+critical acquisition are open. Host reader/writer concurrency does not prove
+LLVM/.NET parity or supervisor access to a child's private state.
