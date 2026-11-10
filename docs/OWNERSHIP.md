@@ -1,5 +1,36 @@
 # Request ownership
 
+## Actor-memory acceptance target
+
+Every handler actor, shared or isolated, must have its own private allocation
+arena and logical execution frames. Explicit shared application regions remain
+separate and require checked ownership or reader/writer access. HTTP capability
+transfer and mailbox delivery do not by themselves prove this storage boundary.
+Tenant-VM work for untrusted actors comes after independent actor arenas and
+frames are established; a tenant VM cannot substitute for that requirement.
+
+The current Java Spin HTTP tests prove request capability behavior and executed
+HTTP responses, not complete allocation/frame lowering or an independent GC heap
+for every actor. LLVM Spin package execution remains unsupported at its pin.
+
+An independently tested LLVM follow-up,
+[PR #1649](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1649),
+commit `f4948859d5d455373275ef3a9018b8ebdaed5f59`, provides restricted **compiled
+scalar actor** evidence: nonoverlapping 64-KiB frame regions, domain/turn denial,
+actor-local 64-frame exhaustion, sibling progress, and fresh-incarnation
+execution. O0/O2 run with a 512-KiB native stack; a separate ASan/UBSan build
+instruments generated IR and runtime. Six focused local tests passed. This is a
+separate compiler branch, not Spin's pinned LLVM or its HTTP server executing.
+
+Remaining gates include all guest allocations (objects, strings, arrays and
+closures), checked 32-bit arena references, concurrent-default actor invocations,
+actor-owned call/operand/continuation frames through await and cancellation,
+borrow/drop/unwind correctness, and physical resource retirement. Java and .NET
+need their own equivalent compiler-backed evidence. No full actor-memory or
+tenant-sandbox certification follows from the restricted LLVM result.
+
+## Request capability lifecycle
+
 ```mermaid
 stateDiagram-v2
     [*] --> Supervisor: accept
