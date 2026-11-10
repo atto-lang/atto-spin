@@ -9,6 +9,10 @@ transfer and mailbox delivery do not by themselves prove this storage boundary.
 Tenant-VM work for untrusted actors comes after independent actor arenas and
 frames are established; a tenant VM cannot substitute for that requirement.
 
+The [shared-memory and mailbox contract](SHARED_MEMORY_AND_MAILBOXES.md)
+separates guarded shared regions from actor-private storage and describes the
+MessagePack data/capability boundary and remaining backend gates.
+
 Each **execution context owns one logical stack**, including its nested call
 frames. A receive is one entry point that can create an execution context;
 stack ownership is not tied to the receive method. Synchronous calls use their
@@ -52,6 +56,14 @@ actor-local 64-frame exhaustion, sibling progress, and fresh-incarnation
 execution. O0/O2 run with a 512-KiB native stack; a separate ASan/UBSan build
 instruments generated IR and runtime. Six focused local tests passed. This is a
 separate compiler branch, not Spin's pinned LLVM or its HTTP server executing.
+
+[LLVM #1653](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1653)
+adds a separate retained-execution/stack bridge integration with current main.
+Fourteen native runtime tests pass normally and under ASan/UBSan. A Rust driver
+executes source-compiled scalar segments through the actual retained scheduler
+at O0/O2 and under sanitizers. This is host-owned continuation bridging, not
+general compiled guest `await`, concurrent-default actors, or LLVM Spin support;
+the two LLVM branches have not yet been unified with Spin's routing pin.
 
 Remaining gates include all guest allocations (objects, strings, arrays and
 closures), checked 32-bit arena references, concurrent-default actor invocations,
