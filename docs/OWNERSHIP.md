@@ -9,12 +9,15 @@ transfer and mailbox delivery do not by themselves prove this storage boundary.
 Tenant-VM work for untrusted actors comes after independent actor arenas and
 frames are established; a tenant VM cannot substitute for that requirement.
 
-One **logical receive invocation** owns one stack, including its nested call
-frames. Await/resume and carrier migration must retain that invocation's exact
-execution context. An unrelated DATA message gets a fresh context; overlapping
-invocations need disjoint live stack storage and the same aggregate actor heap
-quota. Completed invocations may reuse scrubbed arena bytes. A carrier's machine
-stack or thread-local identity cannot substitute for this logical stack.
+Each **execution context owns one logical stack**, including its nested call
+frames. A receive is one entry point that can create an execution context;
+stack ownership is not tied to the receive method. Synchronous calls use their
+caller's stack, while independently scheduled work needs its own context/stack.
+Await/resume and carrier migration retain the original context and stack.
+Overlapping contexts need disjoint live stack storage under the actor's aggregate
+heap quota. Completed contexts may release scrubbed arena bytes for reuse. A
+carrier's machine stack or thread-local identity cannot substitute for this
+logical stack.
 
 The three backend implementations currently have different executed scopes:
 
@@ -26,8 +29,8 @@ The three backend implementations currently have different executed scopes:
   executes restricted source-compiled scalar actors with disjoint native frame
   arenas, actor-local quota failure, sibling/replacement survival and sanitizers.
 - [.NET #459](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/459),
-  commit `7eca08807cc7f23379b89169a68d4e6ed49e0c97`, binds synchronous receive
-  stacks to exact-issued execution contexts, scrubs on completion/failure, and
+  commit `9c0b65eb2fbf2ded17aded8c1579b466617c32b0`, makes each execution
+  context own one logical stack, uses actor-owned physical storage, scrubs on completion/failure, and
   rejects later-DATA frame reuse while retaining persistent heap data. Its full
   managed verification executable passes, and its macOS arm64 NativeAOT host
   probe passes three runs with four private heaps and native budget reclamation.
