@@ -22,7 +22,7 @@ logical stack.
 The three backend implementations currently have different executed scopes:
 
 - [Java #2781](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2781)
-  reconciles actor-owned scalar frames with current main. It passes 69 frame
+  reconciles actor-owned scalar frames with current main. It passes 71 frame
   tests, 39 boundary tests, seven low-stack guest tests, and Spin's real routing,
   builder and 110 HTTP checks. General native guest allocation remains open.
 - [LLVM #1649](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1649)
