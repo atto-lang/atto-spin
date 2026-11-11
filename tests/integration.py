@@ -40,6 +40,12 @@ def main():
             check(req('/shared/')[0] == 404, 'strict trailing slash')
             check(req('/shared//')[0] == 404, 'strict repeated slash')
             check(req('/missing')[0] == 404, 'not found')
+            check(req('/missing')[1].get('x-route-outcome') == 'spin.404',
+                  '404 middleware sees selected framework outcome')
+            check(req('/shared', 'POST')[1].get('x-route-outcome') == 'spin.405',
+                  '405 middleware sees selected framework outcome')
+            check(req('/shared', 'OPTIONS')[1].get('x-route-outcome') == 'spin.204',
+                  'automatic OPTIONS middleware sees selected framework outcome')
             for method in ('GET','POST','OPTIONS'):
                 path = '/missing' if method == 'GET' else '/shared'
                 check(req(path, method)[1].get('x-spin-responder') == 'actor', 'framework reply owns exchange in actor')
