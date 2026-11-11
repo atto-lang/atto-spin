@@ -28,6 +28,16 @@ logical stack.
 
 The three backend implementations currently have different executed scopes:
 
+- [LLVM #1654](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1654),
+  commit `66ff048d03b3175ca6027e42667e862b3d96d1cf`, reconciles bounded native
+  sealed-state source lowering with the execution infrastructure. Independent
+  C++ ownership/codegen revalidation rejects stale schema/mode/effect claims.
+  Seventeen local CTests pass, including 96 O0/O2 and 12 ASan/UBSan compiled
+  sealed-state executions with no-GC IR audit. The Rust harness replaces the
+  inherited new Python driver; 23 fixtures use `.atto`. This still uses a
+  synchronous i64 `on_message` profile, not Java's exact receive/mail syntax,
+  concurrent guest RW admission or compiled logical-stack lowering. It does not
+  change Spin's LLVM pin or unsupported capability gate.
 - [Java #2796](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2796)
   combines the frame integration below with sealed-state RW loans on current
   main. It passes 306 focused tests plus four admission tests, 31 low-stack
