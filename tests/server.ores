@@ -98,7 +98,8 @@ pub async routine main(): void {
     request.set_header("X-Spin-Second-Hook", "yes");
     return true;
   };
-  builder.use(second_hook).unwrap();
+  val second_hook_result = builder.use(second_hook);
+  second_hook_result.unwrap();
   val shared = http_routing.path("/shared", arr[http_routing.literal("shared")]);
   val isolated = http_routing.path("/private", arr[http_routing.literal("private")]);
   val echo = http_routing.path("/echo", arr[http_routing.literal("echo")]);
