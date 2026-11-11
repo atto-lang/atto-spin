@@ -1,12 +1,13 @@
 # Spin + hardened router exact-source integration
 
-Status: **draft candidate; no executable guest proof at this combined head**.
+Status (2026-11-11): **Java-backed Router and Spin original-script/live HTTP proof has executed in private exact-source CI.** See Spin PR #42 for the latest verified Git HEAD/tree and job receipt; newly changed commits require refreshed evidence. Independent approval and Router issue #52 generation authority remain outstanding.
 
 ## Source contract (2026-11-10)
 - This branch stacks on Spin #40, which itself stacks on Spin #39.
 - The submodule `dependencies/http-routing` is a true Gitlink (mode 160000)
-  pinned to router integration PR #51 commit
-  `41082647b74a48ce0526762e481562d4a5346f72`.
+  pinned to Router integration PR #51. The source Gitlink is authoritative;
+  verify its exact current commit with `git rev-parse HEAD:dependencies/http-routing`,
+  rather than relying on a historical SHA copied into documentation.
 - Router #51 includes decision admission #43, local bounded route replay,
   nonempty parameter matching and Java compiler pin #49.
 - Spin `SOURCE_REF=e6098659c2e1641564bb5835b4dbb92a6a00b1a8`.
@@ -28,10 +29,12 @@ Status: **draft candidate; no executable guest proof at this combined head**.
    receipts, raw logs, negative tests and independent review.
 
 ## Explicit limitations
-The PR head has **NOT_EXECUTED** end-to-end HTTP evidence. A host-only
-canary can establish that alternate-org Actions admits runners but cannot
-prove the compiler or Spin semantics. The router Decision remains
-non-cryptographic data; cross-generation identity is not fully fenced.
+The linked private CI receipts in PR #42 include executed compiler-backed
+Router guest and live Spin HTTP tests at recorded exact heads. They reconstruct
+original Git commit/tree identities with sparse physical source; omitted Java
+and Spin blobs are not full-suite proof. A host-only canary remains insufficient.
+The router Decision is non-cryptographic data, not cross-generation authority;
+Router issue #52 remains open.
 The existing Java adapter is not evidence of LLVM, .NET or NativeAOT
 HTTP-serving parity. Do not merge merely because a workflow appears green
 without examining executed steps and source-tree identity.
