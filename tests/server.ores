@@ -71,6 +71,10 @@ pub async routine main(): void {
   val builder = spin.builder();
   val Fnc<bool(borrow HttpExchange)> headers = |borrow HttpExchange request| -> {
     request.set_header("X-Spin", "test");
+    if request.operation_id == "spin.404" || request.operation_id == "spin.405" ||
+       request.operation_id == "spin.204"; then
+      request.set_header("X-Route-Outcome", request.operation_id);
+    fi
     if request.header("X-Fail") == "yes"; then
       request.set_header("Bad Header", "invalid");
     fi
