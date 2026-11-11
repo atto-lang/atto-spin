@@ -76,7 +76,17 @@ define module spin as
         if decision.is_match(); then
           exchange.set_route(decision.operation_id, decision.pipeline_id, decision.contract_id);
           self.bindings.get(decision.handler_id).prepare(rt borrow exchange);
+        elif decision.is_not_found(); then
+          exchange.set_route("spin.404", -1, -1);
+        elif decision.is_limit_exceeded(); then
+          exchange.set_route("spin.414", -1, -1);
+        elif decision.is_automatic_options(); then
+          exchange.set_route("spin.204", -1, -1);
+        else
+          exchange.set_route("spin.405", -1, -1);
         fi
+        // Middleware sees the final routing outcome, even on framework replies.
+        // It must not infer authorization from a stale or uninitialized route.
         for (const hook of self.middleware) {
           if !hook(rt borrow exchange); then return; fi
         }
