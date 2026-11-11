@@ -28,6 +28,14 @@ logical stack.
 
 The three backend implementations currently have different executed scopes:
 
+- [.NET #461](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/461)
+  connects statically source-generated scalar actors to the actual mailbox,
+  native arena and execution-stack path. Local macOS and exact-tree private
+  Linux/Windows NativeAOT checks execute each probe three times, including
+  checked overflow, peer survival and retirement. See the
+  [.NET native checkpoint](NET_NATIVE_ACTOR_CHECKPOINT_20261110.md) for source
+  hashes, stepful run evidence and remaining language/runtime gates. This does
+  not establish .NET Spin support or concurrent-default guest RW admission.
 - [LLVM #1654](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1654),
   commit `66ff048d03b3175ca6027e42667e862b3d96d1cf`, reconciles bounded native
   sealed-state source lowering with the execution infrastructure. Independent
