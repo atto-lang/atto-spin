@@ -1,0 +1,64 @@
+name: Spin source provenance self-tests
+on:
+  pull_request:
+    paths:
+      - 'SOURCE_REF'
+      - 'dependencies/http-routing'
+      - '.gitmodules'
+      - 'src/**'
+      - 'tests/**'
+      - 'examples/**'
+      - 'scripts/check-pins.sh'
+      - 'scripts/compiler.sh'
+      - 'scripts/ci-native.sh'
+      - 'scripts/test.sh'
+      - 'scripts/test-preflight.sh'
+      - '.github/workflows/pin-preflight.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'SOURCE_REF'
+      - 'dependencies/http-routing'
+      - '.gitmodules'
+      - 'src/**'
+      - 'tests/**'
+      - 'examples/**'
+      - 'scripts/check-pins.sh'
+      - 'scripts/compiler.sh'
+      - 'scripts/ci-native.sh'
+      - 'scripts/test.sh'
+      - 'scripts/test-preflight.sh'
+      - '.github/workflows/pin-preflight.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pin-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Prove exact event head and unchanged checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          echo SPIN_EXACT_HEAD_PASS
+      - name: Shell syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          for script in scripts/check-pins.sh scripts/compiler.sh scripts/ci-native.sh scripts/test.sh scripts/test-preflight.sh; do
+            bash -n "$script"
+          done
+      - name: Mocked admission regressions (not native Oreslang execution)
+        run: bash scripts/test-preflight.sh

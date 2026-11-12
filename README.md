@@ -73,9 +73,18 @@ OPTIONS, 404, 405, and Allow synthesis come from the router.
 
 `builder.use(hook)` registers a `Fnc<bool(borrow HttpExchange)>` supervisor middleware.
 Hooks run in registration order after routing metadata/captures are attached,
-including for framework-generated errors and OPTIONS. Return true to continue;
-return false after scheduling a response to stop dispatch. A hook may inspect
-pipeline_id or contract_id to select auth/validation rules. Actor-local processing
+including for framework-generated errors and OPTIONS. On an unmatched request,
+`operation_id` is set **before** middleware to `spin.404`, `spin.405`,
+`spin.414`, or `spin.204` (automatic OPTIONS), with pipeline/contract IDs
+set to -1. Middleware must apply any global security policy independently of
+route-specific metadata; no route match does not imply authorization.
+Return true to continue;
+return false after scheduling a response to stop dispatch. A hook returning
+false without transferring the response produces an actor-owned HTTP 500 rather
+than leaving the client hanging. If a hook has already transferred the response,
+the framework stops dispatch even when the hook incorrectly returns true;
+another hook or handler cannot reuse the revoked supervisor exchange. A hook
+may inspect pipeline_id or contract_id to select auth/validation rules. Actor-local processing
 belongs in that actor's receive method or synchronous helper functions, where
 it cannot retain a supervisor closure. Builder operations return Result and a
 second build or later registration fails.
@@ -98,12 +107,24 @@ SSE-style response streaming, and graceful shutdown.
 ## Verify and measure
 
 ```sh
+# Freshly rebuild the exact SOURCE_REF compiler with JDK 25, then run all Spin tests.
+bash scripts/ci-native.sh
+# For a previously built local compiler (NOT native build-provenance certification):
 ./scripts/test.sh
 ORESLANG_COMPILER="$PWD/scripts/compiler.sh" python3 scripts/benchmark.py
 ```
 
 Tests require clean compiler/router checkouts at exact pins and execute native
-Oreslang, not a compiler test double. [docs/VALIDATION.md](docs/VALIDATION.md)
+Oreslang, not a compiler test double.
+The launcher also rejects compiler revisions differing from `SOURCE_REF`, dirty
+compiler/router trees, modified/staged/untracked Spin application sources,
+any worktree or index substitution of the committed `SOURCE_REF` blob, and
+router submodule pointers that differ from the committed `HEAD` gitlink
+(including index-only substitutions). The
+`bash scripts/test-preflight.sh` regression uses local mock repositories; it
+checks preflight logic, **not** Oreslang guest execution. These checks establish
+source checkout admission, not provenance of prebuilt Java class files or a
+successful native CI run. Record exact run/job/step evidence separately. [docs/VALIDATION.md](docs/VALIDATION.md)
 records local checks and CI activation requirements; [docs/BENCHMARK.md](docs/BENCHMARK.md) records the baseline.
 [docs/PROGRESS.md](docs/PROGRESS.md) tracks the fifteen implementation steps.
 
@@ -122,3 +143,25 @@ revisions, reproducible checks, and unsupported features.
 
 See [reusable request actors](docs/REUSABLE_ACTORS.md) for
 `http.handler("Worker").pooled(32)` and three-minute keep-alive load tests.
+
+## Repository ownership and migration (2026-11-08)
+
+**AttoLang** is the current public language; this code is still maintained under `ores-truffle-oreslang/oreslang-spin` in the original Oreslang organization. Preserve working `.ores` files, repo naming and package/CLI compatibility until an independently tested change migrates them.
+
+- **Owns:** web framework/integration experiments for AttoLang and guest execution contracts.
+- **Not this repository:** production multi-tenant cloud management.
+- **Code ownership:** [atto-lang](https://github.com/atto-lang) is the destination for language semantics, core/std, compilers, developer tools, libraries and demos. [atto-co](https://github.com/atto-co) independently owns managed infrastructure, tenancy, identity, billing and production deployments. A separate `atto-*` repo is not by itself a verified Git transfer or equivalent source tree.
+- **Proposed migration, not authorization:** existing repository into `atto-lang/oreslang-spin` with original name, history and numeric GitHub ID; no first-wave direct move into `atto-co`. A later production product spinout requires its own approval.
+
+**Repository transfer playbook:** coordinate in [issue #26](https://github.com/ores-truffle-oreslang/.github/issues/26) and review [private migration draft #25](https://github.com/ores-truffle-oreslang/.github/pull/25). Capture stable numeric ID, exact head SHA/tree, PRs, releases, packages, GitHub Pages, dependencies, branch/ruleset protections, Actions runners, secrets, App/webhook grants and rollback plan. Require explicit source and target administrators plus independent security reviewer. Never export/mirror private sources as a shortcut. After an actual GitHub ownership transfer, verify unchanged ID/history/tree, re-bind security controls and run exact-head CI. A job with `steps=[]` or `steps=null` is `NOT_EXECUTED`, and host/reference results do not prove compiled AttoLang guest or production HTTP execution.
+
+
+## Strict HTTP framing and Host authority (candidate)
+
+[Spin framing PR #37](https://github.com/ores-truffle-oreslang/oreslang-spin/pull/37)
+adds 23 raw socket negative probes and 2 positive controls, with 119 functional
+HTTP assertions (144 total). Rejected frames must not enter guest middleware.
+The pinned Java compiler currently fails the malformed Host port case; the
+separate [Java Host fix PR #2988](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2988)
+must be merged, repinned and re-executed on this exact head before PR #37 may merge.
+Host-only or zero-step CI is not compiler-backed runtime evidence.

@@ -1,15 +1,20 @@
 # Validation
 
-## Canonical `.atto` migration reconciliation
+## Clean pinned compiler build (merged source-admission gate)
 
-This integration branch carries the current `main` Java/LLVM/compiler/router pins,
-then copies the most recent legacy `.ores` fixture and framework source semantics
-into canonical `.atto` equivalents. Legacy `.ores` files remain available as
-compatibility fixtures; the executable Spin suite selects `.atto` entrypoints.
-The source equality was checked when this branch was reconciled. The native
-`.atto` compiler/HTTP suite and exact LLVM rejection diagnostics still require
-fresh execution at the reconciled source head. A source-level copy is not a
-compiler guest test and historical receipts do not attest this merge commit.
+For a native acceptance run, invoke `bash scripts/ci-native.sh` from a clean,
+exact-head Spin checkout with `ORESLANG_SOURCE_DIR` set to the complete clean
+Java compiler checkout at `SOURCE_REF` and the router at the committed gitlink.
+The script validates immutable pins and source cleanliness, checks JDK 25,
+rebuilds compiler classes and the classpath from scratch, checks artifact paths,
+then executes native HTTP tests through `scripts/test.sh` before emitting
+`SPIN_PINNED_NATIVE_ACCEPTANCE_PASS`.
+
+`scripts/test-preflight.sh` checks orchestration and hostile source mutations
+with mock executables. Its PASS marker never constitutes compiler-backed guest
+or HTTP acceptance. A release requires a nonzero-step exact-head runner receipt
+from the real native acceptance command; a private partial mirror is not a
+substitute for exact physical source provenance.
 
 
 ## Preflight hardening (2026-11-10)
@@ -72,3 +77,14 @@ pass** including handlers that omit self.end and shutdown with a live actor.
 The follow-up keyword-borrow migration was validated against current main plus
 the pinned compiler hardening commit. Core regressions include explicit singleton
 tuples, grouping, borrow suspension, cleanup retention, and async/actor diagnostics.
+
+
+## PR #37 framing status on merged Spin main (2026-11-12)
+
+The current branch requires **119 functional + 25 live raw-wire = 144**
+assertions, including three framework routing outcome checks merged in #41.
+Earlier private candidate execution with a local test-only Java patch passed
+141 checks on a previous PR head. Those checks do not attest this final branch.
+The pinned Java `SOURCE_REF` is still unsafe for malformed Host ports.
+Merge is blocked on independent reviewed Java authority fix, source pin update,
+fresh executed exact-PR-head native checks and independent Spin approval.
