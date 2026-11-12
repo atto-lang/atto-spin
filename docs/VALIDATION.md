@@ -1,5 +1,17 @@
 # Validation
 
+## Canonical `.atto` migration reconciliation
+
+This integration branch carries the current `main` Java/LLVM/compiler/router pins,
+then copies the most recent legacy `.ores` fixture and framework source semantics
+into canonical `.atto` equivalents. Legacy `.ores` files remain available as
+compatibility fixtures; the executable Spin suite selects `.atto` entrypoints.
+The source equality was checked when this branch was reconciled. The native
+`.atto` compiler/HTTP suite and exact LLVM rejection diagnostics still require
+fresh execution at the reconciled source head. A source-level copy is not a
+compiler guest test and historical receipts do not attest this merge commit.
+
+
 ## Preflight hardening (2026-11-10)
 
 The suite now requires the compiler directory to be the checkout root, matching

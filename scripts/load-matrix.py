@@ -133,7 +133,7 @@ def main():
     metadata={'spin_commit':git(ROOT,'rev-parse','HEAD'),'spin_dirty':bool(git(ROOT,'status','--porcelain')),
               'java_source_commit':git(source,'rev-parse','HEAD'),'router_commit':git(router,'rev-parse','HEAD'),
               'benchmark_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-              'fixture_sha256':hashlib.sha256((ROOT/'tests/load-server.ores').read_bytes()).hexdigest(),
+              'fixture_sha256':hashlib.sha256((ROOT/'tests/load-server.atto').read_bytes()).hexdigest(),
               'platform':platform.platform(),'cpus':os.cpu_count(),'fd_limit':resource.getrlimit(resource.RLIMIT_NOFILE),
               'java_tool_options':env['JAVA_TOOL_OPTIONS'],'java_version':subprocess.run([env.get('ORES_JAVA','java'),'-version'],capture_output=True,text=True).stderr,
               'scope':'JVM interpreter; loopback single-client-process simultaneous one-request-per-task bursts; new TCP connections; no retries; actor limit is HTTP in-flight admission, not a reusable pool; backlog equals admission limit',
@@ -143,8 +143,8 @@ def main():
         for actors in args.actors:
             for mode in args.modes:
                 tag=f'c{concurrency}-a{actors}-{mode}'
-                template=(ROOT/'tests/load-server.ores').read_text().replace('/* BENCHMARK_CAPACITY */ 300',str(actors))
-                descriptor,filename=tempfile.mkstemp(prefix='load-generated-',suffix='.ores',dir=ROOT/'tests')
+                template=(ROOT/'tests/load-server.atto').read_text().replace('/* BENCHMARK_CAPACITY */ 300',str(actors))
+                descriptor,filename=tempfile.mkstemp(prefix='load-generated-',suffix='.atto',dir=ROOT/'tests')
                 os.close(descriptor);Path(filename).write_text(template)
                 lines=queue.Queue();captured=[];resources=[];monitor_stop=threading.Event()
                 stderr=(args.output/(tag+'.stderr.log')).open('w')

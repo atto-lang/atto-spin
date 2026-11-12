@@ -164,17 +164,17 @@ def main():
     otel=ROOT/'dependencies/otel'
     if git(otel,'status','--porcelain') or git(otel,'rev-parse','HEAD')!=git(ROOT,'ls-files','--stage','dependencies/otel').split()[1]:raise RuntimeError('Otel provenance differs')
     if git(router,'status','--porcelain') or git(router,'rev-parse','HEAD')!=git(ROOT,'ls-files','--stage','dependencies/http-routing').split()[1]:raise RuntimeError('Router provenance differs')
-    fixture=ROOT/('tests/profiled-pooled-server.ores' if args.sample_every else 'tests/pooled-server.ores')
+    fixture=ROOT/('tests/profiled-pooled-server.atto' if args.sample_every else 'tests/pooled-server.atto')
     if args.dispatch_lanes>1:
-        fixture=ROOT/'tests/profiled-concurrent-server.ores'
+        fixture=ROOT/'tests/profiled-concurrent-server.atto'
     args.output.mkdir(parents=True,exist_ok=False)
     source_fixture = fixture
     source_dirty = bool(git(ROOT,'status','--porcelain'))
     generated = configure_fixture(fixture.read_text(),args.actor_lifecycle,args.pool_size).replace('dispatcher.serve(4)',f'dispatcher.serve({args.dispatch_lanes})')
-    with tempfile.NamedTemporaryFile(mode='w',suffix='.ores',prefix='.sustained-',dir=ROOT/'tests',delete=False) as temp:
+    with tempfile.NamedTemporaryFile(mode='w',suffix='.atto',prefix='.sustained-',dir=ROOT/'tests',delete=False) as temp:
         temp.write(generated)
         fixture=Path(temp.name)
-    (args.output/'fixture.ores').write_text(generated)
+    (args.output/'fixture.atto').write_text(generated)
     env=dict(os.environ);env['JAVA_TOOL_OPTIONS']=env.get('JAVA_TOOL_OPTIONS','')+' -Xms256m -Xmx2g -Dores.runtime.carriers=java'
     meta={'spin_commit':git(ROOT,'rev-parse','HEAD'),'spin_dirty':source_dirty,
           'runtime_commit':git(source,'rev-parse','HEAD'),'router_commit':git(router,'rev-parse','HEAD'),'otel_commit':git(ROOT/'dependencies/otel','rev-parse','HEAD'),

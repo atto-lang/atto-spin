@@ -17,8 +17,8 @@ git -C "$tmp/router" add .
 git -C "$tmp/router" -c user.name=Audit -c user.email=audit@example.invalid commit -qm init
 cp "$root/scripts/test.sh" "$tmp/project/scripts/test.sh"
 printf '%s\n' "$ref" > "$tmp/project/SOURCE_REF"
-printf 'sample\n' > "$tmp/project/examples/mixed.ores"
-printf 'builder fixture\n' > "$tmp/project/tests/builder_contracts_20261101.ores"
+printf 'sample\n' > "$tmp/project/examples/mixed.atto"
+printf 'builder fixture\n' > "$tmp/project/tests/builder_contracts_20261101.atto"
 printf 'print("integration fixture OK")\n' > "$tmp/project/tests/integration.py"
 cat > "$tmp/compiler" <<'COMPILER'
 #!/usr/bin/env bash
@@ -48,7 +48,7 @@ expect_failure() {
 }
 run >/dev/null
 [[ "$(wc -l < "$PREFLIGHT_COMPILER_CALLS" | tr -d '[:space:]')" = 3 ]]
-[[ "$(tail -1 "$PREFLIGHT_COMPILER_CALLS")" = "--platform=server $tmp/project/tests/builder_contracts_20261101.ores" ]]
+[[ "$(tail -1 "$PREFLIGHT_COMPILER_CALLS")" = "--platform=server $tmp/project/tests/builder_contracts_20261101.atto" ]]
 mkdir -p "$tmp/compiler-source/nested"
 export ORESLANG_SOURCE_DIR="$tmp/compiler-source/nested"
 expect_failure 'Compiler directory must be its own Git checkout'

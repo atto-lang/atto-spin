@@ -16,8 +16,8 @@ expected_router="$(git -C "$root" ls-files --stage dependencies/http-routing | a
 [[ "$(git -C "$root/dependencies/http-routing" rev-parse HEAD)" == "$expected_router" ]] || { echo 'Router revision differs from gitlink' >&2; exit 65; }
 export ORESLANG_COMPILER="$compiler"
 bash "$root/dependencies/http-routing/scripts/test.sh"
-"$compiler" --check --platform=server "$root/examples/mixed.ores"
+"$compiler" --check --platform=server "$root/examples/mixed.atto"
 # Explicitly register the native builder regression: checking alone is not execution.
-"$compiler" --check --platform=server "$root/tests/builder_contracts_20261101.ores"
-"$compiler" --platform=server "$root/tests/builder_contracts_20261101.ores"
+"$compiler" --check --platform=server "$root/tests/builder_contracts_20261101.atto"
+"$compiler" --platform=server "$root/tests/builder_contracts_20261101.atto"
 python3 "$root/tests/integration.py"
