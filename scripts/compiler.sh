@@ -2,6 +2,8 @@
 set -euo pipefail
 : "${ORESLANG_SOURCE_DIR:?Set ORESLANG_SOURCE_DIR to the pinned oreslang-source.java checkout}"
 java_bin="${ORES_JAVA:-java}"
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+bash "$root/scripts/check-pins.sh"
 source_dir="$(cd "$ORESLANG_SOURCE_DIR" && pwd -P)"
 if [[ ! -f "$source_dir/target/classpath.txt" ]]; then
   echo 'Build core with: mvn -q -DskipTests package dependency:build-classpath -Dmdep.outputFile=target/classpath.txt' >&2
