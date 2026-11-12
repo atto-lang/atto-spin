@@ -72,8 +72,22 @@ while IFS= read -r -d '' item; do
   type_and_oid="${meta#* }"
   type="${type_and_oid%% *}"
   blob="${type_and_oid##* }"
-  [[ "$type" == blob && "$blob" =~ ^[0-9a-f]{40}$ && -n "$path" ]] ||
-    fail "invalid tracked Git blob"
+  [[ "$blob" =~ ^[0-9a-f]{40}$ && -n "$path" ]] ||
+    fail "invalid tracked Git object"
+  # A Git submodule is represented by a commit gitlink, not by a blob.
+  # Host-only checkout runs with submodules disabled. Admit its immutable
+  # HEAD/index gitlink only when no unverified submodule source is populated.
+  # Native guest runs must initialize and independently verify their pins.
+  if [[ "$mode" == 160000 && "$type" == commit ]]; then
+    [[ ! -L "$root/$path" ]] || fail "submodule is a symlink"
+    if [[ -e "$root/$path" ]]; then
+      [[ -d "$root/$path" ]] || fail "submodule path is not a directory"
+      [[ -z "$(find "$root/$path" -mindepth 1 -print -quit)" ]] ||
+        fail "populated submodule requires separate exact-source admission"
+    fi
+    continue
+  fi
+  [[ "$type" == blob ]] || fail "invalid tracked Git blob"
   case "$mode" in
     100644|100755)
       [[ -f "$root/$path" && ! -L "$root/$path" ]] ||
