@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Black-box HTTP checks against native Oreslang actors; no simulated compiler."""
 import contextlib, concurrent.futures, http.client, json, os, pathlib, queue, socket, subprocess, threading, time
+import transport_security
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 COMPILER = os.environ.get('ORESLANG_COMPILER', 'oreslang-compiler')
@@ -13,7 +14,8 @@ def main():
         threading.Thread(target=lambda: [lines.put(line.strip()) for line in server.stdout], daemon=True).start()
         threading.Thread(target=lambda: [errors.append(line) for line in server.stderr], daemon=True).start()
         try:
-            assert lines.get(timeout=15) == 'true', 'builder must reject a second build'
+            if lines.get(timeout=15) != 'true':
+                raise AssertionError('builder must reject a second build')
             port = int(lines.get(timeout=5))
             def req(path, method='GET', body=None, headers=None, connection=None):
                 conn = connection or http.client.HTTPConnection('127.0.0.1', port, timeout=8)
@@ -26,12 +28,13 @@ def main():
             checks = 0
             def check(ok, label):
                 nonlocal checks
-                assert ok, label
+                if not ok:
+                    raise AssertionError(label)
                 checks += 1
             status, headers, body = req('/shared')
             check((status, body, headers['x-actor-mode']) == (200,b'shared','shared'), 'shared route')
             check(headers['x-spin'] == 'test' and len(headers['x-request-id']) == 36, 'middleware and request ID')
-            check(headers.get('x-spin-second-hook') == 'yes', 'nonterminal request reaches second middleware')
+            check(headers.get('x-spin-second-hook') == 'yes', 'normal request reaches second middleware')
             check(req('/private')[2] == b'private', 'isolated route')
             check(req('/echo', 'POST', 'private-body')[2] == b'private-body', 'body and helper Future flattening')
             check(req('/binary', 'POST', bytes(range(256)))[2] == bytes(range(256)), 'binary body and response streaming')
@@ -51,39 +54,40 @@ def main():
             check(req('/shared')[0] == 200, 'literal route still responds after dynamic requests')
             check(req('/shared', headers={'X-Fail':'yes'})[0] == 500, 'middleware failure contained')
             check(req('/shared')[0] == 200, 'supervisor survives middleware failure')
+            # A middleware return value does not restore an already moved
+            # exchange capability. Terminal paths must not invoke later hooks.
             status, headers, body = req('/shared', headers={'X-Stop-Without-Response':'yes'})
-            check(status == 500 and body == b'Internal Server Error' and headers.get('x-spin-responder') == 'actor' and
+            check(status == 500 and body == b'Internal Server Error' and
+                  headers.get('x-spin-responder') == 'actor' and
                   'x-spin-second-hook' not in headers,
-                  'abandoned middleware exchange skips later hooks and fails closed')
+                  'abandoned middleware fails closed without running later hooks')
             check(req('/missing', headers={'X-Stop-Without-Response':'yes'})[0] == 500,
-                  'middleware abandonment also fails closed on unmatched route')
-            status, _, body = req('/shared', headers={'X-Respond-And-Continue':'yes'})
-            check(status == 403 and body == b'middleware response',
-                  'middleware response is not overwritten by a second handler dispatch')
-            for path, method in (('/missing', 'GET'), ('/shared', 'POST'),
-                                 ('/shared', 'OPTIONS'), ('/auth', 'GET')):
+                  'unmatched route cannot be stranded by middleware')
+            for path, method in (('/shared', 'GET'), ('/missing', 'GET'),
+                                 ('/shared', 'POST'), ('/shared', 'OPTIONS'),
+                                 ('/auth', 'GET')):
                 status, headers, body = req(path, method, headers={'X-Respond-And-Continue':'yes'})
                 check(status == 403 and body == b'middleware response' and
                       headers.get('x-spin-responder') != 'actor' and
                       'x-spin-second-hook' not in headers,
-                      'transferred middleware response skips later hooks and fallback for '+method+' '+path)
-            for path, method in (('/shared', 'POST'), ('/shared', 'OPTIONS')):
-                status, headers, body = req(path, method, headers={'X-Stop-Without-Response':'yes'})
+                      'middleware transfer terminates dispatch for '+method+' '+path)
+            for method in ('POST', 'OPTIONS'):
+                status, headers, body = req('/shared', method, headers={'X-Stop-Without-Response':'yes'})
                 check(status == 500 and body == b'Internal Server Error' and
-                      headers.get('x-spin-responder') == 'actor' and 'x-spin-second-hook' not in headers,
-                      'abandoned middleware exchange skips later hooks before method fallback')
+                      headers.get('x-spin-responder') == 'actor' and
+                      'x-spin-second-hook' not in headers,
+                      'abandoned middleware blocks method fallback: '+method)
             status, headers, body = req('/shared', 'HEAD',
                                         headers={'X-Stop-Without-Response':'yes'})
             check(status == 500 and body == b'' and headers.get('x-spin-responder') == 'actor' and
                   'x-spin-second-hook' not in headers,
-                  'HEAD abandonment suppresses body and skips later middleware')
+                  'abandoned HEAD request suppresses response body')
             with contextlib.closing(http.client.HTTPConnection('127.0.0.1', port, timeout=8)) as conn:
-                check(req('/shared', headers={'X-Respond-And-Continue':'yes'},
-                          connection=conn)[0] == 403,
-                      'middleware transfer on persistent connection')
+                check(req('/shared', headers={'X-Respond-And-Continue':'yes'}, connection=conn)[0] == 403,
+                      'middleware transfer on keepalive connection')
                 check(req('/shared', connection=conn)[0] == 200,
-                      'persistent connection remains usable after middleware transfer')
-            check(req('/shared')[0] == 200, 'supervisor recovers after terminal middleware cases')
+                      'same keepalive connection remains usable afterward')
+            check(req('/shared')[0] == 200, 'supervisor recovers after terminal middleware paths')
             status, headers, _ = req('/shared', 'POST')
             check(status == 405 and headers['allow'] == 'GET, HEAD, OPTIONS', 'method not allowed')
             status, headers, body = req('/shared', 'HEAD')
@@ -94,12 +98,13 @@ def main():
             authorized_status, authorized_headers, _ = req('/auth', headers={'Authorization':'Bearer test'})
             check(unauthorized_status == 401 and 'x-spin-second-hook' not in unauthorized_headers and
                   authorized_status == 200 and authorized_headers.get('x-spin-second-hook') == 'yes',
-                  'authorization denial skips subsequent hooks; acceptance runs them')
+                  'terminal auth denial skips subsequent hook, accepted auth reaches it')
             check(req('/stream')[2] == b'data: one\n\ndata: two\n\n', 'response streaming')
             check(req('/stream', 'HEAD')[2] == b'', 'HEAD suppresses streamed writes')
             check(req('/echo', 'POST', 'x'*2048)[0] == 413, 'body limit')
             check(req('/echo', 'POST', iter([b'a'*600,b'b'*600]))[0] == 413, 'chunked body limit')
             check(req('/users/%C0%AF')[0] == 400, 'invalid UTF-8 path')
+            checks += transport_security.run(port)  # real raw-wire protocol and post-rejection recovery
             check(req('/crash')[0] == 500, 'actor crash cleanup')
             check(req('/startup-failure')[0] == 500, 'actor startup failure cleanup')
             check(req('/timeout')[0] == 504, 'deadline cleanup')
