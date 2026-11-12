@@ -1,0 +1,39 @@
+import module spin_html from "../src/render/html";
+
+// Executable native-Oreslang golden test, no host-language renderer.
+pub routine main(): void {
+  val hostile = spin_html.Html.text("<script>alert('x') && \"y\"</script>");
+  if hostile.markup() != "&lt;script&gt;alert(&#39;x&#39;) &amp;&amp; &quot;y&quot;&lt;/script&gt;"; then
+    stdio.println("FAIL: text escaping");
+    return;
+  fi
+  if spin_html.Html.text("&amp;").markup() != "&amp;amp;"; then
+    stdio.println("FAIL: entity non-recursion");
+    return;
+  fi
+  if spin_html.Html.text("é😀中").markup() != "é😀中"; then
+    stdio.println("FAIL: Unicode preservation");
+    return;
+  fi
+  if spin_html.Html.text("A\u0000B").markup() != "A\uFFFDB"; then
+    stdio.println("FAIL: NUL replacement");
+    return;
+  fi
+
+  val title = spin_html.Html.head(spin_html.Html.title(spin_html.Html.text("X & Y")));
+  val heading = spin_html.Html.h1(spin_html.Html.text("Hello <world>"));
+  val paragraph = spin_html.Html.p(spin_html.Html.text("safe"));
+  val body = spin_html.Html.body(spin_html.Html.main(spin_html.Html.fragment(arr[heading, paragraph])));
+  val root = spin_html.Html.html(spin_html.Html.fragment(arr[title, body]));
+  val page = spin_html.Html.document(root);
+  if page.markup() != "<!doctype html><html><head><title>X &amp; Y</title></head><body><main><h1>Hello &lt;world&gt;</h1><p>safe</p></main></body></html>"; then
+    stdio.println("FAIL: element composition");
+    return;
+  fi
+  if spin_html.Html.div(spin_html.Html.text("</div><script>")).markup() != "<div>&lt;/div&gt;&lt;script&gt;</div>"; then
+    stdio.println("FAIL: nested tag breakout");
+    return;
+  fi
+  stdio.println("HTML_RENDER_OK");
+  return;
+}

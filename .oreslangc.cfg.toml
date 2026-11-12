@@ -7,4 +7,4 @@ root = "."
 roots = ["src", "examples", "tests"]
 import_paths = []
 [entrypoints]
-main = "examples/mixed.ores"
+main = "examples/mixed.atto"

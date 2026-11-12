@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 import unittest
 
-FIXTURE = Path(__file__).with_name('sustained-pool-server.ores')
+FIXTURE = Path(__file__).with_name("sustained-pool-server.atto")
 NAMES = ('FreshShared', 'ReusedShared', 'FreshIsolated', 'ReusedIsolated')
 
 

@@ -1,0 +1,53 @@
+import module spin from "../src/spin.atto";
+import module http_routing from "../dependencies/http-routing/src/http_routing.atto";
+
+define actor SharedLoad as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    request.set_header("X-Actor-Mode", "shared");
+    request.set_header("Server-Timing", request.server_timing);
+    await request.respond(200, "text/plain", "ok\n");
+    self.end();
+    return;
+  }
+end
+
+define isoactor IsolatedLoad as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    request.set_header("X-Actor-Mode", "isolated");
+    request.set_header("Server-Timing", request.server_timing);
+    await request.respond(200, "text/plain", "ok\n");
+    self.end();
+    return;
+  }
+end
+
+pub async routine main(): void {
+  val builder = spin.builder();
+  val shared = http_routing.path("/shared", arr[http_routing.literal("shared")]);
+  val isolated = http_routing.path("/isolated", arr[http_routing.literal("isolated")]);
+  builder.get(rt borrow shared, http.handler("SharedLoad")).unwrap();
+  builder.get(rt borrow isolated, http.handler("IsolatedLoad")).unwrap();
+  val app = builder.build().unwrap();
+  val server = http.listen("127.0.0.1", 0, /* BENCHMARK_CAPACITY */ 300, 1024, 30000);
+  stdio.println(server.port);
+  let int peak = 0;
+  loop {
+    val request = await server.accept();
+    if server.active > peak; then peak = server.active; fi
+    if request.target == "/__stop"; then
+      await request.respond(200, "text/plain", "stop");
+      break;
+    fi
+    app.dispatch(request);
+  }
+  await server.shutdown(1000);
+  stdio.println("SERVER_COUNTERS");
+  stdio.println(server.accepted);
+  stdio.println(server.rejected);
+  stdio.println(server.completed);
+  stdio.println(server.active);
+  stdio.println(peak);
+  return;
+}

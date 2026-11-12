@@ -1,0 +1,35 @@
+import module spin from "../src/spin";
+import module spin_html from "../src/render/html";
+import module http_routing from "../dependencies/http-routing/src/http_routing";
+
+// A Spin rendering actor is an ordinary non-reentrant actor using a typed
+// HTML value, NOT a new core language actor kind.
+define isoactor HomePage as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    val heading = spin_html.Html.h1(spin_html.Html.text("Hello from Oreslang"));
+    val greeting = spin_html.Html.p(spin_html.Html.text(request.query("name")));
+    val content = spin_html.Html.main(spin_html.Html.fragment(arr[heading, greeting]));
+    val title = spin_html.Html.title(spin_html.Html.text("Spin SSR"));
+    val head = spin_html.Html.head(title);
+    val body = spin_html.Html.body(content);
+    val page = spin_html.Html.document(spin_html.Html.html(spin_html.Html.fragment(arr[head, body])));
+    val Future<void> response = spin.render_html(rt borrow request, 200, rt borrow page);
+    await response;
+    self.end();
+    return;
+  }
+end
+
+pub async routine main(): void {
+  val builder = spin.builder();
+  val home = http_routing.path("/page", arr[http_routing.literal("page")]);
+  builder.get(rt borrow home, http.handler("HomePage")).unwrap();
+  val app = builder.build().unwrap();
+  val server = http.listen("127.0.0.1", 8080, 128, 1048576, 30000);
+  loop {
+    val request = await server.accept();
+    app.dispatch(request);
+  }
+  return;
+}

@@ -1,0 +1,142 @@
+import module spin from "../src/spin.atto";
+import module http_routing from "../dependencies/http-routing/src/http_routing.atto";
+
+define actor SharedReply as
+  let int count = 0;
+  receive(ActorMail<String> mail): void {
+    self.count = self.count + 1;
+    val request = http.claim(mail.value);
+    request.set_header("Server-Timing", request.server_timing);
+    request.set_header("X-Actor-Mode", "shared");
+    request.set_header("X-Request-Id", request.request_id);
+    if self.count != 1; then request.abort(); self.end(); return; fi
+    val Future<void> response = spin.text(rt borrow request, 200, "shared");
+    await response;
+    self.end();
+    return;
+  }
+end
+
+define isoactor PrivateReply as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    request.set_header("Server-Timing", request.server_timing);
+    request.set_header("X-Actor-Mode", "isolated");
+    if request.operation_id == "echo"; then
+      val body = await request.body_text();
+      val Future<void> response = spin.text(rt borrow request, 200, body);
+      await response;
+    elif request.operation_id == "binary"; then
+      await request.start(200, "application/octet-stream");
+      loop {
+        val Array<int> chunk = await request.read_chunk(32);
+        if chunk.size == 0; then break; fi
+        await request.write_bytes(chunk);
+      }
+      await request.finish();
+    elif request.operation_id == "params"; then
+      val body = request.param("id") + "|" + request.query("q") + "|" + request.cookie("session");
+      await request.respond(200, "text/plain", body);
+    elif request.operation_id == "wildcard"; then
+      val body = request.param_at("rest", 0) + "|" + request.param_at("rest", 1);
+      await request.respond(200, "text/plain", body);
+    elif request.operation_id == "stream"; then
+      await request.start(200, "text/event-stream");
+      await request.write("data: one\n\n");
+      await request.write("data: two\n\n");
+      await request.finish();
+    elif request.operation_id == "crash"; then
+      val Option<int> missing = None;
+      missing.unwrap();
+    elif request.operation_id == "linger"; then
+      await request.respond(200, "text/plain", "linger");
+      return;
+    elif request.operation_id == "timeout"; then
+      return;
+    else
+      await request.respond(200, "text/plain", "private");
+    fi
+    self.end();
+    return;
+  }
+end
+
+define isoactor BrokenStartup as
+  val int required;
+  on_start(): void { return; }
+  receive(ActorMail<String> mail): void { self.end(); return; }
+end
+
+pub async routine main(): void {
+  val builder = spin.builder();
+  val Fnc<bool(borrow HttpExchange)> headers = |borrow HttpExchange request| -> {
+    request.set_header("X-Spin", "test");
+    if request.header("X-Stop-Without-Response") == "yes"; then
+      return false;
+    fi
+    if request.header("X-Respond-And-Continue") == "yes"; then
+      request.respond(403, "text/plain", "middleware response");
+      return true;
+    fi
+    if request.header("X-Fail") == "yes"; then
+      request.set_header("Bad Header", "invalid");
+    fi
+    if request.header("Origin") == "https://example.test"; then
+      request.set_header("Access-Control-Allow-Origin", "https://example.test");
+      request.set_header("Vary", "Origin");
+    fi
+    if request.pipeline_id == 7 && request.header("Authorization") != "Bearer test"; then
+      request.respond(401, "text/plain", "Unauthorized");
+      return false;
+    fi
+    return true;
+  };
+  val middleware_result = builder.use(headers);
+  middleware_result.unwrap();
+  // Observability marker: terminal paths must never run later hooks.
+  val Fnc<bool(borrow HttpExchange)> second_hook = |borrow HttpExchange request| -> {
+    request.set_header("X-Spin-Second-Hook", "yes");
+    return true;
+  };
+  val second_hook_result = builder.use(second_hook);
+  second_hook_result.unwrap();
+  val shared = http_routing.path("/shared", arr[http_routing.literal("shared")]);
+  val isolated = http_routing.path("/private", arr[http_routing.literal("private")]);
+  val echo = http_routing.path("/echo", arr[http_routing.literal("echo")]);
+  val binary = http_routing.path("/binary", arr[http_routing.literal("binary")]);
+  val params = http_routing.path("/users/{id}", arr[http_routing.literal("users"), http_routing.param("id")]);
+  val wildcard = http_routing.path("/files/*rest", arr[http_routing.literal("files"), http_routing.wildcard("rest")]);
+  val stream = http_routing.path("/stream", arr[http_routing.literal("stream")]);
+  val crash = http_routing.path("/crash", arr[http_routing.literal("crash")]);
+  val linger = http_routing.path("/linger", arr[http_routing.literal("linger")]);
+  val timeout = http_routing.path("/timeout", arr[http_routing.literal("timeout")]);
+  val startup = http_routing.path("/startup-failure", arr[http_routing.literal("startup-failure")]);
+  val auth = http_routing.path("/auth", arr[http_routing.literal("auth")]);
+  builder.get(rt borrow startup, http.handler("BrokenStartup")).unwrap();
+  builder.get(rt borrow shared, http.handler("SharedReply")).unwrap();
+  builder.get(rt borrow isolated, http.handler("PrivateReply")).unwrap();
+  builder.route("POST", rt borrow binary, http.handler("PrivateReply"), 0, 0, "binary").unwrap();
+  builder.route("POST", rt borrow echo, http.handler("PrivateReply"), 0, 0, "echo").unwrap();
+  builder.route("GET", rt borrow params, http.handler("PrivateReply"), 0, 0, "params").unwrap();
+  builder.route("GET", rt borrow wildcard, http.handler("PrivateReply"), 0, 0, "wildcard").unwrap();
+  builder.route("GET", rt borrow stream, http.handler("PrivateReply"), 0, 0, "stream").unwrap();
+  builder.route("GET", rt borrow crash, http.handler("PrivateReply"), 0, 0, "crash").unwrap();
+  builder.route("GET", rt borrow linger, http.handler("PrivateReply"), 0, 0, "linger").unwrap();
+  builder.route("GET", rt borrow timeout, http.handler("PrivateReply"), 0, 0, "timeout").unwrap();
+  builder.route("GET", rt borrow auth, http.handler("PrivateReply"), 7, 0, "auth").unwrap();
+  val app = builder.build().unwrap();
+  stdio.println(builder.build().is_err());
+  val server = http.listen("127.0.0.1", 0, 16, 1024, 2000);
+  stdio.println(server.port);
+  loop {
+    val request = await server.accept();
+    if request.target == "/__stop"; then
+      await request.respond(200, "text/plain", "stopping");
+      break;
+    fi
+    app.dispatch(request);
+  }
+  await server.shutdown(1000);
+  stdio.println(server.active);
+  return;
+}

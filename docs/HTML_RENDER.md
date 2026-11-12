@@ -1,14 +1,14 @@
-# Native Oreslang HTML rendering (initial Spin slice)
+# Native AttoLang HTML rendering (initial Spin slice)
 
 **Status: experimental; requires exact pinned compiler.** This change adds a
-typed and safely escaped HTML value in `src/render/html.ores`, plus a
+typed and safely escaped HTML value in `src/render/html.atto`, plus a
 `spin.render_html` response adapter. It deliberately does **not** add an
 actor kind to the core compiler. Use an existing `define actor` or
 `define isoactor` with a single-use `http.claim` token.
 
 ## Shape and ownership
 
-`Html` is a native Oreslang class whose sole public constructor escapes
+`Html` is a native AttoLang class whose sole public constructor escapes
 **untrusted text**, never parses markup. Fixed-tag class factories construct
 HTML and `fragment` composes child values. The class's encoded storage is
 private. `markup()` exposes serialization for HTTP output, but passing it
@@ -21,7 +21,7 @@ remains a low-level raw-string API; user input must not go through it.
 Do not use `markup()` to build an unsafe raw-string HTML response.
 
 This initial encoder escapes `& < > " '` and replaces NUL with the Unicode
-replacement character. Escaping is performed in native Oreslang with the
+replacement character. Escaping is performed in native AttoLang with the
 runtime's `replace_literal` storage primitive (available at SOURCE_REF).
 It is **not** a CSS, JavaScript, URI, or attribute sanitizer.
 
@@ -41,7 +41,7 @@ await reply;
 self.end();
 ```
 
-See `examples/render.ores` for a full routing + isolated actor example.
+See `examples/render.atto` for a full routing + isolated actor example.
 `spin.render_html` delegates to the existing single-owner bounded HTTP
 response path. It sets `Content-Type: text/html; charset=utf-8` and
 `X-Content-Type-Options: nosniff`. It does not launch another actor,
@@ -49,7 +49,7 @@ create additional response writers, or bypass request ownership.
 
 ## Tests, limits and next gates
 
-The executable `tests/html_render.ores` exercises escaping, nested tags,
+The executable `tests/html_render.atto` exercises escaping, nested tags,
 Unicode, NUL, and injection attempts. `scripts/test.sh` runs its compiler
 check and asserts its golden output against the exact SOURCE_REF, alongside the
 existing integration suite. **Adding these checks does not constitute a
@@ -68,3 +68,12 @@ ownership/cancellation are verified.
 No actor may re-enter its handler while awaiting an HTTP response: use
 the runtime's non-reentrant mailbox semantics. Pool reuse is optional and
 should keep request-local HTML state out of actor fields.
+
+
+## Canonical source parity
+
+The canonical `.atto` entrypoints and legacy `.ores` compatibility fixtures
+contain byte-identical native typed-HTML implementation and tests. The primary
+CI guest golden test executes `tests/html_render.atto` and also type-checks
+the legacy `.ores` source. No Java/C# HTML renderer, raw markup escape hatch,
+actor reentrancy or cross-actor ownership transfer is introduced.

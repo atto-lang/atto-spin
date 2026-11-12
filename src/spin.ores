@@ -184,7 +184,8 @@ define module spin as
   pub fnc html(borrow HttpExchange exchange, int status, String body) -> Future<void> {
     return exchange.respond(status, "text/html; charset=utf-8", body);
   }
-  // Typed fragments escape untrusted text; the exchange remains single-owner.
+  // Escape untrusted text using fixed-tag native Html nodes; the response
+  // remains actor-owned and single-use, never a separate writer.
   pub fnc render_html(borrow HttpExchange exchange, int status, borrow spin_html.Html page) -> Future<void> {
     exchange.set_header("X-Content-Type-Options", "nosniff");
     return exchange.respond(status, "text/html; charset=utf-8", page.markup());
