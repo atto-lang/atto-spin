@@ -1,0 +1,9 @@
+// Native Oreslang regression: a consumed Spin builder is single-use.
+import module spin from "../src/spin";
+
+pub routine main(): int {
+  let builder = spin.builder();
+  if builder.build().is_err() then return 1; fi // case 1: empty valid builder builds
+  if builder.build().is_ok() then return 2; fi // case 2: second build rejects
+  return 0;
+}

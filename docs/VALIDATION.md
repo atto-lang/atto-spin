@@ -1,26 +1,35 @@
 # Validation
 
-## Native acceptance from a fresh compiler build (2026-10-31)
+## Clean pinned compiler build (merged source-admission gate)
 
-Run `bash scripts/ci-native.sh` from an exact-head Spin checkout with
-`ORESLANG_SOURCE_DIR` pointing to the full clean Java `SOURCE_REF` checkout
-and the router submodule initialized at the committed gitlink. The script:
+For a native acceptance run, invoke `bash scripts/ci-native.sh` from a clean,
+exact-head Spin checkout with `ORESLANG_SOURCE_DIR` set to the complete clean
+Java compiler checkout at `SOURCE_REF` and the router at the committed gitlink.
+The script validates immutable pins and source cleanliness, checks JDK 25,
+rebuilds compiler classes and the classpath from scratch, checks artifact paths,
+then executes native HTTP tests through `scripts/test.sh` before emitting
+`SPIN_PINNED_NATIVE_ACCEPTANCE_PASS`.
 
-1. Rejects modified/staged/untracked Spin, Java compiler and router inputs.
-2. Requires an executable JDK 25, rejecting other Java major versions.
-3. Executes `mvn -B -ntp -q -DskipTests clean package dependency:build-classpath
-   -Dmdep.outputFile=target/classpath.txt` in that pinned compiler checkout.
-4. Requires fresh `OresMain.class` and a non-symlink, nonempty classpath file.
-5. Rechecks source admission and runs the actual native Spin HTTP integration via
-   `scripts/test.sh` before printing `SPIN_PINNED_NATIVE_ACCEPTANCE_PASS`.
+`scripts/test-preflight.sh` checks orchestration and hostile source mutations
+with mock executables. Its PASS marker never constitutes compiler-backed guest
+or HTTP acceptance. A release requires a nonzero-step exact-head runner receipt
+from the real native acceptance command; a private partial mirror is not a
+substitute for exact physical source provenance.
 
-The mocked `scripts/test-preflight.sh` checks the *orchestration*, including
-wrong-JDK and Maven-failure rejection, but **does not** run native Oreslang.
-A successful native acceptance claim requires an actual runner/job/step
-receipt from `ci-native.sh` on an authorized full source checkout.
 
-Private source mirror restrictions remain enforced; a partial mirrored router
-subtree must not be relabeled as a complete exact-tree native test.
+## Preflight hardening (2026-11-10)
+
+The suite now requires the compiler directory to be the checkout root, matching
+the backend checker. Its host-only preflight regression covers nested-directory
+rejection, dirty/untracked compiler and router files, and failed Git status
+inspection. The regression fixture also checks that the builder program is
+executed after its source check; previously it rejected that invocation itself.
+
+Local validation at Java pin `6d8eb70048eafc9a84c5aebe9c1bb06104f16e76`:
+`bash scripts/test-preflight.sh` passes, all 21 backend-checker host tests pass,
+and `scripts/test.sh` passes routing semantics, builder execution, and 110 real
+HTTP assertions. Host preflight fixtures are separate from that guest execution
+evidence. These checks do not establish LLVM Spin execution or hosted CI success.
 
 The native HTTP and actor implementation is tested in the compiler repository's
 NativeHttpTest. It checks strict path decoding, malformed UTF-8, sender

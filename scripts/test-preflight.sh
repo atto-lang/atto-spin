@@ -22,11 +22,14 @@ cp "$root/scripts/compiler.sh" "$tmp/project/scripts/compiler.sh"
 cp "$root/scripts/ci-native.sh" "$tmp/project/scripts/ci-native.sh"
 printf '%s\n' "$ref" > "$tmp/project/SOURCE_REF"
 printf 'sample\n' > "$tmp/project/examples/mixed.ores"
+printf 'builder fixture\n' > "$tmp/project/tests/builder_contracts_20261101.ores"
 printf 'print("integration fixture OK")\n' > "$tmp/project/tests/integration.py"
 cat > "$tmp/compiler" <<'COMPILER'
 #!/usr/bin/env bash
 set -euo pipefail
-[[ "$1" = '--check' && "$2" = '--platform=server' ]]
+printf '%s\n' "$*" >> "$PREFLIGHT_COMPILER_CALLS"
+if [[ "${1:-}" = '--check' ]]; then shift; fi
+[[ "$#" = 2 && "$1" = '--platform=server' && -f "$2" ]]
 COMPILER
 chmod +x "$tmp/compiler"
 mkdir -p "$tmp/compiler-source/target"
@@ -46,6 +49,7 @@ git -C "$tmp/project" -c protocol.file.allow=always submodule add -q "$tmp/route
 git -C "$tmp/project" add .
 git -C "$tmp/project" -c user.name=Audit -c user.email=audit@example.invalid commit -qm fixture
 export ORESLANG_COMPILER="$tmp/compiler" ORESLANG_SOURCE_DIR="$tmp/compiler-source"
+export PREFLIGHT_COMPILER_CALLS="$tmp/compiler-calls"
 run() { bash "$tmp/project/scripts/test.sh"; }
 run_launcher() { ORES_JAVA="$tmp/fake-java" bash "$tmp/project/scripts/compiler.sh" --check --platform=server; }
 expect_failure() {
@@ -60,6 +64,12 @@ expect_failure() {
   fi
 }
 run >/dev/null
+[[ "$(wc -l < "$PREFLIGHT_COMPILER_CALLS" | tr -d '[:space:]')" = 3 ]] || { echo 'Three compiler fixture steps were not executed' >&2; exit 1; }
+[[ "$(tail -1 "$PREFLIGHT_COMPILER_CALLS")" = "--platform=server $tmp/project/tests/builder_contracts_20261101.ores" ]] || { echo 'Builder execution was not last' >&2; exit 1; }
+mkdir -p "$tmp/compiler-source/nested"
+export ORESLANG_SOURCE_DIR="$tmp/compiler-source/nested"
+expect_failure 'Compiler must be its own Git checkout root'
+export ORESLANG_SOURCE_DIR="$tmp/compiler-source"
 [[ "$(run_launcher)" == 'mock launcher reached' ]] || { echo 'Pinned launcher did not execute' >&2; exit 1; }
 printf 'invalid\n' > "$tmp/project/SOURCE_REF"
 expect_failure 'Invalid SOURCE_REF'
