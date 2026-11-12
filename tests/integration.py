@@ -7,8 +7,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 COMPILER = os.environ.get('ORESLANG_COMPILER', 'oreslang-compiler')
 
 # Exact expected acceptance receipt after the independently merged terminal
-# middleware tests on parent Spin #35 (116 functional, 25 raw-wire).
-EXPECTED_FUNCTIONAL_CHECKS = 116
+# middleware tests on merged Spin #35 (124 executed functional, 25 raw-wire).
+EXPECTED_FUNCTIONAL_CHECKS = 124
 EXPECTED_RAW_WIRE_CHECKS = 25
 
 def require_condition(ok, label):
