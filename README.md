@@ -73,7 +73,12 @@ OPTIONS, 404, 405, and Allow synthesis come from the router.
 
 `builder.use(hook)` registers a `Fnc<bool(borrow HttpExchange)>` supervisor middleware.
 Hooks run in registration order after routing metadata/captures are attached,
-including for framework-generated errors and OPTIONS. Return true to continue;
+including for framework-generated errors and OPTIONS. On an unmatched request,
+`operation_id` is set **before** middleware to `spin.404`, `spin.405`,
+`spin.414`, or `spin.204` (automatic OPTIONS), with pipeline/contract IDs
+set to -1. Middleware must apply any global security policy independently of
+route-specific metadata; no route match does not imply authorization.
+Return true to continue;
 return false after scheduling a response to stop dispatch. A hook returning
 false without transferring the response produces an actor-owned HTTP 500 rather
 than leaving the client hanging. If a hook has already transferred the response,
@@ -149,7 +154,6 @@ See [reusable request actors](docs/REUSABLE_ACTORS.md) for
 - **Proposed migration, not authorization:** existing repository into `atto-lang/oreslang-spin` with original name, history and numeric GitHub ID; no first-wave direct move into `atto-co`. A later production product spinout requires its own approval.
 
 **Repository transfer playbook:** coordinate in [issue #26](https://github.com/ores-truffle-oreslang/.github/issues/26) and review [private migration draft #25](https://github.com/ores-truffle-oreslang/.github/pull/25). Capture stable numeric ID, exact head SHA/tree, PRs, releases, packages, GitHub Pages, dependencies, branch/ruleset protections, Actions runners, secrets, App/webhook grants and rollback plan. Require explicit source and target administrators plus independent security reviewer. Never export/mirror private sources as a shortcut. After an actual GitHub ownership transfer, verify unchanged ID/history/tree, re-bind security controls and run exact-head CI. A job with `steps=[]` or `steps=null` is `NOT_EXECUTED`, and host/reference results do not prove compiled AttoLang guest or production HTTP execution.
-
 
 ## Typed HTML rendering (experimental)
 
