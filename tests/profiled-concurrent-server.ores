@@ -1,0 +1,125 @@
+import module otel from "../dependencies/otel/src/otel";
+import module spin from "../src/spin";
+import module http_routing from "../dependencies/http-routing/src/http_routing.atto";
+
+define actor SharedLoad as
+  let String identity = "";
+  let bool reused = false;
+  receive(ActorMail<String> mail): void {
+    if self.identity == ""; then self.identity = process.unique_id(); fi
+    val request = http.claim(mail.value);
+    val bool sampled = request.header("X-Profile") == "yes";
+    val int claimed = process.monotonic_ns();
+    val int admitted = request.admitted_ns;
+    val int mailbox = request.move_to_claim_ns;
+    val String trace = request.request_id;
+    request.set_header("X-Actor-Mode", "shared");
+    request.set_header("X-Worker", self.identity);
+    request.set_header("X-Reused", self.reused ? "yes" : "no");
+    self.reused = true;
+    val int responding = process.monotonic_ns();
+    await request.respond(200, "text/plain", "ok\n");
+    val int finished = process.monotonic_ns();
+    if sampled; then
+      otel.metric("spin-profile-shared", trace, "admission.to_claim", "histogram", "ns", claimed - admitted);
+      otel.metric("spin-profile-shared", trace, "mailbox.move_to_claim", "histogram", "ns", mailbox);
+      otel.metric("spin-profile-shared", trace, "actor.prepare", "histogram", "ns", responding - claimed);
+      otel.metric("spin-profile-shared", trace, "response.await", "histogram", "ns", finished - responding);
+      otel.metric("spin-profile-shared", trace, "admission.to_response_continuation", "histogram", "ns", finished - admitted);
+    fi
+    return;
+  }
+end
+
+define isoactor IsolatedLoad as
+  let String identity = "";
+  let bool reused = false;
+  receive(ActorMail<String> mail): void {
+    if self.identity == ""; then self.identity = process.unique_id(); fi
+    val request = http.claim(mail.value);
+    val bool sampled = request.header("X-Profile") == "yes";
+    val int claimed = process.monotonic_ns();
+    val int admitted = request.admitted_ns;
+    val int mailbox = request.move_to_claim_ns;
+    val String trace = request.request_id;
+    request.set_header("X-Actor-Mode", "isolated");
+    request.set_header("X-Worker", self.identity);
+    request.set_header("X-Reused", self.reused ? "yes" : "no");
+    self.reused = true;
+    val int responding = process.monotonic_ns();
+    await request.respond(200, "text/plain", "ok\n");
+    val int finished = process.monotonic_ns();
+    if sampled; then
+      otel.metric("spin-profile-isolated", trace, "admission.to_claim", "histogram", "ns", claimed - admitted);
+      otel.metric("spin-profile-isolated", trace, "mailbox.move_to_claim", "histogram", "ns", mailbox);
+      otel.metric("spin-profile-isolated", trace, "actor.prepare", "histogram", "ns", responding - claimed);
+      otel.metric("spin-profile-isolated", trace, "response.await", "histogram", "ns", finished - responding);
+      otel.metric("spin-profile-isolated", trace, "admission.to_response_continuation", "histogram", "ns", finished - admitted);
+    fi
+    return;
+  }
+end
+
+pub define class ProfileDispatcher as
+  val spin.Application app;
+  val HttpServer server;
+  pub constructor(spin.Application app, HttpServer server) { self.app = app; self.server = server; }
+  pub dispatch(HttpExchange mut request): void {
+    val int resumed = process.monotonic_ns();
+    if request.target == "/__stop"; then
+      request.respond(200, "text/plain", "stop");
+      self.server.shutdown(1000);
+      return;
+    fi
+    val bool sampled = request.header("X-Profile") == "yes";
+    val String trace = request.request_id;
+    val int admitted = request.admitted_ns;
+    val int queued = request.http_queued_ns;
+    val int accept_ready = request.accept_ready_ns;
+    val int dispatching = process.monotonic_ns();
+    self.app.dispatch(request);
+    val int dispatched = process.monotonic_ns();
+    if sampled; then
+      otel.metric("spin-profile", trace, "http.admission_to_queue", "histogram", "ns", queued - admitted);
+      otel.metric("spin-profile", trace, "http.queue", "histogram", "ns", accept_ready - queued);
+      otel.metric("spin-profile", trace, "accept.ready_to_resume", "histogram", "ns", resumed - accept_ready);
+      otel.metric("spin-profile", trace, "supervisor.prepare", "histogram", "ns", dispatching - resumed);
+      otel.metric("spin-profile", trace, "admission.to_dispatch", "histogram", "ns", dispatching - admitted);
+      otel.metric("spin-profile", trace, "routing.dispatch", "histogram", "ns", dispatched - dispatching);
+    fi
+    return;
+  }
+  pub serve(int lanes) -> Future<void> { return self.server.serve(self, "dispatch", lanes); }
+  pub drain() -> Future<void> { return self.server.shutdown(1000); }
+  pub counters(): void {
+    stdio.stdout.log("Spin profiling complete; counters follow");
+    otel.log("spin-profile", "", "", "INFO", "server drained");
+    stdio.println("SERVER_COUNTERS");
+    stdio.println(self.server.accepted);
+    stdio.println(self.server.rejected);
+    stdio.println(self.server.completed);
+    stdio.println(self.server.active);
+    stdio.println(self.server.peak_active);
+    return;
+  }
+end
+
+pub async routine main(): void {
+  val builder = spin.builder();
+  val shared = http_routing.path("/shared", arr[http_routing.literal("shared")]);
+  val isolated = http_routing.path("/isolated", arr[http_routing.literal("isolated")]);
+  val shared_handler = http.handler("SharedLoad").pooled(32);
+  val isolated_handler = http.handler("IsolatedLoad").pooled(32);
+  val shared_registration = builder.get(rt borrow shared, shared_handler);
+  shared_registration.unwrap();
+  val isolated_registration = builder.get(rt borrow isolated, isolated_handler);
+  isolated_registration.unwrap();
+  val app = builder.build().unwrap();
+  val server = http.listen("127.0.0.1", 0, 20000, 1024, 30000);
+  stdio.println(server.port);
+  val dispatcher = new ProfileDispatcher(app, server);
+  await dispatcher.serve(4);
+  await dispatcher.drain();
+  dispatcher.counters();
+  return;
+}

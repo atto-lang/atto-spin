@@ -1,5 +1,5 @@
 // Native Oreslang regression: a consumed Spin builder is single-use.
-import module spin from "../src/spin";
+import module spin from "../src/spin.atto";
 
 pub routine main(): int {
   let builder = spin.builder();

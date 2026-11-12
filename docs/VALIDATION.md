@@ -1,5 +1,31 @@
 # Validation
 
+## Canonical `.atto` migration reconciliation
+
+This integration branch carries the current `main` Java/LLVM/compiler/router pins,
+then copies the most recent legacy `.ores` fixture and framework source semantics
+into canonical `.atto` equivalents. Legacy `.ores` files remain available as
+compatibility fixtures; the executable Spin suite selects `.atto` entrypoints.
+The source equality was checked when this branch was reconciled. The native
+`.atto` compiler/HTTP suite and exact LLVM rejection diagnostics still require
+fresh execution at the reconciled source head. A source-level copy is not a
+compiler guest test and historical receipts do not attest this merge commit.
+
+
+## Preflight hardening (2026-11-10)
+
+The suite now requires the compiler directory to be the checkout root, matching
+the backend checker. Its host-only preflight regression covers nested-directory
+rejection, dirty/untracked compiler and router files, and failed Git status
+inspection. The regression fixture also checks that the builder program is
+executed after its source check; previously it rejected that invocation itself.
+
+Local validation at Java pin `6d8eb70048eafc9a84c5aebe9c1bb06104f16e76`:
+`bash scripts/test-preflight.sh` passes, all 21 backend-checker host tests pass,
+and `scripts/test.sh` passes routing semantics, builder execution, and 110 real
+HTTP assertions. Host preflight fixtures are separate from that guest execution
+evidence. These checks do not establish LLVM Spin execution or hosted CI success.
+
 The native HTTP and actor implementation is tested in the compiler repository's
 NativeHttpTest. It checks strict path decoding, malformed UTF-8, sender
 revocation, double move, wrong-actor claims, one-time claim, exactly-once
