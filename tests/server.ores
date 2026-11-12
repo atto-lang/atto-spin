@@ -1,5 +1,5 @@
 import module spin from "../src/spin";
-import module http_routing from "../dependencies/http-routing/src/http_routing";
+import module http_routing from "../dependencies/http-routing/src/http_routing.atto";
 
 define actor SharedReply as
   let int count = 0;
@@ -71,6 +71,13 @@ pub async routine main(): void {
   val builder = spin.builder();
   val Fnc<bool(borrow HttpExchange)> headers = |borrow HttpExchange request| -> {
     request.set_header("X-Spin", "test");
+    if request.header("X-Stop-Without-Response") == "yes"; then
+      return false;
+    fi
+    if request.header("X-Respond-And-Continue") == "yes"; then
+      request.respond(403, "text/plain", "middleware response");
+      return true;
+    fi
     if request.header("X-Fail") == "yes"; then
       request.set_header("Bad Header", "invalid");
     fi
@@ -86,6 +93,13 @@ pub async routine main(): void {
   };
   val middleware_result = builder.use(headers);
   middleware_result.unwrap();
+  // Observability marker: terminal paths must never run later hooks.
+  val Fnc<bool(borrow HttpExchange)> second_hook = |borrow HttpExchange request| -> {
+    request.set_header("X-Spin-Second-Hook", "yes");
+    return true;
+  };
+  val second_hook_result = builder.use(second_hook);
+  second_hook_result.unwrap();
   val shared = http_routing.path("/shared", arr[http_routing.literal("shared")]);
   val isolated = http_routing.path("/private", arr[http_routing.literal("private")]);
   val echo = http_routing.path("/echo", arr[http_routing.literal("echo")]);
