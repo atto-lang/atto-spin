@@ -17,9 +17,9 @@ class BenchContracts(unittest.TestCase):
             bench.declared_limits("/* BENCHMARK_POOL */ 100 /* BENCHMARK_POOL */ 128 /* BENCHMARK_ADMISSION */ 10000")
 
     def test_guest_counter_decoding(self):
-        lines = ["9182", "POOL_COUNTERS", "2", "100", "101", "101", "0", "0"]
+        lines = ["9182", "POOL_COUNTERS", "2", "100", "0", "0", "101", "101", "0", "0"]
         self.assertEqual(bench.read_runtime_counters(lines), dict(
-            pooled_created=2, pooled_reused=100, accepted=101,
+            created_shared=2, reused_shared=100, created_isolated=0, reused_isolated=0, accepted=101,
             completed=101, rejected=0, active_after_shutdown=0))
         with self.assertRaisesRegex(ValueError, "truncated"):
             bench.read_runtime_counters(lines[:-1])
@@ -29,16 +29,19 @@ class BenchContracts(unittest.TestCase):
     def test_accept_exact_success_and_reuse(self):
         result = dict(attempts=100, successes=100, status={"200": 100},
                       errors={}, reused_connections=95)
-        runtime = dict(pooled_created=2, pooled_reused=98, accepted=101,
+        runtime = dict(created_shared=2, reused_shared=98, created_isolated=0, reused_isolated=0, accepted=101,
                        completed=101, rejected=0, active_after_shutdown=0)
-        self.assertEqual(bench.violations(result, runtime, 100), [])
-        self.assertTrue(bench.violations({**result, "successes": 99}, runtime, 100))
-        self.assertTrue(bench.violations({**result, "status": {"503": 100}}, runtime, 100))
-        self.assertTrue(bench.violations({**result, "reused_connections": 0}, runtime, 100))
-        for issue in ("pooled_reused", "rejected", "active_after_shutdown"):
-            changed = {**runtime, issue: 1 if issue != "pooled_reused" else 0}
-            self.assertTrue(bench.violations(result, changed, 100), issue)
-        self.assertTrue(bench.violations(result, {**runtime, "pooled_created": 201}, 100))
+        self.assertEqual(bench.violations(result, runtime, 100, "shared"), [])
+        self.assertTrue(bench.violations({**result, "successes": 99}, runtime, 100, "shared"))
+        self.assertTrue(bench.violations({**result, "status": {"503": 100}}, runtime, 100, "shared"))
+        self.assertTrue(bench.violations({**result, "reused_connections": 0}, runtime, 100, "shared"))
+        for issue in ("reused_shared", "rejected", "active_after_shutdown"):
+            changed = {**runtime, issue: 1 if issue != "reused_shared" else 0}
+            self.assertTrue(bench.violations(result, changed, 100, "shared"), issue)
+        self.assertTrue(bench.violations(result, {**runtime, "created_shared": 101}, 100, "shared"))
+        self.assertTrue(bench.violations(result, {**runtime, "created_isolated": 1}, 100, "shared"))
+        isolated = dict(runtime, created_shared=0, reused_shared=0, created_isolated=2, reused_isolated=98)
+        self.assertEqual(bench.violations(result, isolated, 100, "isolated"), [])
 
 if __name__ == "__main__":
     unittest.main()

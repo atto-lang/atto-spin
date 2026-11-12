@@ -52,3 +52,8 @@ but it is not a JVM profiler and does not isolate the machines. Socket-setup
 warmup is included in the process-resource sampling interval but excluded from
 HTTP response latency. Cross-run differences between independently provisioned
 runners must not be attributed to actor kind without repeated matched trials.
+
+
+### Exact runtime counter API correction (2026-11-12)
+
+The pinned compiler exposes `HttpHandler.created` and `HttpHandler.reused`, **not** `HttpServer.pooled_created` or `HttpServer.pooled_reused`. The benchmark registers `http.handler(...).pooled(size)` for each actor kind, retains those handler capabilities, and reads separate shared/isolated counts after graceful shutdown. The host regression rejects phantom reuse from an unexercised pool. This change was prompted by a real compiler failure on the first native smoke (run 43283406926); do not claim the old fixture executed.

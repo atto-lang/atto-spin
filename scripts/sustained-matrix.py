@@ -35,18 +35,18 @@ def declared_limits(source):
 
 
 def read_runtime_counters(output):
-    """Extract the real guest's final six-line POOL_COUNTERS receipt."""
+    """Extract the real guest's final eight-line POOL_COUNTERS receipt."""
     markers = [i for i, line in enumerate(output) if line == "POOL_COUNTERS"]
-    if len(markers) != 1 or len(output) < markers[0] + 7:
+    if len(markers) != 1 or len(output) < markers[0] + 9:
         raise ValueError("missing, duplicated or truncated POOL_COUNTERS")
-    values = output[markers[0] + 1:markers[0] + 7]
+    values = output[markers[0] + 1:markers[0] + 9]
     if any(not re.fullmatch(r"\d+", x) for x in values):
         raise ValueError("malformed numeric POOL_COUNTERS")
-    keys = ("pooled_created", "pooled_reused", "accepted", "completed", "rejected", "active_after_shutdown")
+    keys = ("created_shared", "reused_shared", "created_isolated", "reused_isolated", "accepted", "completed", "rejected", "active_after_shutdown")
     return dict(zip(keys, map(int, values)))
 
 
-def violations(result, runtime, pool_size):
+def violations(result, runtime, pool_size, mode):
     """Fail on actual HTTP errors, dishonest counting, or absent actor reuse."""
     failures = []
     if result.get("attempts", 0) < 2 or result["successes"] != result["attempts"]:
@@ -59,11 +59,15 @@ def violations(result, runtime, pool_size):
         failures.append("server retained active HTTP exchanges after shutdown")
     if runtime["rejected"] != 0:
         failures.append("server rejected HTTP admissions")
-    # The fixture contains two pool routes: one shared and one isolated.
-    if not 1 <= runtime["pooled_created"] <= 2 * pool_size:
-        failures.append("pooled actor creation out of bound")
-    if runtime["pooled_reused"] <= 0:
-        failures.append("no guest pooled actor reuse observed")
+    # The fixture registers two separate handler pools. Only one is exercised
+    # per trial; reject attributed reuse from the wrong actor kind.
+    if not 1 <= runtime["created_" + mode] <= pool_size:
+        failures.append("pooled actor creation out of bound for " + mode)
+    if runtime["reused_" + mode] <= 0:
+        failures.append("no guest pooled actor reuse observed for " + mode)
+    other = "isolated" if mode == "shared" else "shared"
+    if runtime["created_" + other] != 0 or runtime["reused_" + other] != 0:
+        failures.append("unexercised actor pool unexpectedly received work")
     if runtime["accepted"] < result["successes"]:
         failures.append("server accepted fewer requests than client verified")
     return failures
@@ -154,7 +158,7 @@ def run_trial(args, concurrency, mode, env, output):
                 raise RuntimeError(f"guest exited {process.returncode}")
             runtime = read_runtime_counters(stdout)
             (output / (tag + ".runtime.json")).write_text(json.dumps(runtime, indent=2) + "\n")
-            failed = violations(result, runtime, args.pool_size)
+            failed = violations(result, runtime, args.pool_size, mode)
             if failed:
                 raise AssertionError("; ".join(failed))
             print(json.dumps({"tag": tag, "result": "PASS", "attempts": result["attempts"],
