@@ -188,6 +188,30 @@ class ExactSourceCheckoutGate(unittest.TestCase):
         result = self.check(self.head)
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_clean_gitlink_is_admitted_without_submodule_checkout(self):
+        # GitHub checkout defaults to submodules: false for this host-only job.
+        # The immutable tree records a commit object at mode 160000.
+        submodule = self.root / "dependencies" / "http-routing"
+        submodule.mkdir(parents=True)
+        self.git("update-index", "--add", "--cacheinfo",
+                 f"160000,{self.head},dependencies/http-routing")
+        self.git("commit", "-qm", "pinned gitlink fixture")
+        self.head = self.git("rev-parse", "HEAD").stdout.strip()
+        result = self.check(self.head)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_populated_unverified_gitlink_is_denied(self):
+        submodule = self.root / "dependencies" / "http-routing"
+        submodule.mkdir(parents=True)
+        self.git("update-index", "--add", "--cacheinfo",
+                 f"160000,{self.head},dependencies/http-routing")
+        self.git("commit", "-qm", "pinned gitlink fixture")
+        self.head = self.git("rev-parse", "HEAD").stdout.strip()
+        (submodule / "injected.atto").write_text("unverified source\\n", encoding="utf-8")
+        result = self.check(self.head)
+        self.assertEqual(result.returncode, 65, result.stdout + result.stderr)
+        self.assertIn("populated submodule requires separate exact-source admission", result.stderr)
+
     def test_untracked_symlink_is_denied(self):
         (self.root / "foreign.atto").symlink_to("source.atto")
         self.assert_dirty_denied()
