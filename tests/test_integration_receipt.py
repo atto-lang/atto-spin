@@ -18,7 +18,7 @@ import transport_security
 class IntegrationReceiptContract(unittest.TestCase):
     def test_full_contract_accepts_exact_functional_and_wire_counts(self):
         self.assertEqual(
-            integration.verify_guest_receipt(140, 25),
+            integration.verify_guest_receipt(141, 25),
             {'checks': 141, 'functional_checks': 116, 'raw_wire_checks': 25})
 
     def test_rejects_short_raw_wire_matrix(self):
