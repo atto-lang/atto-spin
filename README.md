@@ -79,8 +79,12 @@ including for framework-generated errors and OPTIONS. On an unmatched request,
 set to -1. Middleware must apply any global security policy independently of
 route-specific metadata; no route match does not imply authorization.
 Return true to continue;
-return false after scheduling a response to stop dispatch. A hook may inspect
-pipeline_id or contract_id to select auth/validation rules. Actor-local processing
+return false after scheduling a response to stop dispatch. A hook returning
+false without transferring the response produces an actor-owned HTTP 500 rather
+than leaving the client hanging. If a hook has already transferred the response,
+the framework stops dispatch even when the hook incorrectly returns true;
+another hook or handler cannot reuse the revoked supervisor exchange. A hook
+may inspect pipeline_id or contract_id to select auth/validation rules. Actor-local processing
 belongs in that actor's receive method or synchronous helper functions, where
 it cannot retain a supervisor closure. Builder operations return Result and a
 second build or later registration fails.
@@ -127,3 +131,14 @@ revisions, reproducible checks, and unsupported features.
 
 See [reusable request actors](docs/REUSABLE_ACTORS.md) for
 `http.handler("Worker").pooled(32)` and three-minute keep-alive load tests.
+
+## Repository ownership and migration (2026-11-08)
+
+**AttoLang** is the current public language; this code is still maintained under `ores-truffle-oreslang/oreslang-spin` in the original Oreslang organization. Preserve working `.ores` files, repo naming and package/CLI compatibility until an independently tested change migrates them.
+
+- **Owns:** web framework/integration experiments for AttoLang and guest execution contracts.
+- **Not this repository:** production multi-tenant cloud management.
+- **Code ownership:** [atto-lang](https://github.com/atto-lang) is the destination for language semantics, core/std, compilers, developer tools, libraries and demos. [atto-co](https://github.com/atto-co) independently owns managed infrastructure, tenancy, identity, billing and production deployments. A separate `atto-*` repo is not by itself a verified Git transfer or equivalent source tree.
+- **Proposed migration, not authorization:** existing repository into `atto-lang/oreslang-spin` with original name, history and numeric GitHub ID; no first-wave direct move into `atto-co`. A later production product spinout requires its own approval.
+
+**Repository transfer playbook:** coordinate in [issue #26](https://github.com/ores-truffle-oreslang/.github/issues/26) and review [private migration draft #25](https://github.com/ores-truffle-oreslang/.github/pull/25). Capture stable numeric ID, exact head SHA/tree, PRs, releases, packages, GitHub Pages, dependencies, branch/ruleset protections, Actions runners, secrets, App/webhook grants and rollback plan. Require explicit source and target administrators plus independent security reviewer. Never export/mirror private sources as a shortcut. After an actual GitHub ownership transfer, verify unchanged ID/history/tree, re-bind security controls and run exact-head CI. A job with `steps=[]` or `steps=null` is `NOT_EXECUTED`, and host/reference results do not prove compiled AttoLang guest or production HTTP execution.

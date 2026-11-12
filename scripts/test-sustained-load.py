@@ -72,7 +72,7 @@ class SustainedTests(unittest.IsolatedAsyncioTestCase):
                 await load.measure(port,2,.1,0,1,Path(directory),0,'shared','fresh')
 
     def test_fresh_fixture_preserves_telemetry_before_termination(self):
-        template=(load.ROOT/'tests/profiled-pooled-server.ores').read_text()
+        template=(load.ROOT/'tests/profiled-pooled-server.atto').read_text()
         fresh=load.configure_fixture(template,'fresh',32)
         self.assertNotIn('.pooled(',fresh)
         self.assertEqual(fresh.count('self.end();'),2)
@@ -80,7 +80,7 @@ class SustainedTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(load.configure_fixture(template,'pooled',128).count('.pooled(128)'),2)
 
     def test_fresh_concurrent_fixture_preserves_supervisor_lifecycle(self):
-        template=(load.ROOT/'tests/profiled-concurrent-server.ores').read_text()
+        template=(load.ROOT/'tests/profiled-concurrent-server.atto').read_text()
         fresh=load.configure_fixture(template,'fresh',32)
         self.assertEqual(fresh.count('self.end();'),2)
         self.assertNotIn('self.end();',fresh.split('pub define class ProfileDispatcher')[1])

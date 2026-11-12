@@ -1,0 +1,203 @@
+import module http_routing from "../dependencies/http-routing/src/http_routing.atto";
+
+// Spin performs routing in the supervisor. Handler actor code is registered
+// explicitly; mutable guest closures never cross the actor boundary.
+define module spin as
+  // Framework-generated HTTP replies also own their exchange in a mailbox turn.
+  define actor FrameworkResponse as
+    receive(ActorMail<String> mail): void {
+      val request = http.claim(mail.value);
+      val String operation = request.operation_id;
+      val int status = operation == "spin.404" ? 404 : operation == "spin.414" ? 414 : operation == "spin.204" ? 204 : operation == "spin.405" ? 405 : 500;
+      val String body = status == 404 ? "Not Found" : status == 414 ? "URI Too Long" : status == 204 ? "" : status == 405 ? "Method Not Allowed" : "Internal Server Error";
+      request.set_header("X-Spin-Responder", "actor");
+      await request.respond(status, "text/plain; charset=utf-8", body);
+      return;
+    }
+  end
+
+  pub define class Binding as
+    val HttpHandler handler;
+    val http_routing.PathPattern pattern;
+    val int pipeline;
+    val int contract_id;
+    pub constructor(HttpHandler handler, http_routing.PathPattern pattern, int pipeline, int contract_id) {
+      self.handler = handler;
+      self.pattern = pattern;
+      self.pipeline = pipeline;
+      self.contract_id = contract_id;
+    }
+    pub dispatch(borrow mut HttpExchange exchange): void {
+      self.handler.dispatch(exchange);
+      return;
+    }
+    pub prepare(borrow HttpExchange exchange): void {
+      val int count = self.pattern.size();
+      for (let int i = 0; i < count; i = i + 1) {
+        val segment = self.pattern.segment_at(i);
+        if segment.kind == 1; then
+          exchange.add_param(segment.value, exchange.path_at(i));
+        elif segment.kind == 2; then
+          for (let int j = i; j < exchange.path_size; j = j + 1) {
+            exchange.add_param(segment.value, exchange.path_at(j));
+          }
+        fi
+      }
+      return;
+    }
+    pub is_isolated() -> bool { return self.handler.isolated; }
+  end
+
+  pub define class Application as
+    val http_routing.Router router;
+    val Array<Binding> bindings;
+    val Array<Fnc<bool(borrow HttpExchange)>> middleware;
+    val HttpHandler framework_response;
+    pub constructor(http_routing.Router router, Array<Binding> bindings, Array<Fnc<bool(borrow HttpExchange)>> middleware) {
+      self.router = router;
+      self.bindings = bindings;
+      self.middleware = middleware;
+      self.framework_response = http.handler("spin.FrameworkResponse").pooled(8);
+    }
+
+    framework_reply(borrow mut HttpExchange exchange, String operation): void {
+      exchange.set_route(operation, -1, -1);
+      self.framework_response.dispatch(exchange);
+      return;
+    }
+
+    pub dispatch(HttpExchange mut exchange): void {
+      try {
+        val Array<String> segments = new Array<String>();
+        for (let int i = 0; i < exchange.path_size; i = i + 1) {
+          segments.add(exchange.path_at(i));
+        }
+        val decision = self.router.resolve(exchange.method, http_routing.request_path(segments));
+        if decision.is_match(); then
+          exchange.set_route(decision.operation_id, decision.pipeline_id, decision.contract_id);
+          self.bindings.get(decision.handler_id).prepare(rt borrow exchange);
+        elif decision.is_not_found(); then
+          exchange.set_route("spin.404", -1, -1);
+        elif decision.is_limit_exceeded(); then
+          exchange.set_route("spin.414", -1, -1);
+        elif decision.is_automatic_options(); then
+          exchange.set_route("spin.204", -1, -1);
+        else
+          exchange.set_route("spin.405", -1, -1);
+        fi
+        // Middleware observes a selected outcome, including framework replies.
+        for (const hook of self.middleware) {
+          if !hook(rt borrow exchange); then
+            // A hook must either transfer the reply or allow dispatch to
+            // continue. Fail closed if it abandons a writable exchange.
+            if exchange.can_respond; then
+              self.framework_reply(rt mut borrow exchange, "spin.500");
+            fi
+            return;
+          fi
+          // A hook may mistakenly return true after responding. Ownership
+          // of the exchange has already transferred; never reuse it.
+          if !exchange.can_respond; then return; fi
+        }
+        if decision.is_match(); then
+          self.bindings.get(decision.handler_id).dispatch(rt mut borrow exchange);
+          return;
+        fi
+        if decision.is_not_found(); then
+          self.framework_reply(rt mut borrow exchange, "spin.404");
+          return;
+        fi
+        if decision.is_limit_exceeded(); then
+          self.framework_reply(rt mut borrow exchange, "spin.414");
+          return;
+        fi
+        let String allowed = "";
+        val int allow_count = self.router.allow_count(rt borrow decision);
+        for (let int i = 0; i < allow_count; i = i + 1) {
+          if i > 0; then allowed = allowed + ", "; fi
+          val String method = self.router.allow_method_at(rt borrow decision, i).unwrap();
+          allowed = allowed + method;
+        }
+        exchange.set_header("Allow", allowed);
+        if decision.is_automatic_options(); then
+          self.framework_reply(rt mut borrow exchange, "spin.204");
+        else
+          self.framework_reply(rt mut borrow exchange, "spin.405");
+        fi
+        return;
+      } catch (failure) {
+        if exchange.can_respond; then
+          self.framework_reply(rt mut borrow exchange, "spin.500");
+        fi
+        return;
+      }
+    }
+  end
+
+  pub define class Builder as
+    val http_routing.RouterBuilder router;
+    val Array<Binding> bindings = new Array<Binding>();
+    val Array<Fnc<bool(borrow HttpExchange)>> middleware = new Array<Fnc<bool(borrow HttpExchange)>>();
+    let bool built = false;
+
+    pub constructor() {
+      self.router = http_routing.builder();
+    }
+
+    pub use(mut self)(Fnc<bool(borrow HttpExchange)> hook) -> Result<bool, String> {
+      if self.built; then return Err("builder already consumed"); fi
+      self.middleware.add(hook);
+      return Ok(true);
+    }
+
+    pub route(mut self)(String method, borrow http_routing.PathPattern path, HttpHandler handler,
+                        int pipeline, int contract_id, String operation) -> Result<bool, String> {
+      if self.built; then return Err("builder already consumed"); fi
+      val result = self.router.route(method, path, self.bindings.size, pipeline, contract_id, operation);
+      if result.is_err(); then return Err("invalid or conflicting route"); fi
+      self.bindings.add(new Binding(handler, path.copy(), pipeline, contract_id));
+      return Ok(true);
+    }
+    pub get(mut self)(borrow http_routing.PathPattern path, HttpHandler handler) -> Result<bool, String> {
+      return self.route("GET", path, handler, -1, -1, "");
+    }
+    pub post(mut self)(borrow http_routing.PathPattern path, HttpHandler handler) -> Result<bool, String> {
+      return self.route("POST", path, handler, -1, -1, "");
+    }
+    pub build(mut self)() -> Result<Application, String> {
+      if self.built; then return Err("builder already consumed"); fi
+      self.built = true;
+      return Ok(new Application(self.router.build(), self.bindings, self.middleware));
+    }
+  end
+
+  pub fnc require_param(borrow HttpExchange request, String name) -> Result<String, String> {
+    if request.param_size(name) != 1; then return Err("expected one path parameter: " + name); fi
+    val String value = request.param(name);
+    return value == "" ? Err("empty path parameter: " + name) : Ok(value);
+  }
+  pub fnc require_query(borrow HttpExchange request, String name) -> Result<String, String> {
+    val String value = request.query(name);
+    return value == "" ? Err("missing or empty query parameter: " + name) : Ok(value);
+  }
+  pub fnc require_header(borrow HttpExchange request, String name) -> Result<String, String> {
+    val String value = request.header(name);
+    return value == "" ? Err("missing or empty header: " + name) : Ok(value);
+  }
+
+  pub fnc builder() -> Builder { return new Builder(); }
+  pub fnc text(borrow HttpExchange exchange, int status, String body) -> Future<void> {
+    return exchange.respond(status, "text/plain; charset=utf-8", body);
+  }
+  pub fnc html(borrow HttpExchange exchange, int status, String body) -> Future<void> {
+    return exchange.respond(status, "text/html; charset=utf-8", body);
+  }
+  // Serialized JSON comes from the application's chosen serialization library.
+  pub fnc json(borrow HttpExchange exchange, int status, String body) -> Future<void> {
+    return exchange.respond(status, "application/json", body);
+  }
+  pub fnc redirect(borrow HttpExchange exchange, String location) -> Future<void> {
+    exchange.set_header("Location", location);
+    return exchange.respond(303, "text/plain; charset=utf-8", "");
+  }
+end
