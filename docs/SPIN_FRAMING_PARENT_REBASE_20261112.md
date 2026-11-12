@@ -1,9 +1,11 @@
 # Spin framing receipt reconciliation (2026-11-12)
 
-PR #35 is merged into `main`; PR #37 is retargeted to `main` and preserves its current pinned Java compiler `e6098659c2e1641564bb5835b4dbb92a6a00b1a8` and Router gitlink.
+Spin PR #35 merged into main; its executed [private original-commit guest run 43252086287](https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/43252086287) returned **124 total checks = 116 functional + 8 existing raw-wire probes** (seven rejections and one recovery). It did **not** execute 124 functional-only checks.
 
-An **executed native AttoLang Java guest run** for original Spin PR #35 at head `5f8c0ec1ea56e30c14776eea47b4211549e4bc5f`, root tree `aab402f5bed5aebc23fc6f786b622dad4e57f2ee`, produced **124 functional checks** in [run 43252086287](https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/43252086287), not 116 as previously inferred by static counting.
+PR #37 replaces that 8-check raw-wire fixture with **25 actual socket checks: 23 malformed-request negative probes + 2 legitimate-request controls**. Consequently its exact expected receipt is **141 total = 116 functional + 25 raw-wire**. The integration oracle and host tests reject counts below or above the expected values, even under Python optimization. No negative assertions were relaxed.
 
-PR #37 adds 23 malformed raw-wire negatives and 2 raw-wire positive controls, so its **expected**, as yet unexecuted, full native guest receipt is **149 checks = 124 functional + 25 raw-wire**. The exact-count oracle and optimized-mode host tests reject short or extra counts. The 149 total is not a native execution claim until this branch's own exact-head Java guest and transport tests run.
+The [PR #37 original exact-head CI run 43254243063](https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/43254243063) proved that pinned Java `e6098659c2e1641564bb5835b4dbb92a6a00b1a8` rejects too little: `Host: example.test:abc` reached guest middleware and returned 200. This is a real blocker, not a flaky test.
 
-Keep independent code review and non-zero execution receipts as merge gates; host-only and source-free checks are not guest runtime proof. Other backends remain unverified.
+A test-only candidate applies physically SHA-verified [Java source #2988](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2988) Host authority and raw-wire changes in an isolated private CI checkout, preserving original Java/Router/Spin Git commit/tree verification **before** local test commits. The candidate proved 15 Java JUnit tests and got through all 25 Spin socket probes; previous run 43256992870 stopped only because the oracle incorrectly expected 149 instead of 141.
+
+**Merge gate:** obtain an independently reviewed Java authority fix on the appropriate compiler mainline/ref, pin an actual merged Java exact commit, and execute a fresh full original-Spin-head guest run with 141/141 receipt, independent Spin approval, and zero bypass of checkout/provenance checks. An isolated test-only integration commit is not the original Java or Spin PR SHA and cannot itself authorize a merge.
