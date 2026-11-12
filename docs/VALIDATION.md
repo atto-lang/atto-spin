@@ -1,5 +1,22 @@
 # Validation
 
+## Clean pinned compiler build (merged source-admission gate)
+
+For a native acceptance run, invoke `bash scripts/ci-native.sh` from a clean,
+exact-head Spin checkout with `ORESLANG_SOURCE_DIR` set to the complete clean
+Java compiler checkout at `SOURCE_REF` and the router at the committed gitlink.
+The script validates immutable pins and source cleanliness, checks JDK 25,
+rebuilds compiler classes and the classpath from scratch, checks artifact paths,
+then executes native HTTP tests through `scripts/test.sh` before emitting
+`SPIN_PINNED_NATIVE_ACCEPTANCE_PASS`.
+
+`scripts/test-preflight.sh` checks orchestration and hostile source mutations
+with mock executables. Its PASS marker never constitutes compiler-backed guest
+or HTTP acceptance. A release requires a nonzero-step exact-head runner receipt
+from the real native acceptance command; a private partial mirror is not a
+substitute for exact physical source provenance.
+
+
 ## Preflight hardening (2026-11-10)
 
 The suite now requires the compiler directory to be the checkout root, matching

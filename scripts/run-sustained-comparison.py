@@ -51,7 +51,7 @@ def main():
     # must not falsely label a clean source tree as dirty.
     initial_dirty=bool(git(ROOT,"status","--porcelain"))
     if args.output.exists(): parser.error("output path must not already exist")
-    body = (ROOT/"tests/sustained-pool-server.ores").read_text()
+    body = (ROOT/"tests/sustained-pool-server.atto").read_text()
     if body.count("/* BENCHMARK_POOL */ 100") != 2 or body.count("/* BENCHMARK_ADMISSION */ 10000") != 1:
         parser.error("benchmark fixture changed: required pool/admission placeholders absent or duplicated")
     args.output.mkdir(parents=True)
@@ -64,7 +64,7 @@ def main():
     stderr=None
     server=None
     try:
-        handle,filename=tempfile.mkstemp(prefix="spin-sustained-",suffix=".ores",dir=ROOT/"tests")
+        handle,filename=tempfile.mkstemp(prefix="spin-sustained-",suffix=".atto",dir=ROOT/"tests")
         os.close(handle)
         Path(filename).write_text(body)
         env=dict(os.environ)

@@ -46,9 +46,6 @@ define module spin as
       return;
     }
     pub is_isolated() -> bool { return self.handler.isolated; }
-    pub actors_created() -> int { return self.handler.actors_created; }
-    pub dispatches() -> int { return self.handler.dispatches; }
-    pub close_handler() -> void { self.handler.close(); return; }
   end
 
   pub define class Application as
@@ -61,18 +58,6 @@ define module spin as
       self.bindings = bindings;
       self.middleware = middleware;
       self.framework_response = http.handler("spin.FrameworkResponse").pooled(8);
-    }
-
-    // Separate per-binding counters track actual reuse, not TCP admissions.
-    pub actor_creations(int binding_index) -> int {
-      return self.bindings.get(binding_index).actors_created();
-    }
-    pub handled_requests(int binding_index) -> int {
-      return self.bindings.get(binding_index).dispatches();
-    }
-    pub close_handler_pools() -> void {
-      for (const binding of self.bindings) { binding.close_handler(); }
-      return;
     }
 
     framework_reply(borrow mut HttpExchange exchange, String operation): void {
@@ -91,7 +76,16 @@ define module spin as
         if decision.is_match(); then
           exchange.set_route(decision.operation_id, decision.pipeline_id, decision.contract_id);
           self.bindings.get(decision.handler_id).prepare(rt borrow exchange);
+        elif decision.is_not_found(); then
+          exchange.set_route("spin.404", -1, -1);
+        elif decision.is_limit_exceeded(); then
+          exchange.set_route("spin.414", -1, -1);
+        elif decision.is_automatic_options(); then
+          exchange.set_route("spin.204", -1, -1);
+        else
+          exchange.set_route("spin.405", -1, -1);
         fi
+        // Middleware observes a selected outcome, including framework replies.
         for (const hook of self.middleware) {
           if !hook(rt borrow exchange); then
             // A hook must either transfer the reply or allow dispatch to

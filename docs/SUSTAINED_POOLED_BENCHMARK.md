@@ -1,13 +1,15 @@
 # Sustained pooled Spin actor benchmark
 
-This is a **proposed, opt-in Java/GraalVM runtime path** based on `http.pooled_handler(type, pool_size)`.
+This is a **proposed, opt-in Java/GraalVM runtime path** based on `http.pool_handler(type, pool_size)`.
 Each route owns up to `pool_size` persistent request actors, shared or private.
 Each actor handles multiple HTTP exchanges sequentially; do not call `self.end()`
 after each request. Fresh actor routes still use `http.handler`.
 
-The benchmark keeps 100, 1,000, or 10,000 HTTP/1.1 connections active,
+The benchmark targets 100, 1,000, or 10,000 concurrent HTTP/1.1 clients (subject to runner limits),
 and sends a continuous closed-loop stream of requests for **180 seconds per
 mode and concurrency** (six independent trials = 18 minutes minimum).
+It compiles the tracked canonical `tests/sustained-pool-server.atto` without creating any untracked source and exercises `/pooled/shared` and `/pooled/isolated`. The pool size (100) and admission capacity (10000) are committed fixture settings; changing them requires a reviewed source commit and new proof, not a dirty worktree override.
+
 It reports the mean and p50/p95/p99 response time per request, completed
 responses/second, response validation failures, and real actor-created vs
 dispatch counters. Socket setup is excluded from response latency; burst
@@ -17,7 +19,7 @@ uses an approximate 0.1ms-bucket histogram. No retries are hidden.
 ```bash
 python3 scripts/test-sustained-client.py
 python3 scripts/sustained-matrix.py --duration 180 --concurrency 100,1000,10000 \
-  --pool-size 128 --capacity 10000 --out /tmp/spin-sustained-run
+  --pool-size 100 --capacity 10000 --out /tmp/spin-sustained-run
 ```
 
 Requires the clean pinned Java source and HTTP router, JDK 25, Maven, and

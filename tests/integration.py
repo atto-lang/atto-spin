@@ -7,8 +7,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 COMPILER = os.environ.get('ORESLANG_COMPILER', 'oreslang-compiler')
 
 def main():
-    subprocess.run([COMPILER, '--check', '--platform=server', str(ROOT/'tests/server.ores')], check=True, cwd=ROOT)
-    with subprocess.Popen([COMPILER, '--platform=server', '--allow-net=127.0.0.1:0', str(ROOT/'tests/server.ores')], cwd=ROOT,
+    subprocess.run([COMPILER, '--check', '--platform=server', str(ROOT/'tests/server.atto')], check=True, cwd=ROOT)
+    with subprocess.Popen([COMPILER, '--platform=server', '--allow-net=127.0.0.1:0', str(ROOT/'tests/server.atto')], cwd=ROOT,
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as server:
         lines, errors = queue.Queue(), []
         threading.Thread(target=lambda: [lines.put(line.strip()) for line in server.stdout], daemon=True).start()
@@ -43,6 +43,12 @@ def main():
             check(req('/shared/')[0] == 404, 'strict trailing slash')
             check(req('/shared//')[0] == 404, 'strict repeated slash')
             check(req('/missing')[0] == 404, 'not found')
+            check(req('/missing')[1].get('x-route-outcome') == 'spin.404',
+                  '404 outcome is available before middleware')
+            check(req('/shared', 'POST')[1].get('x-route-outcome') == 'spin.405',
+                  '405 outcome is available before middleware')
+            check(req('/shared', 'OPTIONS')[1].get('x-route-outcome') == 'spin.204',
+                  'automatic OPTIONS outcome is available before middleware')
             for method in ('GET','POST','OPTIONS'):
                 path = '/missing' if method == 'GET' else '/shared'
                 check(req(path, method)[1].get('x-spin-responder') == 'actor', 'framework reply owns exchange in actor')
@@ -94,7 +100,11 @@ def main():
             check(status == 200 and body == b'' and headers['content-length'] == '6', 'HEAD suppression')
             status, headers, body = req('/shared', 'OPTIONS', headers={'Origin':'https://example.test'})
             check(status == 204 and headers['allow'] == 'GET, HEAD, OPTIONS' and headers['access-control-allow-origin'] == 'https://example.test', 'OPTIONS and middleware')
-            check(req('/auth')[0] == 401 and req('/auth', headers={'Authorization':'Bearer test'})[0] == 200, 'route pipeline auth')
+            unauthorized_status, unauthorized_headers, _ = req('/auth')
+            authorized_status, authorized_headers, _ = req('/auth', headers={'Authorization':'Bearer test'})
+            check(unauthorized_status == 401 and 'x-spin-second-hook' not in unauthorized_headers and
+                  authorized_status == 200 and authorized_headers.get('x-spin-second-hook') == 'yes',
+                  'terminal auth denial skips subsequent hook, accepted auth reaches it')
             check(req('/stream')[2] == b'data: one\n\ndata: two\n\n', 'response streaming')
             check(req('/stream', 'HEAD')[2] == b'', 'HEAD suppresses streamed writes')
             check(req('/echo', 'POST', 'x'*2048)[0] == 413, 'body limit')

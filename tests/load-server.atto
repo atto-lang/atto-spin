@@ -1,34 +1,24 @@
-import module spin from "../src/spin";
-import module http_routing from "../dependencies/http-routing/src/http_routing";
+import module spin from "../src/spin.atto";
+import module http_routing from "../dependencies/http-routing/src/http_routing.atto";
 
 define actor SharedLoad as
-  suspends checkpoint(): int { rt cooperate; return 1; }
-  suspends receive(ActorMail<String> mail): void {
+  receive(ActorMail<String> mail): void {
     val request = http.claim(mail.value);
     request.set_header("X-Actor-Mode", "shared");
-    if self.checkpoint() == 1; then
-      request.set_header("X-Work-Verified", "1");
-    else
-      request.set_header("X-Work-Verified", "0");
-    fi
     request.set_header("Server-Timing", request.server_timing);
     await request.respond(200, "text/plain", "ok\n");
+    self.end();
     return;
   }
 end
 
 define isoactor IsolatedLoad as
-  suspends checkpoint(): int { rt cooperate; return 1; }
-  suspends receive(ActorMail<String> mail): void {
+  receive(ActorMail<String> mail): void {
     val request = http.claim(mail.value);
     request.set_header("X-Actor-Mode", "isolated");
-    if self.checkpoint() == 1; then
-      request.set_header("X-Work-Verified", "1");
-    else
-      request.set_header("X-Work-Verified", "0");
-    fi
     request.set_header("Server-Timing", request.server_timing);
     await request.respond(200, "text/plain", "ok\n");
+    self.end();
     return;
   }
 end
@@ -37,10 +27,10 @@ pub async routine main(): void {
   val builder = spin.builder();
   val shared = http_routing.path("/shared", arr[http_routing.literal("shared")]);
   val isolated = http_routing.path("/isolated", arr[http_routing.literal("isolated")]);
-  builder.get(rt borrow shared, http.pool_handler("SharedLoad", /* POOL_SIZE */ 128)).unwrap();
-  builder.get(rt borrow isolated, http.pool_handler("IsolatedLoad", /* POOL_SIZE */ 128)).unwrap();
+  builder.get(rt borrow shared, http.handler("SharedLoad")).unwrap();
+  builder.get(rt borrow isolated, http.handler("IsolatedLoad")).unwrap();
   val app = builder.build().unwrap();
-  val server = http.listen_with_limits("127.0.0.1", 0, /* BENCHMARK_BACKLOG */ 4096, /* BENCHMARK_CAPACITY */ 300, 1024, 30000);
+  val server = http.listen("127.0.0.1", 0, /* BENCHMARK_CAPACITY */ 300, 1024, 30000);
   stdio.println(server.port);
   let int peak = 0;
   loop {
@@ -53,15 +43,6 @@ pub async routine main(): void {
     app.dispatch(request);
   }
   await server.shutdown(1000);
-  stdio.println("POOLED_ACTOR_COUNTERS");
-  stdio.println(app.actor_creations(0));
-  stdio.println(app.handled_requests(0));
-  stdio.println(app.actor_creations(1));
-  stdio.println(app.handled_requests(1));
-  app.close_handler_pools();
-  stdio.println("SERVER_LIMITS");
-  stdio.println(server.requested_backlog);
-  stdio.println(server.admission_capacity);
   stdio.println("SERVER_COUNTERS");
   stdio.println(server.accepted);
   stdio.println(server.rejected);

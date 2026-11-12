@@ -1,0 +1,40 @@
+import module spin from "../src/spin.atto";
+import module http_routing from "../dependencies/http-routing/src/http_routing.atto";
+
+define actor SharedHello as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    val Future<void> response = spin.text(rt borrow request, 200, "hello from shared actor");
+    await response;
+    self.end();
+    return;
+  }
+end
+
+define isoactor IsolatedEcho as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    val body = await request.body_text();
+    request.set_header("X-Actor-Mode", "isolated");
+    val Future<void> response = spin.text(rt borrow request, 200, body);
+    await response;
+    self.end();
+    return;
+  }
+end
+
+pub async routine main(): void {
+  val builder = spin.builder();
+  val hello = http_routing.path("/hello", arr[http_routing.literal("hello")]);
+  val echo = http_routing.path("/echo", arr[http_routing.literal("echo")]);
+  builder.get(rt borrow hello, http.handler("SharedHello")).unwrap();
+  builder.post(rt borrow echo, http.handler("IsolatedEcho")).unwrap();
+  val app = builder.build().unwrap();
+  val server = http.listen("127.0.0.1", 8080, 128, 1048576, 30000);
+  stdio.println(server.port);
+  loop {
+    val request = await server.accept();
+    app.dispatch(request);
+  }
+  return;
+}

@@ -8,7 +8,7 @@ parser.add_argument('--concurrency', type=int, default=8)
 args = parser.parse_args()
 if args.requests < 1 or args.concurrency < 1 or args.concurrency > 16: parser.error('positive requests and concurrency 1..16 required')
 compiler = os.environ.get('ORESLANG_COMPILER', str(root/'scripts/compiler.sh'))
-with subprocess.Popen([compiler, '--platform=server', '--allow-net=127.0.0.1:0', str(root/'tests/server.ores')], cwd=root,
+with subprocess.Popen([compiler, '--platform=server', '--allow-net=127.0.0.1:0', str(root/'tests/server.atto')], cwd=root,
                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as server:
     lines, errors = queue.Queue(), []
     threading.Thread(target=lambda: [lines.put(x.strip()) for x in server.stdout], daemon=True).start()
