@@ -1,4 +1,4 @@
-import module http_routing from "../dependencies/http-routing/src/http_routing";
+import module http_routing from "../dependencies/http-routing/src/http_routing.atto";
 
 // Spin performs routing in the supervisor. Handler actor code is registered
 // explicitly; mutable guest closures never cross the actor boundary.
@@ -85,21 +85,30 @@ define module spin as
         else
           exchange.set_route("spin.405", -1, -1);
         fi
-        // Middleware sees the final routing outcome, even on framework replies.
-        // It must not infer authorization from a stale or uninitialized route.
+        // Middleware observes a selected outcome, including framework replies.
         for (const hook of self.middleware) {
-          if !hook(rt borrow exchange); then return; fi
+          if !hook(rt borrow exchange); then
+            // A hook must either transfer the reply or allow dispatch to
+            // continue. Fail closed if it abandons a writable exchange.
+            if exchange.can_respond; then
+              self.framework_reply(rt mut borrow exchange, "spin.500");
+            fi
+            return;
+          fi
+          // A hook may mistakenly return true after responding. Ownership
+          // of the exchange has already transferred; never reuse it.
+          if !exchange.can_respond; then return; fi
         }
         if decision.is_match(); then
-          self.bindings.get(decision.handler_id).dispatch(rt borrow mut exchange);
+          self.bindings.get(decision.handler_id).dispatch(rt mut borrow exchange);
           return;
         fi
         if decision.is_not_found(); then
-          self.framework_reply(rt borrow mut exchange, "spin.404");
+          self.framework_reply(rt mut borrow exchange, "spin.404");
           return;
         fi
         if decision.is_limit_exceeded(); then
-          self.framework_reply(rt borrow mut exchange, "spin.414");
+          self.framework_reply(rt mut borrow exchange, "spin.414");
           return;
         fi
         let String allowed = "";
@@ -111,14 +120,14 @@ define module spin as
         }
         exchange.set_header("Allow", allowed);
         if decision.is_automatic_options(); then
-          self.framework_reply(rt borrow mut exchange, "spin.204");
+          self.framework_reply(rt mut borrow exchange, "spin.204");
         else
-          self.framework_reply(rt borrow mut exchange, "spin.405");
+          self.framework_reply(rt mut borrow exchange, "spin.405");
         fi
         return;
       } catch (failure) {
         if exchange.can_respond; then
-          self.framework_reply(rt borrow mut exchange, "spin.500");
+          self.framework_reply(rt mut borrow exchange, "spin.500");
         fi
         return;
       }

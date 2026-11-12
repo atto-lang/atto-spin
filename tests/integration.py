@@ -14,7 +14,8 @@ def main():
         threading.Thread(target=lambda: [lines.put(line.strip()) for line in server.stdout], daemon=True).start()
         threading.Thread(target=lambda: [errors.append(line) for line in server.stderr], daemon=True).start()
         try:
-            assert lines.get(timeout=15) == 'true', 'builder must reject a second build'
+            if lines.get(timeout=15) != 'true':
+                raise AssertionError('builder must reject a second build')
             port = int(lines.get(timeout=5))
             def req(path, method='GET', body=None, headers=None, connection=None):
                 conn = connection or http.client.HTTPConnection('127.0.0.1', port, timeout=8)
@@ -27,11 +28,13 @@ def main():
             checks = 0
             def check(ok, label):
                 nonlocal checks
-                assert ok, label
+                if not ok:
+                    raise AssertionError(label)
                 checks += 1
             status, headers, body = req('/shared')
             check((status, body, headers['x-actor-mode']) == (200,b'shared','shared'), 'shared route')
             check(headers['x-spin'] == 'test' and len(headers['x-request-id']) == 36, 'middleware and request ID')
+            check(headers.get('x-spin-second-hook') == 'yes', 'normal request reaches second middleware')
             check(req('/private')[2] == b'private', 'isolated route')
             check(req('/echo', 'POST', 'private-body')[2] == b'private-body', 'body and helper Future flattening')
             check(req('/binary', 'POST', bytes(range(256)))[2] == bytes(range(256)), 'binary body and response streaming')
@@ -41,11 +44,11 @@ def main():
             check(req('/shared//')[0] == 404, 'strict repeated slash')
             check(req('/missing')[0] == 404, 'not found')
             check(req('/missing')[1].get('x-route-outcome') == 'spin.404',
-                  '404 middleware sees selected framework outcome')
+                  '404 outcome is available before middleware')
             check(req('/shared', 'POST')[1].get('x-route-outcome') == 'spin.405',
-                  '405 middleware sees selected framework outcome')
+                  '405 outcome is available before middleware')
             check(req('/shared', 'OPTIONS')[1].get('x-route-outcome') == 'spin.204',
-                  'automatic OPTIONS middleware sees selected framework outcome')
+                  'automatic OPTIONS outcome is available before middleware')
             for method in ('GET','POST','OPTIONS'):
                 path = '/missing' if method == 'GET' else '/shared'
                 check(req(path, method)[1].get('x-spin-responder') == 'actor', 'framework reply owns exchange in actor')
@@ -57,6 +60,40 @@ def main():
             check(req('/shared')[0] == 200, 'literal route still responds after dynamic requests')
             check(req('/shared', headers={'X-Fail':'yes'})[0] == 500, 'middleware failure contained')
             check(req('/shared')[0] == 200, 'supervisor survives middleware failure')
+            # A middleware return value does not restore an already moved
+            # exchange capability. Terminal paths must not invoke later hooks.
+            status, headers, body = req('/shared', headers={'X-Stop-Without-Response':'yes'})
+            check(status == 500 and body == b'Internal Server Error' and
+                  headers.get('x-spin-responder') == 'actor' and
+                  'x-spin-second-hook' not in headers,
+                  'abandoned middleware fails closed without running later hooks')
+            check(req('/missing', headers={'X-Stop-Without-Response':'yes'})[0] == 500,
+                  'unmatched route cannot be stranded by middleware')
+            for path, method in (('/shared', 'GET'), ('/missing', 'GET'),
+                                 ('/shared', 'POST'), ('/shared', 'OPTIONS'),
+                                 ('/auth', 'GET')):
+                status, headers, body = req(path, method, headers={'X-Respond-And-Continue':'yes'})
+                check(status == 403 and body == b'middleware response' and
+                      headers.get('x-spin-responder') != 'actor' and
+                      'x-spin-second-hook' not in headers,
+                      'middleware transfer terminates dispatch for '+method+' '+path)
+            for method in ('POST', 'OPTIONS'):
+                status, headers, body = req('/shared', method, headers={'X-Stop-Without-Response':'yes'})
+                check(status == 500 and body == b'Internal Server Error' and
+                      headers.get('x-spin-responder') == 'actor' and
+                      'x-spin-second-hook' not in headers,
+                      'abandoned middleware blocks method fallback: '+method)
+            status, headers, body = req('/shared', 'HEAD',
+                                        headers={'X-Stop-Without-Response':'yes'})
+            check(status == 500 and body == b'' and headers.get('x-spin-responder') == 'actor' and
+                  'x-spin-second-hook' not in headers,
+                  'abandoned HEAD request suppresses response body')
+            with contextlib.closing(http.client.HTTPConnection('127.0.0.1', port, timeout=8)) as conn:
+                check(req('/shared', headers={'X-Respond-And-Continue':'yes'}, connection=conn)[0] == 403,
+                      'middleware transfer on keepalive connection')
+                check(req('/shared', connection=conn)[0] == 200,
+                      'same keepalive connection remains usable afterward')
+            check(req('/shared')[0] == 200, 'supervisor recovers after terminal middleware paths')
             status, headers, _ = req('/shared', 'POST')
             check(status == 405 and headers['allow'] == 'GET, HEAD, OPTIONS', 'method not allowed')
             status, headers, body = req('/shared', 'HEAD')

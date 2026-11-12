@@ -3,6 +3,8 @@ set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 compiler="${ORESLANG_COMPILER:-$root/scripts/compiler.sh}"
 : "${ORESLANG_SOURCE_DIR:?Set ORESLANG_SOURCE_DIR to the compiler checkout}"
+source_dir="$(cd "$ORESLANG_SOURCE_DIR" && pwd -P)"
+[[ "$(git -C "$source_dir" rev-parse --show-toplevel)" == "$source_dir" ]] || { echo 'Compiler directory must be its own Git checkout' >&2; exit 65; }
 expected="$(tr -d '[:space:]' < "$root/SOURCE_REF")"
 [[ "$expected" =~ ^[0-9a-f]{40}$ ]] || { echo 'Invalid SOURCE_REF' >&2; exit 65; }
 [[ "$(git -C "$ORESLANG_SOURCE_DIR" rev-parse HEAD)" == "$expected" ]] || { echo 'Compiler revision differs from SOURCE_REF' >&2; exit 65; }
