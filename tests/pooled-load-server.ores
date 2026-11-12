@@ -2,9 +2,15 @@ import module spin from "../src/spin";
 import module http_routing from "../dependencies/http-routing/src/http_routing";
 
 define actor SharedLoad as
-  receive(ActorMail<String> mail): void {
+  suspends checkpoint(): int { rt cooperate; return 1; }
+  suspends receive(ActorMail<String> mail): void {
     val request = http.claim(mail.value);
     request.set_header("X-Actor-Mode", "shared");
+    if self.checkpoint() == 1; then
+      request.set_header("X-Work-Verified", "1");
+    else
+      request.set_header("X-Work-Verified", "0");
+    fi
     request.set_header("Server-Timing", request.server_timing);
     await request.respond(200, "text/plain", "ok\n");
     return;
@@ -12,9 +18,15 @@ define actor SharedLoad as
 end
 
 define isoactor IsolatedLoad as
-  receive(ActorMail<String> mail): void {
+  suspends checkpoint(): int { rt cooperate; return 1; }
+  suspends receive(ActorMail<String> mail): void {
     val request = http.claim(mail.value);
     request.set_header("X-Actor-Mode", "isolated");
+    if self.checkpoint() == 1; then
+      request.set_header("X-Work-Verified", "1");
+    else
+      request.set_header("X-Work-Verified", "0");
+    fi
     request.set_header("Server-Timing", request.server_timing);
     await request.respond(200, "text/plain", "ok\n");
     return;
@@ -25,8 +37,8 @@ pub async routine main(): void {
   val builder = spin.builder();
   val shared = http_routing.path("/shared", arr[http_routing.literal("shared")]);
   val isolated = http_routing.path("/isolated", arr[http_routing.literal("isolated")]);
-  builder.get(rt borrow shared, http.pooled_handler("SharedLoad", /* POOL_SIZE */ 128)).unwrap();
-  builder.get(rt borrow isolated, http.pooled_handler("IsolatedLoad", /* POOL_SIZE */ 128)).unwrap();
+  builder.get(rt borrow shared, http.pool_handler("SharedLoad", /* POOL_SIZE */ 128)).unwrap();
+  builder.get(rt borrow isolated, http.pool_handler("IsolatedLoad", /* POOL_SIZE */ 128)).unwrap();
   val app = builder.build().unwrap();
   val server = http.listen_with_limits("127.0.0.1", 0, /* BENCHMARK_BACKLOG */ 4096, /* BENCHMARK_CAPACITY */ 300, 1024, 30000);
   stdio.println(server.port);

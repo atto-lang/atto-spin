@@ -1,0 +1,40 @@
+{
+  "sources": {
+    "llvm": {
+      "commit": "817069a2b422f77ee91e7f5d49b5791f8b5e5527",
+      "tree": "3f50aab8fa95d48bfb2495def8b3b2e711651468"
+    },
+    "java": {
+      "commit": "3f679db71f392d461dd5cb6f8a15e36dd1dcf5e6",
+      "tree": "4e1e691f0f07e7c43031a14b92deb2b0a07d0c6b"
+    },
+    "routing": {
+      "commit": "7aa8b181adb991bfc240d6fcd6dca24ee01e8c3c",
+      "tree": "c1b05797185491e4693dce23f93c63d9d8a4109b"
+    },
+    "spin": {
+      "commit": "fb24cc520099dabebf50a7948841e7746b35c82c",
+      "tree": "1424d2c25e432db13f8ead2db08d947540899589"
+    }
+  },
+  "mirror_repository": "led-dynamo/leddy-e2e",
+  "mirror_private_verified": true,
+  "source_repositories_private": true,
+  "mirror_commit": "c4a0bfe5a43947743becc87de5ef88361321bdd6",
+  "mirror_root_tree": "e858b625d60f6d85eb1d4f5fafb1f130e370f17b",
+  "run_id": 39167627664,
+  "job_id": 117793792744,
+  "run_url": "https://github.com/led-dynamo/leddy-e2e/actions/runs/39167627664",
+  "conclusion": "success",
+  "java_tests_passed": 317,
+  "routing_semantics": "PASS twice, standalone and downstream",
+  "spin_http_checks": 55,
+  "routing_backend_harness_tests": 16,
+  "spin_backend_harness_tests": 14,
+  "native_cpp_rebuilt_in_this_run": false,
+  "native_cpp_validation_run": 39166194349,
+  "native_cpp_tests_in_separate_run": 434,
+  "dependency_materialization": "Exact separately mirrored routing Git checkout copied locally into matching Spin gitlink; no cross-org checkout",
+  "merge_checks": "Origin required checks unchanged",
+  "transfer": "GitHub connector; destination own GITHUB_TOKEN; no cross-org credentials"
+}

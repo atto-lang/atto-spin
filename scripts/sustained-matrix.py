@@ -53,13 +53,16 @@ def main():
                 actual=subprocess.check_output(["git","hash-object",str(workspace/filename)],text=True).strip()
                 if actual!=expected_blob:
                     raise RuntimeError("mirrored Git blob mismatch: "+filename)
-        if expected != "6508a10258c0912bd3b7550c08935c7f186f0317":
-            raise RuntimeError("unexpected pinned Java pooled runtime")
-        expected_router="b736ecfeae9b2c702a672930f97209f5d27e090c"
+        if not re.fullmatch(r"[0-9a-f]{40}",expected):
+            raise RuntimeError("invalid pinned Java source ref")
+        gitlink=subprocess.check_output(["git","-C",str(ROOT),"ls-tree","HEAD","--","dependencies/http-routing"],text=True).split()
+        if len(gitlink)!=4 or gitlink[0]!="160000" or gitlink[1]!="commit":
+            raise RuntimeError("missing committed router gitlink")
+        expected_router=gitlink[2]
     else:
         assert sha(source)==expected, "compiler pin mismatch"
         assert not subprocess.check_output(["git","-C",str(source),"status","--porcelain"],text=True).strip(), "dirty compiler source"
-        expected_router=subprocess.check_output(["git","-C",str(ROOT),"ls-files","--stage","dependencies/http-routing"],text=True).split()[1]
+        expected_router=subprocess.check_output(["git","-C",str(ROOT),"ls-tree","HEAD","--","dependencies/http-routing"],text=True).split()[2]
         assert sha(router)==expected_router, "router pin mismatch"
         assert not subprocess.check_output(["git","-C",str(router),"status","--porcelain"],text=True).strip(), "dirty router"
     metadata=dict(spin_commit=None if mirror else sha(ROOT),mirror_commit=sha(ROOT) if mirror else None,java_source_commit=expected if mirror else sha(source),router_commit=expected_router if mirror else sha(router),mirrored_inputs_verified=mirror,
@@ -106,7 +109,8 @@ def main():
                         sampler=ProcessSampler(proc.pid, interval_s=2.0)
                         sampler.start()
                         try:
-                            result=await client.sustained("127.0.0.1",port,"/"+mode,mode,conc,a.duration)
+                            options=argparse.Namespace(host="127.0.0.1",port=port,path="/"+mode,mode=mode,concurrency=conc,duration=a.duration,timeout=30)
+                        result=await client.benchmark(options)
                         finally:
                             resources=sampler.finish()
                             (a.out/(tag+".resources.json")).write_text(json.dumps(resources,indent=2)+"\n")
@@ -147,7 +151,7 @@ def main():
                         failed.append(tag+": actor pool unexpectedly grew")
                     if runtime["dispatches_"+mode] <= runtime["actors_created_"+mode]:
                         failed.append(tag+": no actor reuse observed")
-                    if result["success_percent"]!=100.0 or result["failures"] or result["http_statuses"].get(503,0):
+                    if result["attempts"]!=result["successes"] or result["errors"] or result["status"].get("503",0):
                         failed.append(tag+": invalid response(s); see trial JSON")
             finally:
                 generated.unlink(missing_ok=True)

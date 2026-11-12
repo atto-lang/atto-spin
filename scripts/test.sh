@@ -3,6 +3,8 @@ set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 compiler="${ORESLANG_COMPILER:-$root/scripts/compiler.sh}"
 : "${ORESLANG_SOURCE_DIR:?Set ORESLANG_SOURCE_DIR to the compiler checkout}"
+source_dir="$(cd "$ORESLANG_SOURCE_DIR" && pwd -P)"
+[[ "$(git -C "$source_dir" rev-parse --show-toplevel)" == "$source_dir" ]] || { echo 'Compiler directory must be its own Git checkout' >&2; exit 65; }
 expected="$(tr -d '[:space:]' < "$root/SOURCE_REF")"
 [[ "$expected" =~ ^[0-9a-f]{40}$ ]] || { echo 'Invalid SOURCE_REF' >&2; exit 65; }
 [[ "$(git -C "$ORESLANG_SOURCE_DIR" rev-parse HEAD)" == "$expected" ]] || { echo 'Compiler revision differs from SOURCE_REF' >&2; exit 65; }
@@ -15,4 +17,7 @@ expected_router="$(git -C "$root" ls-files --stage dependencies/http-routing | a
 export ORESLANG_COMPILER="$compiler"
 bash "$root/dependencies/http-routing/scripts/test.sh"
 "$compiler" --check --platform=server "$root/examples/mixed.ores"
+# Explicitly register the native builder regression: checking alone is not execution.
+"$compiler" --check --platform=server "$root/tests/builder_contracts_20261101.ores"
+"$compiler" --platform=server "$root/tests/builder_contracts_20261101.ores"
 python3 "$root/tests/integration.py"

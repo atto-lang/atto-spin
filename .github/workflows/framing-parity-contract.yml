@@ -1,0 +1,42 @@
+name: Spin framing harness and five-backend contract
+on:
+  pull_request:
+    paths:
+      - 'BACKENDS.json'
+      - 'scripts/check-backend.py'
+      - 'scripts/test-backend-checker.py'
+      - 'tests/transport_security.py'
+      - 'tests/test_transport_security.py'
+      - 'tests/integration.py'
+      - '.github/workflows/framing-parity-contract.yml'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  host-contract-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact event head
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Run host-only test harness and backend-metadata validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B -m unittest discover -s tests -p 'test_transport_security.py' -v
+          python3 -B scripts/test-backend-checker.py
+          echo SPIN_HOST_CONTRACT_ONLY_PASS

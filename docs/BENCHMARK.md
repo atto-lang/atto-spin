@@ -65,3 +65,6 @@ and TCP backlog limitations.
 See the [full-admission latency follow-up](benchmarks/2026-10-12/full-admission/RESULTS.md)
 for 66,600 successful requests with no rejections or retries, including mean
 response time at 100, 1,000, and 10,000 concurrency.
+
+See [three-minute pooled-worker results](benchmarks/2026-10-13/pooled-180/REPORT.md)
+for sustained keep-alive traffic at 100/1,000/10,000 concurrent clients.

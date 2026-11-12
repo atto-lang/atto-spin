@@ -1,0 +1,33 @@
+{
+  "destination": "led-dynamo/leddy-e2e",
+  "visibility_verified": "private",
+  "branch": "validation/spin-actor-owned-20261015",
+  "mirror_commit": "ab88948a060743029a965fed5a33a4339a8b6311",
+  "mirror_tree": "e292fc7c5aeacb8f8a32e5540b05688f47ba0b02",
+  "origin_run_zero_steps": 39154680797,
+  "snapshots": {
+    "java": {
+      "commit": "f4b69fd2722f0d78956179c8bc22d9065537f48d",
+      "tree": "5123a95a878c6c8419a49fcfe842446084e8b33e"
+    },
+    "router": {
+      "commit": "6de1436623ba1480e0e7e4fd72aafa04af94e607",
+      "tree": "0b680564798cb40f7ca43009959bcf59964c7123"
+    },
+    "spin": {
+      "commit": "82f9368f40a6cfe6644c5ac28b7b2267bba7095f",
+      "tree": "508e26276036883b6a8f4153dd2f607bf80008fd"
+    },
+    "otel": {
+      "commit": "5fe62a3447e77072cfd30850a96ef654a18008f7",
+      "tree": "60c6f66a680b315742ec9a3cffe7ec031fd85515"
+    }
+  },
+  "run_id": 39155323092,
+  "job_id": 117757241018,
+  "conclusion": "success",
+  "runtime_tests": 242,
+  "spin_integration_checks": 102,
+  "driver_tests": 8,
+  "telemetry_tests": 2
+}

@@ -1,0 +1,32 @@
+{
+  "spin_commit": "f36564117158a5b6d231ef1947076a90fc787499",
+  "spin_dirty": true,
+  "runtime_commit": "f4b69fd2722f0d78956179c8bc22d9065537f48d",
+  "router_commit": "ea37c3a96ec5c6028abb4a5a2bf04bb31ddc015f",
+  "otel_commit": "5fe62a3447e77072cfd30850a96ef654a18008f7",
+  "driver_sha256": "3b94597ff5cdd84282d96fad5b9c7544d5fb4b0f3d75f4b3fdea6178834a32a7",
+  "fixture_sha256": "f119791259fdbdf879530920943892e4e7ac4369861f732238578bd4256b4275",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "cpus": 18,
+  "java_options": "-Dores.runtime.control.parallelism=4 -Xms256m -Xmx2g -Dores.runtime.carriers=java -Djdk.httpserver.maxConnections=20000 -Dsun.net.httpserver.maxIdleConnections=20000",
+  "java_version": "Picked up JAVA_TOOL_OPTIONS: -Dores.runtime.control.parallelism=4\nopenjdk version \"25.0.4.1\" 2026-08-18 LTS\nOpenJDK Runtime Environment Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS, mixed mode, sharing)\n",
+  "source_fixture": "tests/profiled-concurrent-server.ores",
+  "actor_lifecycle": "pooled",
+  "application_instances": 1,
+  "dispatch_lanes": 4,
+  "pool_workers_per_mode": 128,
+  "mix": "shared; fixed per connection; no retry",
+  "configuration": {
+    "concurrency": 100,
+    "seconds": 20.0,
+    "warmup": 10,
+    "timeout": 60,
+    "sample_every": 1000,
+    "actor_mode": "shared",
+    "actor_lifecycle": "pooled",
+    "pool_size": 128,
+    "dispatch_lanes": 4,
+    "core_perf": false,
+    "output": "../../outputs/spin-drain-mailbox-pilot"
+  }
+}

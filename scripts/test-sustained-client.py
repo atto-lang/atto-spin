@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import asyncio
+import argparse
 import importlib.machinery
 from pathlib import Path
 import unittest
@@ -18,18 +19,21 @@ class SustainedTests(unittest.IsolatedAsyncioTestCase):
                     try:await reader.readuntil(b"\r\n\r\n")
                     except asyncio.IncompleteReadError:break
                     calls+=1
-                    writer.write(b"HTTP/1.1 200 OK\r\nContent-Length: 3\r\nX-Actor-Mode: shared\r\n\r\nok\n")
+                    writer.write(b"HTTP/1.1 200 OK\r\nContent-Length: 3\r\nX-Actor-Mode: shared\r\nX-Work-Verified: 1\r\n\r\nok\n")
                     await writer.drain()
             finally:
                 writer.close()
         server=await asyncio.start_server(serve,"127.0.0.1",0)
         try:
-            result=await client.sustained("127.0.0.1",server.sockets[0].getsockname()[1],"/shared","shared",3,1)
-            self.assertEqual(result["failures"],{})
-            self.assertEqual(result["success_responses"],calls)
+            args=argparse.Namespace(host="127.0.0.1",port=server.sockets[0].getsockname()[1],
+                                    path="/shared",mode="shared",concurrency=3,duration=0.25,timeout=2)
+            result=await client.benchmark(args)
+            self.assertEqual(result["errors"],{})
+            self.assertEqual(result["successes"],calls)
+            self.assertEqual(result["attempts"],result["successes"])
             self.assertGreater(calls,3)
             self.assertEqual(sockets,3)
-            self.assertEqual(result["retries"],0)
+            self.assertGreater(result["reused_connections"],0)
         finally:
             server.close();await server.wait_closed()
 

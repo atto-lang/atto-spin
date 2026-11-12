@@ -1,0 +1,68 @@
+{
+  "warm.accept.ready_to_resume": {
+    "count": 745,
+    "mean_ms": 0.008183,
+    "p50_ms": 0.004625,
+    "p95_ms": 0.027292
+  },
+  "warm.actor.prepare": {
+    "count": 745,
+    "mean_ms": 0.002541,
+    "p50_ms": 0.002208,
+    "p95_ms": 0.004042
+  },
+  "warm.admission.to_claim": {
+    "count": 745,
+    "mean_ms": 0.214869,
+    "p50_ms": 0.188209,
+    "p95_ms": 0.403167
+  },
+  "warm.admission.to_dispatch": {
+    "count": 745,
+    "mean_ms": 0.147144,
+    "p50_ms": 0.120375,
+    "p95_ms": 0.320292
+  },
+  "warm.admission.to_response_continuation": {
+    "count": 745,
+    "mean_ms": 0.264073,
+    "p50_ms": 0.229917,
+    "p95_ms": 0.461084
+  },
+  "warm.http.admission_to_queue": {
+    "count": 745,
+    "mean_ms": 0.002188,
+    "p50_ms": 0.000959,
+    "p95_ms": 0.006542
+  },
+  "warm.http.queue": {
+    "count": 745,
+    "mean_ms": 0.135019,
+    "p50_ms": 0.108042,
+    "p95_ms": 0.309958
+  },
+  "warm.mailbox.move_to_claim": {
+    "count": 745,
+    "mean_ms": 0.026119,
+    "p50_ms": 0.020458,
+    "p95_ms": 0.055167
+  },
+  "warm.response.await": {
+    "count": 745,
+    "mean_ms": 0.046662,
+    "p50_ms": 0.039084,
+    "p95_ms": 0.079416
+  },
+  "warm.routing.dispatch": {
+    "count": 745,
+    "mean_ms": 0.055515,
+    "p50_ms": 0.049875,
+    "p95_ms": 0.102
+  },
+  "warm.supervisor.prepare": {
+    "count": 745,
+    "mean_ms": 0.001753,
+    "p50_ms": 0.00125,
+    "p95_ms": 0.00225
+  }
+}

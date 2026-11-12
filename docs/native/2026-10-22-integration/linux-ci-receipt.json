@@ -1,0 +1,54 @@
+{
+  "source": {
+    "llvm": {
+      "commit": "ff5f7eaf1217545e579e4ce610d86aaffa46bf7f",
+      "tree": "70bfb36a3c40f54d944407bcb7dd9ef0ce05840c",
+      "commit_base64": "dHJlZSA3MGJmYjM2YTNjNDBmNTRkOTQ0NDA3YmNiN2RkOWVmMGNlMDU4NDBjCnBhcmVudCBmMjk2OTJhZWVlOTJkMGZhNjkyYjU0ODVlMWUwNmE3OWZjMjlhZDE2CmF1dGhvciBvcmVzb2Z0d2FyZSA8YWxleGFuZGVyLmQubWlsbHNAZ21haWwuY29tPiAxNzkyNjk5MTYwIC0wNTAwCmNvbW1pdHRlciBvcmVzb2Z0d2FyZSA8YWxleGFuZGVyLmQubWlsbHNAZ21haWwuY29tPiAxNzkyNjk5MTYwIC0wNTAwCgpGaXggR0NDIHJhbmdlLWxvb3AgZGlhZ25vc3RpY3MgaW4gc3RyaWN0IGFsbG9jYXRpb24gSlNPTiB0ZXN0cwo="
+    },
+    "java": {
+      "commit": "79e88c627efa9522a0990077301eb6611dd9320c",
+      "tree": "40a23d769f9772cf333ebf838710eecde55b6d57",
+      "commit_base64": "dHJlZSA0MGEyM2Q3NjlmOTc3MmNmMzMzZWJmODM4NzEwZWVjZGU1NWI2ZDU3CnBhcmVudCA0MzJiMjIyOWQ5NWIwODUwYjcwNTRkNmQ3Y2U4NzdhOWRlZWNjNzIyCmF1dGhvciBvcmVzb2Z0d2FyZSA8YWxleGFuZGVyLmQubWlsbHNAZ21haWwuY29tPiAxNzkyNjk4NDkxIC0wNTAwCmNvbW1pdHRlciBvcmVzb2Z0d2FyZSA8YWxleGFuZGVyLmQubWlsbHNAZ21haWwuY29tPiAxNzkyNjk4NDkxIC0wNTAwCgpGaXggY2Fub25pY2FsIG11dGFibGUgYm9ycm93IHNwZWxsaW5nIGluIG93bmVyc2hpcCByZWdyZXNzaW9uIHRlc3RzCg=="
+    }
+  },
+  "destination": "led-dynamo/leddy-e2e",
+  "destination_id": 1324139596,
+  "visibility": "private",
+  "branch": "validation/aot-integration-20261022",
+  "mirror_commit": "b8efd6b802b803b96527a7fbf4dad523c1f3dc7e",
+  "mirror_tree": "537e598fb056bf4ada52cdd932577f851f29741b",
+  "exact_subtree_hashes_verified": true,
+  "cross_org_source_credentials": false,
+  "origin_check": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/actions/runs/39843983756",
+  "origin_check_execution": "NOT_STARTED_BILLING",
+  "authorization": "User AGENTS.md explicit budget fallback",
+  "attempts": [
+    {
+      "mirror_commit": "87ce1145ccbd24b46853f3197c7101e00bff1473",
+      "mirror_tree": "851d1170afc29c82dd0f009dca44c0f6bad2afe6",
+      "run_id": 39844532779,
+      "conclusion": "FAILURE",
+      "phase": "build",
+      "reason": "GCC range-loop-construct warnings in allocation JSON tests"
+    }
+  ],
+  "run_id": 39845008508,
+  "run_url": "https://github.com/led-dynamo/leddy-e2e/actions/runs/39845008508",
+  "status": "COMPLETED",
+  "conclusion": "SUCCESS",
+  "job_id": 120055879432,
+  "native_tests": 515,
+  "java_tests": 317,
+  "java_suites": 38,
+  "module_cases": 48,
+  "module_java_comparisons": 14,
+  "method_cases": 33,
+  "method_java_comparisons": 11,
+  "bool_cases": 37,
+  "bool_java_comparisons": 13,
+  "http_tests_repeated": {
+    "tests": 3,
+    "repetitions_each": 5
+  },
+  "origin_merge_checks_preserved": true
+}

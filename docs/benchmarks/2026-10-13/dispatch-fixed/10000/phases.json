@@ -1,0 +1,92 @@
+{
+  "cold.core.actor.pools.startup": {
+    "count": 1,
+    "mean_ms": 1.222125,
+    "p50_ms": 1.222125,
+    "p95_ms": 1.222125
+  },
+  "cold.core.context.startup": {
+    "count": 1,
+    "mean_ms": 14.728167,
+    "p50_ms": 14.728167,
+    "p95_ms": 14.728167
+  },
+  "cold.core.http.executor.queue": {
+    "count": 4165,
+    "mean_ms": 11.200339,
+    "p50_ms": 7.642416,
+    "p95_ms": 30.619917
+  },
+  "cold.core.http.listen": {
+    "count": 1,
+    "mean_ms": 10.780833,
+    "p50_ms": 10.780833,
+    "p95_ms": 10.780833
+  },
+  "cold.core.http.receive": {
+    "count": 2011,
+    "mean_ms": 0.948518,
+    "p50_ms": 0.041167,
+    "p95_ms": 1.02225
+  },
+  "cold.core.http.timer.schedule": {
+    "count": 2011,
+    "mean_ms": 0.004113,
+    "p50_ms": 0.003292,
+    "p95_ms": 0.005958
+  },
+  "cold.core.stdio.write": {
+    "count": 1,
+    "mean_ms": 0.050583,
+    "p50_ms": 0.050583,
+    "p95_ms": 0.050583
+  },
+  "cold.core.vm.control.startup": {
+    "count": 1,
+    "mean_ms": 3.858167,
+    "p50_ms": 3.858167,
+    "p95_ms": 3.858167
+  },
+  "warm.actor.prepare": {
+    "count": 1862,
+    "mean_ms": 0.005741,
+    "p50_ms": 0.005208,
+    "p95_ms": 0.008042
+  },
+  "warm.admission.to_claim": {
+    "count": 1862,
+    "mean_ms": 939.133256,
+    "p50_ms": 907.821584,
+    "p95_ms": 1181.739333
+  },
+  "warm.admission.to_dispatch": {
+    "count": 1862,
+    "mean_ms": 939.024807,
+    "p50_ms": 907.680271,
+    "p95_ms": 1181.643542
+  },
+  "warm.admission.to_response_continuation": {
+    "count": 1862,
+    "mean_ms": 939.238779,
+    "p50_ms": 907.859833,
+    "p95_ms": 1181.797875
+  },
+  "warm.mailbox.move_to_claim": {
+    "count": 1862,
+    "mean_ms": 0.030334,
+    "p50_ms": 0.011625,
+    "p95_ms": 0.037625
+  },
+  "warm.response.await": {
+    "count": 1862,
+    "mean_ms": 0.099782,
+    "p50_ms": 0.028,
+    "p95_ms": 0.131042
+  },
+  "warm.routing.dispatch": {
+    "count": 1862,
+    "mean_ms": 0.085804,
+    "p50_ms": 0.078125,
+    "p95_ms": 0.122875
+  }
+}

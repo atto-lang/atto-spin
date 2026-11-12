@@ -10,6 +10,12 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 
+UNVERIFIED = {
+    'wasm': 'oreslang-source.wasm',
+    'cranelift': 'oreslang-source.cranelift',
+    'net': 'oreslang-source.net',
+}
+
 def git(directory, *args):
     return subprocess.check_output(['git', '-C', str(directory), *args], text=True).strip()
 
@@ -39,9 +45,16 @@ def local_file(relative):
 
 def load_contract():
     contract = json.loads((ROOT / 'BACKENDS.json').read_text())
-    if not isinstance(contract, dict) or set(contract) != {'java', 'llvm'}:
-        raise RuntimeError('Expected java and llvm backend contracts')
+    if not isinstance(contract, dict) or set(contract) != {'java', 'llvm', *UNVERIFIED}:
+        raise RuntimeError('Expected exactly java, llvm, wasm, cranelift and net backend contracts')
     java, llvm = contract['java'], contract['llvm']
+    # Unimplemented backend capabilities must not be silently promoted by
+    # changing manifest metadata or pointing at a different source repository.
+    for backend, source_repo in UNVERIFIED.items():
+        entry = contract[backend]
+        if (not isinstance(entry, dict) or set(entry) != {'source_repo', 'execution', 'evidence'}
+                or entry != {'source_repo': source_repo, 'execution': 'unverified', 'evidence': 'none'}):
+            raise RuntimeError(f'{backend}: missing native Spin guest evidence; keep execution unverified')
     if not isinstance(java, dict) or not isinstance(llvm, dict):
         raise RuntimeError('Backend contracts must be objects')
     if java.get('pin') != 'SOURCE_REF' or llvm.get('pin') != 'LLVM_SOURCE_REF':
@@ -61,7 +74,12 @@ def load_contract():
             raise RuntimeError('Duplicate LLVM rejection probe')
         seen.add(path)
         diagnostic = probe['diagnostic']
-        if not isinstance(diagnostic, str) or not diagnostic.startswith('oreslang-llvmc: expected ') or '\n' in diagnostic:
+        if not isinstance(diagnostic, str) or '\n' in diagnostic:
+            raise RuntimeError('Expected a specific unsupported-syntax diagnostic')
+        field_boundary = re.fullmatch(
+            r'oreslang-llvmc: native class field supports only scalar int(?:/bool)? or mut Array<int> at byte [0-9]+',
+            diagnostic)
+        if not field_boundary and not diagnostic.startswith(('oreslang-llvmc: expected ', 'oreslang-llvmc: actor requires ')):
             raise RuntimeError('Expected a specific unsupported-syntax diagnostic')
     return contract
 
@@ -69,11 +87,19 @@ def check_rejection(result, probe):
     if result.returncode != 1 or result.stdout.strip() or result.stderr.strip() != probe['diagnostic']:
         raise RuntimeError(f"Unexpected rejection result for {probe['path']}: exit={result.returncode}\n{result.stderr}")
 
+def check_positive(result):
+    # Current native ABI has an OS i32 entrypoint around the guest i64 main.
+    if result.returncode or not re.search(r'^define i32 @main\(\)', result.stdout, re.MULTILINE):
+        raise RuntimeError('LLVM positive control failed; rejection is not evidence of compatibility: ' + result.stderr)
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('backend', choices=['java', 'llvm'])
+    parser.add_argument('backend', choices=['java', 'llvm', *UNVERIFIED])
     args = parser.parse_args()
     contract = load_contract()
+    if args.backend in UNVERIFIED:
+        raise RuntimeError(f'{args.backend} Spin HTTP package execution is unverified; '
+                           'a backend compiler build or source-only check is not native parity')
     if args.backend == 'java':
         require_source('ORESLANG_SOURCE_DIR', 'SOURCE_REF')
         env = dict(os.environ)
@@ -88,8 +114,7 @@ def main():
         baseline = Path(directory) / 'baseline.ores'
         baseline.write_text('pub fnc main(): int { return 42; }\n')
         positive = subprocess.run([str(compiler), str(baseline)], capture_output=True, text=True, timeout=30)
-        if positive.returncode or 'define i64 @main(' not in positive.stdout:
-            raise RuntimeError('LLVM positive control failed; rejection is not evidence of compatibility: ' + positive.stderr)
+        check_positive(positive)
         for probe in contract['llvm']['rejection_probes']:
             entry = local_file(probe['path'])
             result = subprocess.run([str(compiler), str(entry)], capture_output=True, text=True, timeout=30)

@@ -18,11 +18,14 @@ git -C "$tmp/router" -c user.name=Audit -c user.email=audit@example.invalid comm
 cp "$root/scripts/test.sh" "$tmp/project/scripts/test.sh"
 printf '%s\n' "$ref" > "$tmp/project/SOURCE_REF"
 printf 'sample\n' > "$tmp/project/examples/mixed.ores"
+printf 'builder fixture\n' > "$tmp/project/tests/builder_contracts_20261101.ores"
 printf 'print("integration fixture OK")\n' > "$tmp/project/tests/integration.py"
 cat > "$tmp/compiler" <<'COMPILER'
 #!/usr/bin/env bash
 set -euo pipefail
-[[ "$1" = '--check' && "$2" = '--platform=server' ]]
+printf '%s\n' "$*" >> "$PREFLIGHT_COMPILER_CALLS"
+if [[ "${1:-}" = '--check' ]]; then shift; fi
+[[ "$#" = 2 && "$1" = '--platform=server' && -f "$2" ]]
 COMPILER
 chmod +x "$tmp/compiler"
 git -C "$tmp/project" init -q
@@ -30,6 +33,7 @@ git -C "$tmp/project" -c protocol.file.allow=always submodule add -q "$tmp/route
 git -C "$tmp/project" add .
 git -C "$tmp/project" -c user.name=Audit -c user.email=audit@example.invalid commit -qm fixture
 export ORESLANG_COMPILER="$tmp/compiler" ORESLANG_SOURCE_DIR="$tmp/compiler-source"
+export PREFLIGHT_COMPILER_CALLS="$tmp/compiler-calls"
 run() { bash "$tmp/project/scripts/test.sh"; }
 expect_failure() {
   local needle="$1" output
@@ -43,6 +47,12 @@ expect_failure() {
   fi
 }
 run >/dev/null
+[[ "$(wc -l < "$PREFLIGHT_COMPILER_CALLS" | tr -d '[:space:]')" = 3 ]]
+[[ "$(tail -1 "$PREFLIGHT_COMPILER_CALLS")" = "--platform=server $tmp/project/tests/builder_contracts_20261101.ores" ]]
+mkdir -p "$tmp/compiler-source/nested"
+export ORESLANG_SOURCE_DIR="$tmp/compiler-source/nested"
+expect_failure 'Compiler directory must be its own Git checkout'
+export ORESLANG_SOURCE_DIR="$tmp/compiler-source"
 printf 'dirty\n' >> "$tmp/compiler-source/tracked"
 expect_failure 'Compiler checkout must be clean'
 git -C "$tmp/compiler-source" restore tracked
