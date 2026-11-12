@@ -94,7 +94,11 @@ def main():
             check(status == 200 and body == b'' and headers['content-length'] == '6', 'HEAD suppression')
             status, headers, body = req('/shared', 'OPTIONS', headers={'Origin':'https://example.test'})
             check(status == 204 and headers['allow'] == 'GET, HEAD, OPTIONS' and headers['access-control-allow-origin'] == 'https://example.test', 'OPTIONS and middleware')
-            check(req('/auth')[0] == 401 and req('/auth', headers={'Authorization':'Bearer test'})[0] == 200, 'route pipeline auth')
+            unauthorized_status, unauthorized_headers, _ = req('/auth')
+            authorized_status, authorized_headers, _ = req('/auth', headers={'Authorization':'Bearer test'})
+            check(unauthorized_status == 401 and 'x-spin-second-hook' not in unauthorized_headers and
+                  authorized_status == 200 and authorized_headers.get('x-spin-second-hook') == 'yes',
+                  'terminal auth denial skips subsequent hook, accepted auth reaches it')
             check(req('/stream')[2] == b'data: one\n\ndata: two\n\n', 'response streaming')
             check(req('/stream', 'HEAD')[2] == b'', 'HEAD suppresses streamed writes')
             check(req('/echo', 'POST', 'x'*2048)[0] == 413, 'body limit')
