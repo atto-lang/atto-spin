@@ -10,11 +10,11 @@
     "rejection_probes": [
       {
         "path": "examples/mixed.atto",
-        "diagnostic": "oreslang-llvmc: actor requires at least one scalar field at byte 151 [file: mixed.atto]"
+        "diagnostic": "oreslang-llvmc: actor requires at least one scalar field at byte 156 [file: mixed.atto]"
       },
       {
         "path": "src/spin.atto",
-        "diagnostic": "oreslang-llvmc: actor requires at least one scalar field at byte 372 [file: spin.atto]"
+        "diagnostic": "oreslang-llvmc: actor requires at least one scalar field at byte 377 [file: spin.atto]"
       }
     ]
   },

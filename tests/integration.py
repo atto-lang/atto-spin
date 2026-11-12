@@ -6,26 +6,20 @@ import transport_security
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 COMPILER = os.environ.get('ORESLANG_COMPILER', 'oreslang-compiler')
 
-# Keep the 102 established actor/HTTP checks separate from the 23 rejection
-# frames and two positive controls in tests/transport_security.py. Update
-# these constants deliberately when the actual integration matrix changes.
-EXPECTED_FUNCTIONAL_CHECKS = 102
+# Exact expected acceptance receipt after the independently merged terminal
+# middleware tests on parent Spin #35 (117 functional, 25 raw-wire).
+EXPECTED_FUNCTIONAL_CHECKS = 117
 EXPECTED_RAW_WIRE_CHECKS = 25
 
 def require_condition(ok, label):
-    # Python's assert is stripped under -O / PYTHONOPTIMIZE. A release
-    # test must not silently pass if run by an optimized Python interpreter.
-    if not ok:
-        raise AssertionError(label)
+    if not ok: raise AssertionError(label)
 
 def verify_guest_receipt(total_checks, raw_wire_checks):
     if raw_wire_checks != EXPECTED_RAW_WIRE_CHECKS:
-        raise AssertionError(
-            f'raw-wire checks {raw_wire_checks} != {EXPECTED_RAW_WIRE_CHECKS}')
+        raise AssertionError(f'raw-wire checks {raw_wire_checks} != {EXPECTED_RAW_WIRE_CHECKS}')
     functional_checks = total_checks - raw_wire_checks
     if functional_checks != EXPECTED_FUNCTIONAL_CHECKS:
-        raise AssertionError(
-            f'functional checks {functional_checks} != {EXPECTED_FUNCTIONAL_CHECKS}')
+        raise AssertionError(f'functional checks {functional_checks} != {EXPECTED_FUNCTIONAL_CHECKS}')
     return {'checks': total_checks, 'functional_checks': functional_checks,
             'raw_wire_checks': raw_wire_checks}
 
@@ -37,8 +31,8 @@ def main():
         threading.Thread(target=lambda: [lines.put(line.strip()) for line in server.stdout], daemon=True).start()
         threading.Thread(target=lambda: [errors.append(line) for line in server.stderr], daemon=True).start()
         try:
-            require_condition(lines.get(timeout=15) == 'true',
-                              'builder must reject a second build')
+            if lines.get(timeout=15) != 'true':
+                raise AssertionError('builder must reject a second build')
             port = int(lines.get(timeout=5))
             def req(path, method='GET', body=None, headers=None, connection=None):
                 conn = connection or http.client.HTTPConnection('127.0.0.1', port, timeout=8)
@@ -56,6 +50,7 @@ def main():
             status, headers, body = req('/shared')
             check((status, body, headers['x-actor-mode']) == (200,b'shared','shared'), 'shared route')
             check(headers['x-spin'] == 'test' and len(headers['x-request-id']) == 36, 'middleware and request ID')
+            check(headers.get('x-spin-second-hook') == 'yes', 'normal request reaches second middleware')
             check(req('/private')[2] == b'private', 'isolated route')
             check(req('/echo', 'POST', 'private-body')[2] == b'private-body', 'body and helper Future flattening')
             check(req('/binary', 'POST', bytes(range(256)))[2] == bytes(range(256)), 'binary body and response streaming')
@@ -75,6 +70,40 @@ def main():
             check(req('/shared')[0] == 200, 'literal route still responds after dynamic requests')
             check(req('/shared', headers={'X-Fail':'yes'})[0] == 500, 'middleware failure contained')
             check(req('/shared')[0] == 200, 'supervisor survives middleware failure')
+            # A middleware return value does not restore an already moved
+            # exchange capability. Terminal paths must not invoke later hooks.
+            status, headers, body = req('/shared', headers={'X-Stop-Without-Response':'yes'})
+            check(status == 500 and body == b'Internal Server Error' and
+                  headers.get('x-spin-responder') == 'actor' and
+                  'x-spin-second-hook' not in headers,
+                  'abandoned middleware fails closed without running later hooks')
+            check(req('/missing', headers={'X-Stop-Without-Response':'yes'})[0] == 500,
+                  'unmatched route cannot be stranded by middleware')
+            for path, method in (('/shared', 'GET'), ('/missing', 'GET'),
+                                 ('/shared', 'POST'), ('/shared', 'OPTIONS'),
+                                 ('/auth', 'GET')):
+                status, headers, body = req(path, method, headers={'X-Respond-And-Continue':'yes'})
+                check(status == 403 and body == b'middleware response' and
+                      headers.get('x-spin-responder') != 'actor' and
+                      'x-spin-second-hook' not in headers,
+                      'middleware transfer terminates dispatch for '+method+' '+path)
+            for method in ('POST', 'OPTIONS'):
+                status, headers, body = req('/shared', method, headers={'X-Stop-Without-Response':'yes'})
+                check(status == 500 and body == b'Internal Server Error' and
+                      headers.get('x-spin-responder') == 'actor' and
+                      'x-spin-second-hook' not in headers,
+                      'abandoned middleware blocks method fallback: '+method)
+            status, headers, body = req('/shared', 'HEAD',
+                                        headers={'X-Stop-Without-Response':'yes'})
+            check(status == 500 and body == b'' and headers.get('x-spin-responder') == 'actor' and
+                  'x-spin-second-hook' not in headers,
+                  'abandoned HEAD request suppresses response body')
+            with contextlib.closing(http.client.HTTPConnection('127.0.0.1', port, timeout=8)) as conn:
+                check(req('/shared', headers={'X-Respond-And-Continue':'yes'}, connection=conn)[0] == 403,
+                      'middleware transfer on keepalive connection')
+                check(req('/shared', connection=conn)[0] == 200,
+                      'same keepalive connection remains usable afterward')
+            check(req('/shared')[0] == 200, 'supervisor recovers after terminal middleware paths')
             status, headers, _ = req('/shared', 'POST')
             check(status == 405 and headers['allow'] == 'GET, HEAD, OPTIONS', 'method not allowed')
             status, headers, body = req('/shared', 'HEAD')
@@ -88,7 +117,7 @@ def main():
             check(req('/echo', 'POST', iter([b'a'*600,b'b'*600]))[0] == 413, 'chunked body limit')
             check(req('/users/%C0%AF')[0] == 400, 'invalid UTF-8 path')
             raw_wire_checks = transport_security.run(port)
-            checks += raw_wire_checks  # real raw-wire protocol, not a host mock
+            checks += raw_wire_checks  # actual socket probes, not simulated compiler
             check(req('/crash')[0] == 500, 'actor crash cleanup')
             check(req('/startup-failure')[0] == 500, 'actor startup failure cleanup')
             check(req('/timeout')[0] == 504, 'deadline cleanup')
@@ -122,7 +151,7 @@ def main():
             check(server.returncode == 0, 'clean process exit: '+''.join(errors[-20:]))
             check(lines.get(timeout=5) == '0', 'zero active exchanges after shutdown')
             receipt = verify_guest_receipt(checks, raw_wire_checks)
-            print(json.dumps({**receipt, 'result': 'PASS'}))
+            print(json.dumps({**receipt, 'result':'PASS'}))
         except Exception:
             print(''.join(errors[-50:]))
             raise
