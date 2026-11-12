@@ -45,23 +45,23 @@ define module spin_html as
 
     // Tag names are compile-time literals here, never caller-controlled.
     // No attribute, script, style, URL, or raw-HTML escape hatch is provided.
-    pub static fnc html(borrow Html child) -> Html { return Html.wrap("html", child); }
-    pub static fnc head(borrow Html child) -> Html { return Html.wrap("head", child); }
-    pub static fnc title(borrow Html child) -> Html { return Html.wrap("title", child); }
-    pub static fnc body(borrow Html child) -> Html { return Html.wrap("body", child); }
-    pub static fnc main(borrow Html child) -> Html { return Html.wrap("main", child); }
-    pub static fnc header(borrow Html child) -> Html { return Html.wrap("header", child); }
-    pub static fnc footer(borrow Html child) -> Html { return Html.wrap("footer", child); }
-    pub static fnc section(borrow Html child) -> Html { return Html.wrap("section", child); }
-    pub static fnc div(borrow Html child) -> Html { return Html.wrap("div", child); }
-    pub static fnc span(borrow Html child) -> Html { return Html.wrap("span", child); }
-    pub static fnc h1(borrow Html child) -> Html { return Html.wrap("h1", child); }
-    pub static fnc h2(borrow Html child) -> Html { return Html.wrap("h2", child); }
-    pub static fnc p(borrow Html child) -> Html { return Html.wrap("p", child); }
-    pub static fnc strong(borrow Html child) -> Html { return Html.wrap("strong", child); }
-    pub static fnc em(borrow Html child) -> Html { return Html.wrap("em", child); }
-    pub static fnc ul(borrow Html child) -> Html { return Html.wrap("ul", child); }
-    pub static fnc li(borrow Html child) -> Html { return Html.wrap("li", child); }
+    pub static fnc html(borrow Html child) -> Html { return Html.wrap("html", rt borrow child); }
+    pub static fnc head(borrow Html child) -> Html { return Html.wrap("head", rt borrow child); }
+    pub static fnc title(borrow Html child) -> Html { return Html.wrap("title", rt borrow child); }
+    pub static fnc body(borrow Html child) -> Html { return Html.wrap("body", rt borrow child); }
+    pub static fnc main(borrow Html child) -> Html { return Html.wrap("main", rt borrow child); }
+    pub static fnc header(borrow Html child) -> Html { return Html.wrap("header", rt borrow child); }
+    pub static fnc footer(borrow Html child) -> Html { return Html.wrap("footer", rt borrow child); }
+    pub static fnc section(borrow Html child) -> Html { return Html.wrap("section", rt borrow child); }
+    pub static fnc div(borrow Html child) -> Html { return Html.wrap("div", rt borrow child); }
+    pub static fnc span(borrow Html child) -> Html { return Html.wrap("span", rt borrow child); }
+    pub static fnc h1(borrow Html child) -> Html { return Html.wrap("h1", rt borrow child); }
+    pub static fnc h2(borrow Html child) -> Html { return Html.wrap("h2", rt borrow child); }
+    pub static fnc p(borrow Html child) -> Html { return Html.wrap("p", rt borrow child); }
+    pub static fnc strong(borrow Html child) -> Html { return Html.wrap("strong", rt borrow child); }
+    pub static fnc em(borrow Html child) -> Html { return Html.wrap("em", rt borrow child); }
+    pub static fnc ul(borrow Html child) -> Html { return Html.wrap("ul", rt borrow child); }
+    pub static fnc li(borrow Html child) -> Html { return Html.wrap("li", rt borrow child); }
 
     pub static fnc document(borrow Html root) -> Html {
       let mut Html result = new Html("");
