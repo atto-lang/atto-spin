@@ -56,4 +56,9 @@ runners must not be attributed to actor kind without repeated matched trials.
 
 ### Exact runtime counter API correction (2026-11-12)
 
-The pinned compiler exposes `HttpHandler.created` and `HttpHandler.reused`, **not** `HttpServer.pooled_created` or `HttpServer.pooled_reused`. The benchmark registers `http.handler(...).pooled(size)` for each actor kind, retains those handler capabilities, and reads separate shared/isolated counts after graceful shutdown. The host regression rejects phantom reuse from an unexercised pool. This change was prompted by a real compiler failure on the first native smoke (run 43283406926); do not claim the old fixture executed.
+The pinned compiler exposes `HttpHandler.created` and `HttpHandler.reused`, **not** `HttpServer.pooled_created` or `HttpServer.pooled_reused`. The benchmark registers `http.handler(...).pooled(size)` for each actor kind, transfers each handler to the Spin builder, and reads separate shared/isolated counts through the owning `spin.Application.handler_created(index)` / `handler_reused(index)` accessors after graceful shutdown. The host regression rejects phantom reuse from an unexercised pool. This change was prompted by a real compiler failure on the first native smoke (run 43283406926); do not claim the old fixture executed.
+
+
+### Ownership-safe pool telemetry
+
+`Builder.get` takes ownership of the `HttpHandler`; caller aliases may not read `.created` or `.reused` after that move. Spin therefore adds read-only `Binding.created()/reused()` and `Application.handler_created(index)/handler_reused(index)` methods. Indices 1 and 3 refer to the pooled shared and isolated handlers registered by this fixed fixture. The methods report native counters without transferring or cloning handlers, and the compiler's ownership checker remains enabled. This is not an unsafe ref, cross-actor state leak, or monkey patch.

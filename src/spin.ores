@@ -46,6 +46,10 @@ define module spin as
       return;
     }
     pub is_isolated() -> bool { return self.handler.isolated; }
+    // Read native counters through the sole owning binding. Never retain an
+    // alias to a handler after ownership transfers into the builder.
+    pub created(): int { return self.handler.created; }
+    pub reused(): int { return self.handler.reused; }
   end
 
   pub define class Application as
@@ -58,6 +62,16 @@ define module spin as
       self.bindings = bindings;
       self.middleware = middleware;
       self.framework_response = http.handler("spin.FrameworkResponse").pooled(8);
+    }
+
+    // Route registration index (zero-based) identifies an owned binding.
+    // These are supervisor-side immutable telemetry reads, not raw handler
+    // references or authority to dispatch additional actor mail.
+    pub handler_created(int binding_index): int {
+      return self.bindings.get(binding_index).created();
+    }
+    pub handler_reused(int binding_index): int {
+      return self.bindings.get(binding_index).reused();
     }
 
     framework_reply(borrow mut HttpExchange exchange, String operation): void {

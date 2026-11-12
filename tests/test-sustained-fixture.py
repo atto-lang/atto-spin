@@ -42,6 +42,17 @@ class SustainedFixtureContractTest(unittest.TestCase):
                 self.assertIn('request.set_header("X-Work-Verified", "0");', request)
                 self.assertEqual(request.count('self.end();'), int(name.startswith('Fresh')))
 
+    def test_counters_are_read_from_owning_application(self):
+        source = FIXTURE.read_text()
+        self.assertNotIn("server.pooled_created", source)
+        self.assertNotIn("server.pooled_reused", source)
+        self.assertIn("app.handler_created(1)", source)
+        self.assertIn("app.handler_reused(1)", source)
+        self.assertIn("app.handler_created(3)", source)
+        self.assertIn("app.handler_reused(3)", source)
+        self.assertNotIn("val sharedPool", source)
+        self.assertNotIn("val isolatedPool", source)
+
     def test_fresh_and_reused_have_identical_non_lifecycle_work(self):
         source = FIXTURE.read_text()
         for mode in ('Shared', 'Isolated'):
