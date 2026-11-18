@@ -1,5 +1,13 @@
 # oreslang-spin
 
+## AttoLang naming migration (2026-11-18)
+
+**AttoLang** is the new public name for **Oreslang**. This `ores-truffle-oreslang/oreslang-spin` repository is a legacy-named checkout. A one-to-one replacement has **not been verified**; discover current work in [atto-lang](https://github.com/atto-lang) rather than inventing a repository destination. Do not assume that matching project names mean GitHub history, PRs, issues, code or feature completeness has been transferred. The existing project commands and implementation status below refer to this historical checkout.
+
+The authoritative language specification is **[atto-spec](https://github.com/atto-lang/atto-spec)** (not old Oreslang README/spec prose); portable test fixtures belong in [atto-platform-conformance](https://github.com/atto-lang/atto-platform-conformance), and portable libraries in [atto-common-source](https://github.com/atto-lang/atto-common-source). The evolving language contracts include canonical `.atto` source, `snake_case` callable names, `borrow!`/`take!`/`copy!`/`copy!!`/`share!`, [implicit borrowing](https://github.com/atto-lang/atto-spec/blob/main/language/implicit-argument-borrow-v1.md), [file/module `define const` with guarded one-time `os.read_env`](https://github.com/atto-lang/atto-spec/blob/main/language/file-module-const-v1.md), and [bitwise `<<<`/`>>>`/`ashr` versus stream `<<`/`>>`](https://github.com/atto-lang/atto-spec/blob/main/language/bitwise-and-stream-operators-v1.md). These are **target rules**, not automatic execution claims for this repo.
+
+Treat historical `.ores` fixtures, `oreslang-*` commands, package IDs, ABIs and examples below as compatibility instructions until verified changes supersede them. No Python project tooling/tests; prefer Rust support tooling. Compiler/runtime support and parity require exact source SHA/tree, target/toolchain, executed positive and negative guest tests; host-only or zero-step CI is **not executed** evidence.
+
 An Oreslang HTTP framework that dispatches each matched request to a shared
 actor or isolated actor. Handlers use fresh actors by default; opt-in pools reuse
 workers across requests. It uses `oreslang-http-routing` for route
