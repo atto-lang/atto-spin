@@ -1,0 +1,72 @@
+// Spin's typed, buffered HTML boundary. No Java/C# interop.
+// The only public constructor treats its input as UNTRUSTED TEXT.
+// Raw HTML is created exclusively by this class's fixed-tag factories.
+define module spin_html as
+  pub define class Html as
+    let String encoded;
+
+    pub constructor(String untrusted_text) {
+      // Replace '&' first: newly inserted entities must not be escaped again.
+      // Unicode is preserved; NUL is replaced rather than entering HTML output.
+      self.encoded = untrusted_text
+        .replace_literal("\u0000", "\uFFFD")
+        .replace_literal("&", "&amp;")
+        .replace_literal("<", "&lt;")
+        .replace_literal(">", "&gt;")
+        .replace_literal("\"", "&quot;")
+        .replace_literal("'", "&#39;");
+    }
+
+    // Serialized, escaped HTML. This method does NOT make arbitrary raw
+    // strings trusted input to Html's node factories.
+    pub markup() -> String {
+      return self.encoded;
+    }
+
+    static fnc wrap(String tag, borrow Html child) -> Html {
+      let mut Html result = new Html("");
+      result.encoded = "<" + tag + ">" + child.encoded + "</" + tag + ">";
+      return result;
+    }
+
+    pub static fnc text(String untrusted_text) -> Html {
+      return new Html(untrusted_text);
+    }
+
+    pub static fnc fragment(Array<Html> children) -> Html {
+      let String combined = "";
+      for (const child of children) {
+        combined = combined + child.encoded;
+      }
+      let mut Html result = new Html("");
+      result.encoded = combined;
+      return result;
+    }
+
+    // Tag names are compile-time literals here, never caller-controlled.
+    // No attribute, script, style, URL, or raw-HTML escape hatch is provided.
+    pub static fnc html(borrow Html child) -> Html { return Html.wrap("html", rt borrow child); }
+    pub static fnc head(borrow Html child) -> Html { return Html.wrap("head", rt borrow child); }
+    pub static fnc title(borrow Html child) -> Html { return Html.wrap("title", rt borrow child); }
+    pub static fnc body(borrow Html child) -> Html { return Html.wrap("body", rt borrow child); }
+    pub static fnc main(borrow Html child) -> Html { return Html.wrap("main", rt borrow child); }
+    pub static fnc header(borrow Html child) -> Html { return Html.wrap("header", rt borrow child); }
+    pub static fnc footer(borrow Html child) -> Html { return Html.wrap("footer", rt borrow child); }
+    pub static fnc section(borrow Html child) -> Html { return Html.wrap("section", rt borrow child); }
+    pub static fnc div(borrow Html child) -> Html { return Html.wrap("div", rt borrow child); }
+    pub static fnc span(borrow Html child) -> Html { return Html.wrap("span", rt borrow child); }
+    pub static fnc h1(borrow Html child) -> Html { return Html.wrap("h1", rt borrow child); }
+    pub static fnc h2(borrow Html child) -> Html { return Html.wrap("h2", rt borrow child); }
+    pub static fnc p(borrow Html child) -> Html { return Html.wrap("p", rt borrow child); }
+    pub static fnc strong(borrow Html child) -> Html { return Html.wrap("strong", rt borrow child); }
+    pub static fnc em(borrow Html child) -> Html { return Html.wrap("em", rt borrow child); }
+    pub static fnc ul(borrow Html child) -> Html { return Html.wrap("ul", rt borrow child); }
+    pub static fnc li(borrow Html child) -> Html { return Html.wrap("li", rt borrow child); }
+
+    pub static fnc document(borrow Html root) -> Html {
+      let mut Html result = new Html("");
+      result.encoded = "<!doctype html>" + root.encoded;
+      return result;
+    }
+  end
+end

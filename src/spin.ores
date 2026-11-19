@@ -1,4 +1,5 @@
 import module http_routing from "../dependencies/http-routing/src/http_routing.atto";
+import module spin_html from "./render/html";
 
 // Spin performs routing in the supervisor. Handler actor code is registered
 // explicitly; mutable guest closures never cross the actor boundary.
@@ -191,6 +192,12 @@ define module spin as
   }
   pub fnc html(borrow HttpExchange exchange, int status, String body) -> Future<void> {
     return exchange.respond(status, "text/html; charset=utf-8", body);
+  }
+  // Escape untrusted text using fixed-tag native Html nodes; response stays
+  // actor-owned and single-use, never a separate writer.
+  pub fnc render_html(borrow HttpExchange exchange, int status, borrow spin_html.Html page) -> Future<void> {
+    exchange.set_header("X-Content-Type-Options", "nosniff");
+    return exchange.respond(status, "text/html; charset=utf-8", page.markup());
   }
   // Serialized JSON comes from the application's chosen serialization library.
   pub fnc json(borrow HttpExchange exchange, int status, String body) -> Future<void> {

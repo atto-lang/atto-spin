@@ -1,0 +1,48 @@
+import module spin_html from "../src/render/html";
+
+// Executable native-Oreslang golden test, no host-language renderer.
+pub routine main(): void {
+  val hostile = spin_html.Html.text("<script>alert('x') && \"y\"</script>");
+  if hostile.markup() != "&lt;script&gt;alert(&#39;x&#39;) &amp;&amp; &quot;y&quot;&lt;/script&gt;"; then
+    stdio.println("FAIL: text escaping");
+    return;
+  fi
+  if spin_html.Html.text("&amp;").markup() != "&amp;amp;"; then
+    stdio.println("FAIL: entity non-recursion");
+    return;
+  fi
+  if spin_html.Html.text("é😀中").markup() != "é😀中"; then
+    stdio.println("FAIL: Unicode preservation");
+    return;
+  fi
+  if spin_html.Html.text("A\u0000B").markup() != "A\uFFFDB"; then
+    stdio.println("FAIL: NUL replacement");
+    return;
+  fi
+
+  val title_text = spin_html.Html.text("X & Y");
+  val title_node = spin_html.Html.title(rt borrow title_text);
+  val title = spin_html.Html.head(rt borrow title_node);
+  val heading_text = spin_html.Html.text("Hello <world>");
+  val heading = spin_html.Html.h1(rt borrow heading_text);
+  val paragraph_text = spin_html.Html.text("safe");
+  val paragraph = spin_html.Html.p(rt borrow paragraph_text);
+  val content_fragment = spin_html.Html.fragment(arr[heading, paragraph]);
+  val main_node = spin_html.Html.main(rt borrow content_fragment);
+  val body = spin_html.Html.body(rt borrow main_node);
+  val root_fragment = spin_html.Html.fragment(arr[title, body]);
+  val root = spin_html.Html.html(rt borrow root_fragment);
+  val page = spin_html.Html.document(rt borrow root);
+  if page.markup() != "<!doctype html><html><head><title>X &amp; Y</title></head><body><main><h1>Hello &lt;world&gt;</h1><p>safe</p></main></body></html>"; then
+    stdio.println("FAIL: element composition");
+    return;
+  fi
+  val dangerous_text = spin_html.Html.text("</div><script>");
+  val safe_div = spin_html.Html.div(rt borrow dangerous_text);
+  if safe_div.markup() != "<div>&lt;/div&gt;&lt;script&gt;</div>"; then
+    stdio.println("FAIL: nested tag breakout");
+    return;
+  fi
+  stdio.println("HTML_RENDER_OK");
+  return;
+}
